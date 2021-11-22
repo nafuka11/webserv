@@ -1,7 +1,7 @@
 NAME		:= webserv
 
 INC_DIR		:= ./includes
-SRCS		:=
+SRCS		:= srcs/SystemError.cpp srcs/Socket.cpp srcs/HTTPServer.cpp srcs/AddressInfoError.cpp srcs/main.cpp srcs/ServerSocket.cpp
 OBJS		:= $(SRCS:.cpp=.o)
 
 CXX			:= clang++
@@ -18,8 +18,11 @@ clean		: ## Delete object files
 	$(RM) $(OBJS)
 
 .PHONY		: fclean
-fclean		: clean ## Delete executables
-	$(RM) $(NAME_STL) $(NAME_FT)
+fclean		: clean ## Delete executable and object files
+	$(RM) $(NAME)
+
+.PHONY		: re
+re			: fclean all ## Rebuild executable
 
 .PHONY		: srcs
 srcs		: ## Update SRCS
