@@ -63,7 +63,10 @@ int ServerSocket::open_from_address(struct addrinfo *address)
     }
 
     int optval = 1;
-    setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void *)&optval, sizeof(int));
+    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void *)&optval, sizeof(int)) < 0)
+    {
+        throw SystemError("setsockopt", errno);
+    }
     if (bind(fd, address->ai_addr, address->ai_addrlen) == 0)
     {
         return fd;
