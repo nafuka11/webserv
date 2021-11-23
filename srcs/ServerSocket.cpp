@@ -86,13 +86,17 @@ void ServerSocket::listen()
     }
 }
 
-int ServerSocket::accept_connection()
+ClientSocket ServerSocket::accept_connection()
 {
-    int connect_d = accept(fd_, NULL, 0);
+    struct sockaddr_storage address;
+    socklen_t address_len = sizeof(struct sockaddr_storage);
+
+    int connect_d = accept(fd_, reinterpret_cast<struct sockaddr *>(&address), &address_len);
 
     if (connect_d < 0)
     {
         throw SystemError("accept", errno);
     }
-    return connect_d;
+    ClientSocket clientSocket = ClientSocket(connect_d, address);
+    return clientSocket;
 }

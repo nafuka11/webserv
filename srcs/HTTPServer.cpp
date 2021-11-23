@@ -7,13 +7,13 @@
 
 HTTPServer::HTTPServer(int port)
 {
-    ServerSocket socket(port);
+    ServerSocket server(port);
     std::string message = "Hello webserv!\n";
     while (true)
     {
-        int connect_d = socket.accept_connection();
-        send(connect_d, message.c_str(), message.size(), 0);
-        close(connect_d);
+        ClientSocket client = server.accept_connection();
+        client.send(message);
+        client.close();
     }
 }
 

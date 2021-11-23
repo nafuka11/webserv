@@ -2,6 +2,7 @@
 #define SERVERSOCKET_HPP
 
 #include "Socket.hpp"
+#include "ClientSocket.hpp"
 
 class ServerSocket : public Socket
 {
@@ -13,7 +14,7 @@ private:
 public:
     ServerSocket(int port);
     ~ServerSocket();
-    int accept_connection();
+    ClientSocket accept_connection();
 };
 
 #endif /* SERVERSOCKET_HPP */
