@@ -1,6 +1,10 @@
 #include "Socket.hpp"
 
-Socket::Socket(int port) : port(port)
+Socket::Socket()
+{
+}
+
+Socket::Socket(int fd) : fd_(fd)
 {
 }
 

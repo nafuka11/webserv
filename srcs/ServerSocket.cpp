@@ -7,8 +7,9 @@
 #include "AddressInfoError.hpp"
 #include "SystemError.hpp"
 
-ServerSocket::ServerSocket(int port) : Socket(port)
+ServerSocket::ServerSocket(int port) : Socket()
 {
+    port_ = port;
     open();
     listen();
 }
@@ -20,7 +21,7 @@ ServerSocket::~ServerSocket()
 void ServerSocket::open()
 {
     std::stringstream sstream;
-    sstream << port;
+    sstream << port_;
     const char *str_port = sstream.str().c_str();
 
     struct addrinfo hints = {};
@@ -38,17 +39,19 @@ void ServerSocket::open()
     }
     for (current = addr_list; current; current = current->ai_next)
     {
-        fd = open_from_address(current);
-        if (fd >= 0)
+        fd_ = open_from_address(current);
+        if (fd_ >= 0)
         {
             break;
         }
     }
-    freeaddrinfo(addr_list);
     if (current == NULL)
     {
         throw std::runtime_error("socket not found");
     }
+    struct sockaddr_storage *storage_addr = reinterpret_cast<struct sockaddr_storage *>(current->ai_addr);
+    address_ = *storage_addr;
+    freeaddrinfo(addr_list);
 }
 
 int ServerSocket::open_from_address(struct addrinfo *address)
@@ -74,7 +77,7 @@ int ServerSocket::open_from_address(struct addrinfo *address)
 
 void ServerSocket::listen()
 {
-    if (::listen(fd, SOMAXCONN) < 0)
+    if (::listen(fd_, SOMAXCONN) < 0)
     {
         throw SystemError("listen", errno);
     }
@@ -82,7 +85,7 @@ void ServerSocket::listen()
 
 int ServerSocket::accept_connection()
 {
-    int connect_d = accept(fd, NULL, 0);
+    int connect_d = accept(fd_, NULL, 0);
 
     if (connect_d < 0)
     {
