@@ -9,7 +9,6 @@
 HTTPServer::HTTPServer(int port)
 {
     ServerSocket server(port);
-    std::string message = "Hello webserv!\n";
     while (true)
     {
         ClientSocket client = server.acceptConnection();
