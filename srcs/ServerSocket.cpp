@@ -39,7 +39,7 @@ void ServerSocket::open()
     }
     for (current = addr_list; current; current = current->ai_next)
     {
-        fd_ = open_from_address(current);
+        fd_ = openFromAddress(current);
         if (fd_ >= 0)
         {
             break;
@@ -54,7 +54,7 @@ void ServerSocket::open()
     freeaddrinfo(addr_list);
 }
 
-int ServerSocket::open_from_address(struct addrinfo *address)
+int ServerSocket::openFromAddress(struct addrinfo *address)
 {
     int fd = socket(address->ai_family, address->ai_socktype, address->ai_protocol);
     if (fd < 0)
@@ -86,7 +86,7 @@ void ServerSocket::listen()
     }
 }
 
-ClientSocket ServerSocket::accept_connection()
+ClientSocket ServerSocket::acceptConnection()
 {
     struct sockaddr_storage address;
     socklen_t address_len = sizeof(struct sockaddr_storage);

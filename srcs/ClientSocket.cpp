@@ -13,7 +13,7 @@ ClientSocket::~ClientSocket()
 {
 }
 
-std::string ClientSocket::receive_request()
+std::string ClientSocket::receiveRequest()
 {
     size_t buffer_size = 4096;
     char buffer[buffer_size];
@@ -24,7 +24,7 @@ std::string ClientSocket::receive_request()
     return std::string(buffer);
 }
 
-void ClientSocket::send_response(const std::string &message)
+void ClientSocket::sendResponse(const std::string &message)
 {
     ::send(fd_, message.c_str(), message.size(), 0);
 }

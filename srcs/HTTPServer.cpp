@@ -12,15 +12,15 @@ HTTPServer::HTTPServer(int port)
     std::string message = "Hello webserv!\n";
     while (true)
     {
-        ClientSocket client = server.accept_connection();
+        ClientSocket client = server.acceptConnection();
         while (true)
         {
-            std::string request = client.receive_request();
+            std::string request = client.receiveRequest();
             std::cout << "Received: " << request.size() << " byte: " << std::endl
                       << request << std::endl;
             if (request.size() <= 2)
                 break;
-            client.send_response(request);
+            client.sendResponse(request);
         }
         client.close();
     }

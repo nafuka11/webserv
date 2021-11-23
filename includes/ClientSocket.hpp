@@ -11,8 +11,8 @@ private:
 public:
     ClientSocket(int fd, const struct sockaddr_storage &address);
     ~ClientSocket();
-    std::string receive_request();
-    void send_response(const std::string &message);
+    std::string receiveRequest();
+    void sendResponse(const std::string &message);
     void close();
 };
 

@@ -8,13 +8,13 @@ class ServerSocket : public Socket
 {
 private:
     void open();
-    int open_from_address(struct addrinfo *address);
+    int openFromAddress(struct addrinfo *address);
     void listen();
 
 public:
     ServerSocket(int port);
     ~ServerSocket();
-    ClientSocket accept_connection();
+    ClientSocket acceptConnection();
 };
 
 #endif /* SERVERSOCKET_HPP */
