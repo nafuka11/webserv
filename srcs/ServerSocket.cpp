@@ -22,7 +22,7 @@ void ServerSocket::open()
 {
     std::stringstream sstream;
     sstream << port_;
-    const char *str_port = sstream.str().c_str();
+    std::string string_port = sstream.str();
 
     struct addrinfo hints = {};
 
@@ -32,7 +32,7 @@ void ServerSocket::open()
     struct addrinfo *addr_list;
     struct addrinfo *current;
 
-    int code = getaddrinfo(NULL, str_port, &hints, &addr_list);
+    int code = getaddrinfo(NULL, string_port.c_str(), &hints, &addr_list);
     if (code != 0)
     {
         throw AddressInfoError("getaddrinfo", code);
