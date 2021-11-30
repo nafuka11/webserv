@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <iostream>
+#include "HTTPParseException.hpp"
 
 HTTPServer::HTTPServer(int port)
 {
@@ -14,12 +15,15 @@ HTTPServer::HTTPServer(int port)
         ClientSocket client = server.acceptConnection();
         while (true)
         {
-            std::string request = client.receiveRequest();
-            std::cout << "Received: " << request.size() << " byte: " << std::endl
-                      << request << std::endl;
-            if (request.size() <= 2)
-                break;
-            client.sendResponse(request);
+            try
+            {
+                client.receiveRequest();
+            }
+            catch(const HTTPParseException& e)
+            {
+                std::cerr << "HTTP Parse Error: code: " << e.getStatusCode() << std::endl;
+            }
+            // client.sendResponse(request);
         }
         client.close();
     }

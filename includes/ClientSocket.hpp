@@ -3,15 +3,19 @@
 
 #include <string>
 #include "Socket.hpp"
+#include "HTTPRequest.hpp"
 
 class ClientSocket : public Socket
 {
 private:
-    /* data */
+    static const size_t BUF_SIZE;
+    std::string message_;
+    HTTPRequest request_;
+
 public:
     ClientSocket(int fd, const struct sockaddr_storage &address);
     ~ClientSocket();
-    std::string receiveRequest();
+    void receiveRequest();
     void sendResponse(const std::string &message);
     void close();
 };
