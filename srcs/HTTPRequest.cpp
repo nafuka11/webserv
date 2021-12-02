@@ -132,7 +132,9 @@ bool HTTPRequest::needsParsingMessageBody()
 
 bool HTTPRequest::isSpace(char c)
 {
-    return c == ' ';
+    return c == ' ' || c == '\t';
+}
+
 }
 
 std::vector<std::string> HTTPRequest::split(const std::string &str, const std::string &delim)
