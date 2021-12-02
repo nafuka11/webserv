@@ -49,8 +49,9 @@ void ServerSocket::open()
     {
         throw std::runtime_error("socket not found");
     }
-    struct sockaddr_storage *storage_addr = reinterpret_cast<struct sockaddr_storage *>(current->ai_addr);
-    address_ = *storage_addr;
+    struct sockaddr_storage storage = {};
+    *reinterpret_cast<struct sockaddr *>(&storage) = *current->ai_addr;
+    address_ = storage;
     freeaddrinfo(addr_list);
 }
 
