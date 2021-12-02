@@ -4,10 +4,12 @@
 #include <cerrno>
 #include <unistd.h>
 
+#include <iostream>
+
 const size_t ClientSocket::BUF_SIZE = 8192;
 
 ClientSocket::ClientSocket(int fd, const struct sockaddr_storage &address)
-    : Socket(fd)
+    : Socket(fd), parser_(request_)
 {
     address_ = address;
 }
@@ -23,13 +25,31 @@ void ClientSocket::receiveRequest()
     if (read_byte <= 0)
         return;
     buffer[read_byte] = '\0';
-    request_.appendRawMessage(buffer);
+    parser_.appendRawMessage(buffer);
     try
     {
-        request_.parse();
+        parser_.parse();
+        if (parser_.finished())
+        {
+            // TODO: 後で消しましょう。ログクラスを作って出力するのがいいかも
+            std::cout << "method: " << request_.getMethod() << std::endl
+            << "uri: \"" << request_.getUri() << "\"" << std::endl
+            << "protocol: \"" << request_.getProtocolVersion() << "\"" << std::endl;
+            const std::map<std::string, std::string> headers = request_.getHeaders();
+            for (std::map<std::string, std::string>::const_iterator iter = headers.begin();
+                iter != headers.end();
+                ++iter)
+            {
+                std::cout << "\"" << iter->first << "\": \"" << iter->second << "\"" << std::endl;
+            }
+            // TODO: HTTPリクエストを作成しsendする。
+            parser_.clear();
+            request_.clear();
+        }
     }
     catch(const HTTPParseException &e)
     {
+        parser_.clear();
         request_.clear();
         throw e;
     }
