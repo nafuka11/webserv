@@ -140,6 +140,21 @@ bool HTTPRequest::isSpace(char c)
     return c == ' ' || c == '\t';
 }
 
+bool HTTPRequest::isToken(const std::string &str)
+{
+    for (size_t i = 0; i < str.size(); i++)
+    {
+        if (!isTokenChar(str[i]))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool HTTPRequest::isTokenChar(char c)
+{
+    return isalnum(c) || strchr("!#$%&'*+-.^_`|~", c);
 }
 
 std::vector<std::string> HTTPRequest::split(const std::string &str, const std::string &delim)
@@ -195,6 +210,10 @@ void HTTPRequest::setProtocolVersion(const std::string &protocol_version)
 
 void HTTPRequest::setHeader(const std::string &key, const std::string &value)
 {
+    if (!isToken(key))
+    {
+        throw HTTPParseException(CODE_400);
+    }
     headers_.insert(std::make_pair(key, value));
 }
 

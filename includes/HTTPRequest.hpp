@@ -41,6 +41,8 @@ private:
     void parseMessageBody(const std::string &line);
     bool needsParsingMessageBody();
     bool isSpace(char c);
+    bool isToken(const std::string &str);
+    bool isTokenChar(char c);
     std::vector<std::string> split(const std::string &str, const std::string &delim);
 
     void setMethod(const std::string &method);
