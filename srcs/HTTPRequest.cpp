@@ -132,7 +132,7 @@ void HTTPRequest::parseMessageBody(const std::string &line)
 bool HTTPRequest::needsParsingMessageBody()
 {
     return method_ == POST &&
-        (headers_.count("Content-Length") || headers_.count("Transfer-Encoding"));
+        (headers_.count("content-length") || headers_.count("transfer-encoding"));
 }
 
 bool HTTPRequest::isSpace(char c)
