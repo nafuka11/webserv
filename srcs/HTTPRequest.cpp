@@ -44,7 +44,7 @@ void HTTPRequest::parse()
                 iter != headers_.end();
                 ++iter)
             {
-                std::cout << (*iter).first << ": " << (*iter).second << std::endl;
+                std::cout << (*iter).first << ": \"" << (*iter).second << "\"" << std::endl;
             }
             clear();
             break;
