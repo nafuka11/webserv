@@ -168,7 +168,7 @@ std::vector<std::string> HTTPRequest::split(const std::string &str, const std::s
         words.push_back(str.substr(start, end - start));
         start = end + delim.size();
     }
-    if (start < str.size())
+    if (start <= str.size())
     {
         words.push_back(str.substr(start, str.size() - start));
     }
