@@ -109,12 +109,17 @@ void HTTPRequest::parseHeader(const std::string &line)
         throw HTTPParseException(CODE_400);
     }
     std::string key = line.substr(0, delim_pos);
-    size_t value_pos = delim_pos + 1;
-    while (isSpace(line[value_pos]))
+    size_t value_start = delim_pos + 1;
+    while (isSpace(line[value_start]))
     {
-        value_pos++;
+        value_start++;
     }
-    std::string value = line.substr(value_pos, line.size() - value_pos);
+    size_t value_end = line.size();
+    while (value_end - 1 > 0 && isSpace(line[value_end - 1]))
+    {
+        value_end--;
+    }
+    std::string value = line.substr(value_start, value_end - value_start);
     setHeader(key, value);
 }
 
