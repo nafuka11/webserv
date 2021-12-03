@@ -1,10 +1,15 @@
 #include "ClientSocket.hpp"
 #include "SystemError.hpp"
+#include "HTTPParseException.hpp"
 #include <cerrno>
 #include <unistd.h>
 
+#include <iostream>
+
+const size_t ClientSocket::BUF_SIZE = 8192;
+
 ClientSocket::ClientSocket(int fd, const struct sockaddr_storage &address)
-    : Socket(fd)
+    : Socket(fd), parser_(request_)
 {
     address_ = address;
 }
@@ -13,15 +18,41 @@ ClientSocket::~ClientSocket()
 {
 }
 
-std::string ClientSocket::receiveRequest()
+void ClientSocket::receiveRequest()
 {
-    size_t buffer_size = 4096;
-    char buffer[buffer_size];
-    int read_byte = recv(fd_, buffer, buffer_size - 1, 0);
+    char buffer[BUF_SIZE];
+    int read_byte = recv(fd_, buffer, BUF_SIZE - 1, 0);
     if (read_byte <= 0)
-        return "";
+        return;
     buffer[read_byte] = '\0';
-    return std::string(buffer);
+    parser_.appendRawMessage(buffer);
+    try
+    {
+        parser_.parse();
+        if (parser_.finished())
+        {
+            // TODO: 後で消しましょう。ログクラスを作って出力するのがいいかも
+            std::cout << "method: " << request_.getMethod() << std::endl
+            << "uri: \"" << request_.getUri() << "\"" << std::endl
+            << "protocol: \"" << request_.getProtocolVersion() << "\"" << std::endl;
+            const std::map<std::string, std::string> headers = request_.getHeaders();
+            for (std::map<std::string, std::string>::const_iterator iter = headers.begin();
+                iter != headers.end();
+                ++iter)
+            {
+                std::cout << "\"" << iter->first << "\": \"" << iter->second << "\"" << std::endl;
+            }
+            // TODO: HTTPリクエストを作成しsendする。
+            parser_.clear();
+            request_.clear();
+        }
+    }
+    catch(const HTTPParseException &e)
+    {
+        parser_.clear();
+        request_.clear();
+        throw e;
+    }
 }
 
 void ClientSocket::sendResponse(const std::string &message)
