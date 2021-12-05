@@ -11,7 +11,7 @@ public:
 	ServerConfig();
 	~ServerConfig();
 
-	void	setListen(const int port); //publicの必要はない
+	void	setListen(const int port); // publicの必要はない！
 
 	const int	listen() const;
 	const std::string	serverName() const;
