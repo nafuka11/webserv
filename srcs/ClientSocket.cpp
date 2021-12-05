@@ -1,6 +1,7 @@
 #include "ClientSocket.hpp"
 #include "SystemError.hpp"
 #include "HTTPParseException.hpp"
+#include "HTTPResponse.hpp"
 #include <cerrno>
 #include <unistd.h>
 
@@ -31,24 +32,16 @@ void ClientSocket::receiveRequest()
         parser_.parse();
         if (parser_.finished())
         {
-            // TODO: 後で消しましょう。ログクラスを作って出力するのがいいかも
-            std::cout << "method: " << request_.getMethod() << std::endl
-            << "uri: \"" << request_.getUri() << "\"" << std::endl
-            << "protocol: \"" << request_.getProtocolVersion() << "\"" << std::endl;
-            const std::map<std::string, std::string> headers = request_.getHeaders();
-            for (std::map<std::string, std::string>::const_iterator iter = headers.begin();
-                iter != headers.end();
-                ++iter)
-            {
-                std::cout << "\"" << iter->first << "\": \"" << iter->second << "\"" << std::endl;
-            }
-            // TODO: HTTPリクエストを作成しsendする。
+            HTTPResponse response(CODE_200);
+            sendResponse(response.toString());
             parser_.clear();
             request_.clear();
         }
     }
     catch(const HTTPParseException &e)
     {
+        HTTPResponse response(e.getStatusCode());
+        sendResponse(response.toString());
         parser_.clear();
         request_.clear();
         throw e;
