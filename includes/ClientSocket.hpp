@@ -25,7 +25,6 @@ public:
 
 private:
     static const size_t BUF_SIZE;
-    std::string message_;
     HTTPRequest request_;
     HTTPResponse response_;
     HTTPParser parser_;
