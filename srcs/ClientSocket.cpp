@@ -5,8 +5,6 @@
 #include <cerrno>
 #include <unistd.h>
 
-#include <iostream>
-
 const size_t ClientSocket::BUF_SIZE = 8192;
 
 ClientSocket::ClientSocket(int fd, const struct sockaddr_storage &address)
@@ -32,18 +30,31 @@ void ClientSocket::receiveRequest()
         parser_.parse();
         if (parser_.finished())
         {
+            state_ = WRITE;
             response_.setStatusCode(CODE_200);
         }
     }
     catch(const HTTPParseException &e)
     {
+        state_ = WRITE;
         response_.setStatusCode(e.getStatusCode());
     }
 }
 
-void ClientSocket::sendResponse(const std::string &message)
+void ClientSocket::sendResponse()
 {
+    std::string message = response_.toString();
     ::send(fd_, message.c_str(), message.size(), 0);
+    if (request_.canKeepAlive())
+    {
+        state_ = READ;
+    }
+    else
+    {
+        state_ = CLOSE;
+    }
+    request_.clear();
+    parser_.clear();
 }
 
 void ClientSocket::close()
