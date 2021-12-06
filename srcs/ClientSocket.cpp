@@ -32,19 +32,12 @@ void ClientSocket::receiveRequest()
         parser_.parse();
         if (parser_.finished())
         {
-            HTTPResponse response(CODE_200);
-            sendResponse(response.toString());
-            parser_.clear();
-            request_.clear();
+            response_.setStatusCode(CODE_200);
         }
     }
     catch(const HTTPParseException &e)
     {
-        HTTPResponse response(e.getStatusCode());
-        sendResponse(response.toString());
-        parser_.clear();
-        request_.clear();
-        throw e;
+        response_.setStatusCode(e.getStatusCode());
     }
 }
 
