@@ -5,7 +5,7 @@ SRCS		:= srcs/ClientSocket.cpp srcs/SystemError.cpp srcs/Socket.cpp srcs/HTTPSer
 OBJS		:= $(SRCS:.cpp=.o)
 
 CXX			:= clang++
-CXXFLAGS	:= -Wall -Wextra -Werror -std=c++98 -I$(INC_DIR)
+CXXFLAGS	:= -Wall -Wextra -Werror -std=c++98 -I$(INC_DIR) -pedantic
 
 .PHONY		: all
 all			: $(NAME) ## Build executable
