@@ -84,6 +84,11 @@ std::string HTTPResponse::generateHTMLfromStatusCode() const
        << "<body>"
        << "\r\n"
        << "<center><h1>" << status_code_ << " " << phrase << "</h1></center>"
+       << "<hr><center>webserv/1.0.0</center>"
+       << "\r\n"
+       << "</body>"
+       << "\r\n"
+       << "</html>"
        << "\r\n";
     return ss.str();
 }
