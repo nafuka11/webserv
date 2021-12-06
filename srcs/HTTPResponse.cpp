@@ -18,8 +18,14 @@ HTTPResponse::HTTPResponse(HTTPStatusCode status_code) : status_code_(status_cod
     }
 }
 
-HTTPResponse::~HTTPResponse()
+void HTTPResponse::setStatusCode(HTTPStatusCode status_code)
 {
+    status_code_ = status_code;
+}
+
+void HTTPResponse::setKeepAlive(bool keep_alive)
+{
+    keep_alive_ = keep_alive;
 }
 
 std::map<HTTPStatusCode, std::string> HTTPResponse::setReasonPhrase()

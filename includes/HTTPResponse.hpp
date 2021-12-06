@@ -12,6 +12,8 @@ public:
     HTTPResponse(HTTPStatusCode status_code);
     ~HTTPResponse();
     std::string toString();
+    void setStatusCode(HTTPStatusCode status_code);
+    void setKeepAlive(bool keep_alive);
 
 private:
     static const std::map<HTTPStatusCode, std::string> REASON_PHRASE;
@@ -20,6 +22,7 @@ private:
     HTTPStatusCode status_code_;
     std::map<std::string, std::string> headers_;
     std::string message_body_;
+    bool keep_alive_;
 
     static std::map<HTTPStatusCode, std::string> setReasonPhrase();
     bool canKeepAlive() const;
