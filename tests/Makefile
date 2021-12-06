@@ -1,15 +1,16 @@
 POETRY := $(shell which poetry)
+PYTHON := python3
 
 test: ## Test webserv
 ifndef POETRY
-	source .venv/bin/activate && python -m pytest && deactivate
+	source .venv/bin/activate && $(PYTHON) -m pytest && deactivate
 else
 	poetry run python -m pytest
 endif
 
 install: ## Install Python packages
 ifndef POETRY
-	python -m venv .venv
+	$(PYTHON) -m venv .venv
 	source .venv/bin/activate && pip install -r requirements.txt
 else
 	poetry install
