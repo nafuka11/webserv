@@ -8,18 +8,26 @@
 
 class ClientSocket : public Socket
 {
+public:
+    enum State {
+        READ,
+        WRITE,
+        CLOSE
+    };
+
+    ClientSocket(int fd, const struct sockaddr_storage &address);
+    ~ClientSocket();
+    void receiveRequest();
+    void sendResponse();
+    void close();
+    State getState() const;
+
 private:
     static const size_t BUF_SIZE;
     std::string message_;
     HTTPRequest request_;
     HTTPParser parser_;
-
-public:
-    ClientSocket(int fd, const struct sockaddr_storage &address);
-    ~ClientSocket();
-    void receiveRequest();
-    void sendResponse(const std::string &message);
-    void close();
+    State state_;
 };
 
 #endif /* CLIENTSOCKET_HPP */

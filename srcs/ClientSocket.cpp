@@ -10,7 +10,7 @@
 const size_t ClientSocket::BUF_SIZE = 8192;
 
 ClientSocket::ClientSocket(int fd, const struct sockaddr_storage &address)
-    : Socket(fd), parser_(request_)
+    : Socket(fd), parser_(request_), state_(READ)
 {
     address_ = address;
 }
@@ -59,4 +59,9 @@ void ClientSocket::close()
     {
         throw SystemError("close", errno);
     }
+}
+
+ClientSocket::State ClientSocket::getState() const
+{
+    return state_;
 }
