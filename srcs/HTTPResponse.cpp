@@ -4,18 +4,31 @@
 const std::map<HTTPStatusCode, std::string> HTTPResponse::REASON_PHRASE = HTTPResponse::setReasonPhrase();
 const size_t HTTPResponse::DATE_STR_LEN = 40;
 
-HTTPResponse::HTTPResponse(HTTPStatusCode status_code) : status_code_(status_code)
+HTTPResponse::HTTPResponse()
 {
-    headers_.insert(std::make_pair("Server", "webserv/1.0.0"));
-    headers_.insert(std::make_pair("Date", generateDateString()));
-    if (canKeepAlive())
+}
+
+HTTPResponse::~HTTPResponse()
+{
+}
+
+std::string HTTPResponse::toString()
+{
+    setProperties();
+
+    std::stringstream ss;
+
+    std::string phrase = HTTPResponse::REASON_PHRASE.find(status_code_)->second;
+    ss << "HTTP/1.1 " << status_code_ << " " << phrase << "\r\n";
+    for (std::map<std::string, std::string>::iterator iter = headers_.begin();
+         iter != headers_.end();
+         ++iter)
     {
-        headers_.insert(std::make_pair("Connection", "keep-alive"));
+        ss << iter->first << ": " << iter->second << "\r\n";
     }
-    else
-    {
-        headers_.insert(std::make_pair("Connection", "close"));
-    }
+    ss << "\r\n";
+    ss << message_body_;
+    return ss.str();
 }
 
 void HTTPResponse::setStatusCode(HTTPStatusCode status_code)
@@ -38,31 +51,24 @@ std::map<HTTPStatusCode, std::string> HTTPResponse::setReasonPhrase()
     return reason_phrase;
 }
 
-std::string HTTPResponse::toString()
+void HTTPResponse::setProperties()
 {
+    message_body_ = generateHTMLfromStatusCode();
     std::stringstream ss;
+    ss << message_body_.size();
+    std::string content_length = ss.str();
 
-    std::string phrase = HTTPResponse::REASON_PHRASE.find(status_code_)->second;
-    ss << "HTTP/1.1 " << status_code_ << " " << phrase << "\r\n";
-    for (std::map<std::string, std::string>::iterator iter = headers_.begin();
-        iter != headers_.end();
-        ++iter)
+    headers_.clear();
+    headers_.insert(std::make_pair("Server", "webserv/1.0.0"));
+    headers_.insert(std::make_pair("Date", generateDateString()));
+    headers_.insert(std::make_pair("Content-Length", content_length));
+    if (keep_alive_)
     {
-        ss << iter->first << ": " << iter->second << "\r\n";
+        headers_.insert(std::make_pair("Connection", "keep-alive"));
     }
-    ss << "\r\n";
-    ss << generateHTMLfromStatusCode();
-    return ss.str();
-}
-
-bool HTTPResponse::canKeepAlive() const
-{
-    switch (status_code_)
+    else
     {
-    // case /* 408（Request Time-out） */:
-    //     return false;
-    default:
-        return true;
+        headers_.insert(std::make_pair("Connection", "close"));
     }
 }
 

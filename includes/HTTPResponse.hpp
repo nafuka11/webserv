@@ -9,7 +9,7 @@
 class HTTPResponse
 {
 public:
-    HTTPResponse(HTTPStatusCode status_code);
+    HTTPResponse();
     ~HTTPResponse();
     std::string toString();
     void setStatusCode(HTTPStatusCode status_code);
@@ -25,7 +25,7 @@ private:
     bool keep_alive_;
 
     static std::map<HTTPStatusCode, std::string> setReasonPhrase();
-    bool canKeepAlive() const;
+    void setProperties();
     std::string generateHTMLfromStatusCode() const;
     std::string generateDateString() const;
 };
