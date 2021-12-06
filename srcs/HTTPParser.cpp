@@ -1,5 +1,7 @@
 #include "HTTPParser.hpp"
 #include "HTTPParseException.hpp"
+#include <algorithm>
+#include <cstring>
 
 HTTPParser::HTTPParser(HTTPRequest &request)
     : request_(request), parse_pos_(0), state_(PARSE_START_LINE)
