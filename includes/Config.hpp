@@ -9,7 +9,7 @@ class Config
 public:
     Config();
     ~Config();
-    const std::vector<ServerConfig> getServer() const;
+    const std::vector<ServerConfig> server() const;
 private:
     std::vector<ServerConfig> server_;
 };
