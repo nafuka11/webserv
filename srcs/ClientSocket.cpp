@@ -1,7 +1,6 @@
 #include "ClientSocket.hpp"
 #include "SystemError.hpp"
 #include "HTTPParseException.hpp"
-#include "HTTPResponse.hpp"
 #include <cerrno>
 #include <unistd.h>
 
