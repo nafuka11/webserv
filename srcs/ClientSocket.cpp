@@ -22,7 +22,12 @@ void ClientSocket::receiveRequest()
     char buffer[BUF_SIZE];
     int read_byte = recv(fd_, buffer, BUF_SIZE - 1, 0);
     if (read_byte <= 0)
+    {
+        state_ = CLOSE;
+        request_.clear();
+        parser_.clear();
         return;
+    }
     buffer[read_byte] = '\0';
     parser_.appendRawMessage(buffer);
     try
