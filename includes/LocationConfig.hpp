@@ -10,6 +10,10 @@ class LocationConfig
 public:
     LocationConfig();
     ~LocationConfig();
+    void setAlias(const std::string alias);
+    void setAutoIndex(const std::string autoindex);
+    void addIndex(const std::string index);
+    void addReturnRedirect(const int code, const std::string uri);
     const std::string alias() const;
     const std::string autoindex() const;
     const std::vector<std::string> index() const;
