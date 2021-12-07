@@ -44,10 +44,10 @@ void ServerConfig::setUploadPath(const std::string path)
     upload_path_ = path;
 }
 
-// void ServerConfig::addLocation(const std::string path, const LocationConfig location_config)
-// {
-//     location_.insert(std::map<std::string, LocationConfig>::value_type(path, location_config));
-// }
+void ServerConfig::addLocation(const std::string path, const LocationConfig location_config)
+{
+    location_.insert(std::make_pair(path, location_config));
+}
 
 const int ServerConfig::listen() const
 {
@@ -84,7 +84,7 @@ const std::string ServerConfig::uploadPath() const
     return upload_path_;
 }
 
-// const std::map<std::string, LocationConfig> ServerConfig::location()
-// {
-//     return location_
-// }
+const std::map<std::string, LocationConfig> ServerConfig::location() const
+{
+    return location_;
+}

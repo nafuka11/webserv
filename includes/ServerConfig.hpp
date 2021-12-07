@@ -25,7 +25,7 @@ public:
     const int clientMaxBodySize() const;
     const std::map<int, std::string> errorPage() const;
     const std::string uploadPath() const;
-    const std::map<std::string, LocationConfig> location();
+    const std::map<std::string, LocationConfig> location() const;
 private:
     int listen_;
     std::string server_name_;
