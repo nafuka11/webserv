@@ -1,7 +1,18 @@
 #include "ServerConfig.hpp"
 #include <utility>
 
+const int ServerConfig::DEFAULT_PORT = 80;
+const int ServerConfig::DEFAULT_CLIENT_MAX_BODY_SIZE = 5000;
+
 ServerConfig::ServerConfig()
+: listen_(DEFAULT_PORT),
+  server_name_(),
+  allow_methods_(),//GET, POST, DELETE
+  cgi_extension_(),
+  client_max_body_size_(DEFAULT_CLIENT_MAX_BODY_SIZE),
+  error_page_(),
+  upload_path_(),
+  location_()
 {
 }
 
@@ -9,9 +20,9 @@ ServerConfig::~ServerConfig()
 {
 }
 
-void ServerConfig::setListen(const int listen)
+void ServerConfig::setListen(const int port)
 {
-    listen_ = listen;
+    listen_ = port;
 }
 
 void ServerConfig::setServerName(const std::string name)
@@ -34,9 +45,9 @@ void ServerConfig::setClientMaxBodySize(const int size)
     client_max_body_size_ = size;
 }
 
-void ServerConfig::addErrorPage(const int code, const std::string uri)
+void ServerConfig::addErrorPage(const int status_code, const std::string uri)
 {
-    error_page_.insert(std::map<int, std::string>::value_type(code, uri));
+    error_page_.insert(std::map<int, std::string>::value_type(status_code, uri));
 }
 
 void ServerConfig::setUploadPath(const std::string path)
