@@ -167,11 +167,24 @@ void put_server_config(Config &config)
     }
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
-    Config config = Config();
+    if (argc != 2)
+    {
+        std::cout << "Failed arguments. Please enter the following... " << std::endl
+                  << "$ ./file [CONFIG_FILE_PATH]" << std::endl;
+        return (0);
+    }
 
-    config.readFile();
-    put_server_config(config);
+    Config config = Config();
+    try
+    {
+        config.readFile(argv[1]);
+        put_server_config(config);
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
     return (0);
 }
