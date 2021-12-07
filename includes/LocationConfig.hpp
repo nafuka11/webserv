@@ -10,6 +10,7 @@ class LocationConfig
 public:
     LocationConfig();
     ~LocationConfig();
+    void clear();
     void setAlias(const std::string path);
     void setAutoIndex(const std::string autoindex);
     void addIndex(const std::string file);

@@ -8,6 +8,14 @@ LocationConfig::~LocationConfig()
 {
 }
 
+void LocationConfig::clear()
+{
+    alias_.clear();
+    autoindex_.clear();
+    index_.clear();
+    return_.clear();
+}
+
 void LocationConfig::setAlias(const std::string path)
 {
     alias_ = path;
