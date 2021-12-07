@@ -25,17 +25,17 @@ void ServerConfig::setListen(const int port)
     listen_ = port;
 }
 
-void ServerConfig::setServerName(const std::string name)
+void ServerConfig::setServerName(const std::string &name)
 {
     server_name_ = name;
 }
 
-void ServerConfig::addAllowMethods(const std::string method)
+void ServerConfig::addAllowMethods(const std::string &method)
 {
     allow_methods_.push_back(method);
 }
 
-void ServerConfig::setcgiExtension(const std::string extension)
+void ServerConfig::setcgiExtension(const std::string &extension)
 {
     cgi_extension_ = extension;
 }
@@ -45,17 +45,17 @@ void ServerConfig::setClientMaxBodySize(const int size)
     client_max_body_size_ = size;
 }
 
-void ServerConfig::addErrorPage(const int status_code, const std::string uri)
+void ServerConfig::addErrorPage(const int status_code, const std::string &uri)
 {
-    error_page_.insert(std::map<int, std::string>::value_type(status_code, uri));
+    error_page_.insert(std::make_pair(::map<int, std::string>::value_type(status_code, uri));
 }
 
-void ServerConfig::setUploadPath(const std::string path)
+void ServerConfig::setUploadPath(const std::string &path)
 {
     upload_path_ = path;
 }
 
-void ServerConfig::addLocation(const std::string path, const LocationConfig location_config)
+void ServerConfig::addLocation(const std::string &path, const LocationConfig location_config)
 {
     location_.insert(std::make_pair(path, location_config));
 }

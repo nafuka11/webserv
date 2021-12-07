@@ -8,21 +8,21 @@ LocationConfig::~LocationConfig()
 {
 }
 
-void LocationConfig::setAlias(const std::string path)
+void LocationConfig::setAlias(const std::string &path)
 {
     alias_ = path;
 }
 
-void LocationConfig::setAutoIndex(const std::string autoindex)
+void LocationConfig::setAutoIndex(const std::string &autoindex)
 {
     autoindex_ = autoindex;
 }
-void LocationConfig::addIndex(const std::string file)
+void LocationConfig::addIndex(const std::string &file)
 {
     index_.push_back(file);
 }
 
-void LocationConfig::addReturnRedirect(const int status_code, const std::string uri)
+void LocationConfig::addReturnRedirect(const int status_code, const std::string &uri)
 {
     return_.insert(std::make_pair(status_code, uri));
 }
