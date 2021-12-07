@@ -16,6 +16,17 @@ void HTTPRequest::clear()
     message_body_.clear();
 }
 
+bool HTTPRequest::canKeepAlive()
+{
+    std::map<std::string, std::string>::const_iterator item = headers_.find("connection");
+
+    if (item != headers_.end() && item->second == "close")
+    {
+        return false;
+    }
+    return true;
+}
+
 void HTTPRequest::setMethod(HTTPMethod method)
 {
     method_ = method;

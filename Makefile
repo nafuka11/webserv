@@ -1,11 +1,11 @@
 NAME		:= webserv
 
 INC_DIR		:= ./includes
-SRCS		:= srcs/ClientSocket.cpp srcs/SystemError.cpp srcs/Socket.cpp srcs/HTTPServer.cpp srcs/HTTPParser.cpp srcs/AddressInfoError.cpp srcs/HTTPParseException.cpp srcs/main.cpp srcs/ServerSocket.cpp srcs/HTTPRequest.cpp
+SRCS		:= srcs/ClientSocket.cpp srcs/SystemError.cpp srcs/Socket.cpp srcs/HTTPServer.cpp srcs/HTTPParser.cpp srcs/HTTPResponse.cpp srcs/AddressInfoError.cpp srcs/HTTPParseException.cpp srcs/main.cpp srcs/ServerSocket.cpp srcs/HTTPRequest.cpp
 OBJS		:= $(SRCS:.cpp=.o)
 
 CXX			:= clang++
-CXXFLAGS	:= -Wall -Wextra -Werror -std=c++98 -I$(INC_DIR)
+CXXFLAGS	:= -Wall -Wextra -Werror -std=c++98 -I$(INC_DIR) -pedantic
 
 .PHONY		: all
 all			: $(NAME) ## Build executable
