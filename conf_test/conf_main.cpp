@@ -9,15 +9,15 @@ int main(void)
 
     config.readFile();
 
-    std::vector<ServerConfig> server = config.server();
-    int listen = server[0].listen();
-    std::string server_name = server[0].serverName();
-    std::vector<std::string> allow_methods = server[0].allowMethods();
-    std::string cgi_extension = server[0].cgiExtension();
-    int client_max_body_size = server[0].clientMaxBodySize();
-    std::map<int, std::string> error_page = server[0].errorPage();
-    std::string upload_path = server[0].uploadPath();
-    std::map<std::string, LocationConfig> location = server[0].location();
+    const std::vector<ServerConfig> server = config.server();
+    const int listen = server[0].listen();
+    const std::string server_name = server[0].serverName();
+    const std::vector<std::string> allow_methods = server[0].allowMethods();
+    const std::string cgi_extension = server[0].cgiExtension();
+    const int client_max_body_size = server[0].clientMaxBodySize();
+    const std::map<int, std::string> error_page = server[0].errorPage();
+    const std::string upload_path = server[0].uploadPath();
+    const std::map<std::string, LocationConfig> location = server[0].location();
 
     std::cout << "              listen: " << listen << std::endl;
 

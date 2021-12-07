@@ -49,7 +49,7 @@ void ServerConfig::addLocation(const std::string path, const LocationConfig loca
     location_.insert(std::make_pair(path, location_config));
 }
 
-const int ServerConfig::listen() const
+const int &ServerConfig::listen() const
 {
     return listen_;
 }
@@ -69,7 +69,7 @@ const std::string ServerConfig::cgiExtension() const
     return cgi_extension_;
 }
 
-const int ServerConfig::clientMaxBodySize() const
+const int &ServerConfig::clientMaxBodySize() const
 {
     return client_max_body_size_;
 }

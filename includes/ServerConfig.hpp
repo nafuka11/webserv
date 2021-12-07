@@ -18,11 +18,11 @@ public:
     void addErrorPage(const int code, const std::string uri);
     void setUploadPath(const std::string path);
     void addLocation(const std::string path, const LocationConfig location_config);
-    const int listen() const;
+    const int &listen() const;
     const std::string serverName() const;
     const std::vector<std::string> allowMethods() const;
     const std::string cgiExtension() const;
-    const int clientMaxBodySize() const;
+    const int &clientMaxBodySize() const;
     const std::map<int, std::string> errorPage() const;
     const std::string uploadPath() const;
     const std::map<std::string, LocationConfig> location() const;
