@@ -4,12 +4,10 @@
 #include <cerrno>
 #include <unistd.h>
 
-#include <iostream>
-
 const size_t ClientSocket::BUF_SIZE = 8192;
 
 ClientSocket::ClientSocket(int fd, const struct sockaddr_storage &address)
-    : Socket(fd), parser_(request_)
+    : Socket(fd), parser_(request_), state_(READ)
 {
     address_ = address;
 }
@@ -23,7 +21,12 @@ void ClientSocket::receiveRequest()
     char buffer[BUF_SIZE];
     int read_byte = recv(fd_, buffer, BUF_SIZE - 1, 0);
     if (read_byte <= 0)
+    {
+        state_ = CLOSE;
+        request_.clear();
+        parser_.clear();
         return;
+    }
     buffer[read_byte] = '\0';
     parser_.appendRawMessage(buffer);
     try
@@ -31,33 +34,31 @@ void ClientSocket::receiveRequest()
         parser_.parse();
         if (parser_.finished())
         {
-            // TODO: 後で消しましょう。ログクラスを作って出力するのがいいかも
-            std::cout << "method: " << request_.getMethod() << std::endl
-            << "uri: \"" << request_.getUri() << "\"" << std::endl
-            << "protocol: \"" << request_.getProtocolVersion() << "\"" << std::endl;
-            const std::map<std::string, std::string> headers = request_.getHeaders();
-            for (std::map<std::string, std::string>::const_iterator iter = headers.begin();
-                iter != headers.end();
-                ++iter)
-            {
-                std::cout << "\"" << iter->first << "\": \"" << iter->second << "\"" << std::endl;
-            }
-            // TODO: HTTPリクエストを作成しsendする。
-            parser_.clear();
-            request_.clear();
+            state_ = WRITE;
+            response_.setStatusCode(CODE_200);
         }
     }
     catch(const HTTPParseException &e)
     {
-        parser_.clear();
-        request_.clear();
-        throw e;
+        state_ = WRITE;
+        response_.setStatusCode(e.getStatusCode());
     }
 }
 
-void ClientSocket::sendResponse(const std::string &message)
+void ClientSocket::sendResponse()
 {
+    std::string message = response_.toString();
     ::send(fd_, message.c_str(), message.size(), 0);
+    if (request_.canKeepAlive())
+    {
+        state_ = READ;
+    }
+    else
+    {
+        state_ = CLOSE;
+    }
+    request_.clear();
+    parser_.clear();
 }
 
 void ClientSocket::close()
@@ -66,4 +67,9 @@ void ClientSocket::close()
     {
         throw SystemError("close", errno);
     }
+}
+
+ClientSocket::State ClientSocket::getState() const
+{
+    return state_;
 }

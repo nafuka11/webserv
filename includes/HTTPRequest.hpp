@@ -11,6 +11,7 @@ public:
     HTTPRequest();
     ~HTTPRequest();
     void clear();
+    bool canKeepAlive();
 
     void setMethod(HTTPMethod method);
     void setUri(const std::string &uri);

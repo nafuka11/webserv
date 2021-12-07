@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <unistd.h>
+#include <cerrno>
 #include "AddressInfoError.hpp"
 #include "SystemError.hpp"
 

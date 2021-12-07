@@ -4,7 +4,6 @@
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <iostream>
 #include "HTTPParseException.hpp"
 
 HTTPServer::HTTPServer(int port)
@@ -13,17 +12,19 @@ HTTPServer::HTTPServer(int port)
     while (true)
     {
         ClientSocket client = server.acceptConnection();
-        while (true)
+        while (client.getState() != ClientSocket::CLOSE)
         {
-            try
+            switch (client.getState())
             {
+            case ClientSocket::READ:
                 client.receiveRequest();
+                break;
+            case ClientSocket::WRITE:
+                client.sendResponse();
+                break;
+            default:
+                break;
             }
-            catch(const HTTPParseException& e)
-            {
-                std::cerr << "HTTP Parse Error: code: " << e.getStatusCode() << std::endl;
-            }
-            // client.sendResponse(request);
         }
         client.close();
     }
