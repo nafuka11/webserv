@@ -18,7 +18,7 @@ public:
     void setClientMaxBodySize(const int size);
     void addErrorPage(const int status_code, const std::string &uri);
     void setUploadPath(const std::string &path);
-    void addLocation(const std::string &path, const LocationConfig location_config);
+    void addLocation(const std::string &path, const LocationConfig &location_config);
 
     const int &listen() const;
     const std::string serverName() const;

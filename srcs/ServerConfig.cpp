@@ -47,7 +47,7 @@ void ServerConfig::setClientMaxBodySize(const int size)
 
 void ServerConfig::addErrorPage(const int status_code, const std::string &uri)
 {
-    error_page_.insert(std::make_pair(::map<int, std::string>::value_type(status_code, uri));
+    error_page_.insert(std::map<int, std::string>::value_type(status_code, uri));
 }
 
 void ServerConfig::setUploadPath(const std::string &path)
@@ -55,7 +55,7 @@ void ServerConfig::setUploadPath(const std::string &path)
     upload_path_ = path;
 }
 
-void ServerConfig::addLocation(const std::string &path, const LocationConfig location_config)
+void ServerConfig::addLocation(const std::string &path, const LocationConfig &location_config)
 {
     location_.insert(std::make_pair(path, location_config));
 }
