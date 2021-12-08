@@ -10,11 +10,11 @@ Config::~Config()
 {
 }
 
-void Config::readFile(const std::string &file_path)
+void Config::readFile(const std::string &filepath)
 {
     ConfigParser parser(*this);
 
-    parser.readFile(file_path);
+    parser.readFile(filepath);
 
     // ServerConfig server_config = ServerConfig();
 
@@ -61,7 +61,7 @@ void Config::readFile(const std::string &file_path)
     // /***************************************/
 }
 
-const std::vector<ServerConfig> Config::server() const
+const std::vector<ServerConfig> &Config::server() const
 {
     return server_;
 }

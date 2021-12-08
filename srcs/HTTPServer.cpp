@@ -6,9 +6,17 @@
 #include <unistd.h>
 #include "HTTPParseException.hpp"
 
-HTTPServer::HTTPServer(int port)
+HTTPServer::HTTPServer(const ServerConfig &config) : config_(config)
 {
-    ServerSocket server(port);
+}
+
+HTTPServer::~HTTPServer()
+{
+}
+
+void HTTPServer::run()
+{
+    ServerSocket server(config_.listen());
     while (true)
     {
         ClientSocket client = server.acceptConnection();
@@ -28,8 +36,4 @@ HTTPServer::HTTPServer(int port)
         }
         client.close();
     }
-}
-
-HTTPServer::~HTTPServer()
-{
 }
