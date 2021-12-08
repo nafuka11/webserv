@@ -1,11 +1,13 @@
 #include <iostream>
-#include "HTTPServer.hpp"
+#include "Webserv.hpp"
 
 int main(void)
 {
     try
     {
-        HTTPServer server(4242);
+        // TODO: Configのファイル読み込み処理実装後、コマンドライン引数からセットすること
+        Webserv webserv("dummy.conf");
+        webserv.run();
     }
     catch(const std::exception& e)
     {
