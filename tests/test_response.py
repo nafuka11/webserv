@@ -5,7 +5,7 @@ import subprocess
 import time
 
 HOST = "localhost"
-PORT = 4242
+PORT = 80
 WEBSERV_PATH = "../webserv"
 SLEEP_TIME = 0.1
 
