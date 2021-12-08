@@ -24,8 +24,7 @@ void Webserv::setServers()
 {
     for (size_t i = 0; i < config_.server().size(); i++)
     {
-        int port = config_.server()[i].listen();
-        HTTPServer http_server(port);
+        HTTPServer http_server(config_.server()[i]);
         servers_.push_back(http_server);
     }
 }

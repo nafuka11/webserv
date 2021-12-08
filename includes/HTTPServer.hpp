@@ -1,15 +1,17 @@
 #ifndef HTTPSERVER_HPP
 #define HTTPSERVER_HPP
 
+#include "ServerConfig.hpp"
+
 class HTTPServer
 {
 public:
-    HTTPServer(int port);
+    HTTPServer(const ServerConfig &config);
     ~HTTPServer();
     void run();
 
 private:
-    int port_;
+    const ServerConfig &config_;
 };
 
 #endif /* HTTPSERVER_HPP */
