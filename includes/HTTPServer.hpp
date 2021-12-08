@@ -3,11 +3,13 @@
 
 class HTTPServer
 {
-private:
-    /* data */
 public:
     HTTPServer(int port);
     ~HTTPServer();
+    void run();
+
+private:
+    int port_;
 };
 
 #endif /* HTTPSERVER_HPP */
