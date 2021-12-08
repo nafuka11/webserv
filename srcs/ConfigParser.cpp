@@ -12,9 +12,9 @@ ConfigParser::~ConfigParser()
 {
 }
 
-void ConfigParser::readFile(const std::string &file_path)
+void ConfigParser::readFile(const std::string &filepath)
 {
-    std::ifstream ifs(file_path);
+    std::ifstream ifs(filepath);
 
     if (!ifs)
     {
@@ -24,7 +24,6 @@ void ConfigParser::readFile(const std::string &file_path)
 
     while (std::getline(ifs, line))
     {
-        // line内の一行文字列をsplit
         std::vector<std::string> words = splitLine(line);
         /* del */
         for (size_t i = 0; i < words.size(); i++)
@@ -42,40 +41,24 @@ void ConfigParser::readFile(const std::string &file_path)
     ifs.close();
 }
 
-std::vector<std::string> ConfigParser::splitLine(const std::string &line/*, const std::vector<std::string> delims*/)
+std::vector<std::string> ConfigParser::splitLine(const std::string &line)
 {
     std::vector<std::string> words;
     size_t start = 0;
     size_t end = 0;
 
-    while (line[end])
+    while (line[start])
     {
         while (isspace(line[start]))
         {
-            // std::cout  << "start[" << start << "]:" << line[start] << std::endl; //del
             ++start;
         }
         end = start;
-        while (isprint(line[end]))
+        while (isprint(line[end]) && !(isspace(line[end])))
         {
-            // std::cout  << "end[" << end << "]:" << line[end] << std::endl; //del
-            if (isspace(line[end]))
-                break ;
             ++end;
         }
-        // std::cout  << "start[" << start << "]:" << line[start] << "| "//del
-        //            << " end[" << end << "]:" << line[end] << "|" << std::endl; //del
-        // for (size_t i = start; i <= end; ++i)
-        // {
-        //     std::cout << "[" << line[i] << "]";
-        // }
-        // std::cout << std::endl;//del;
-
         words.push_back(line.substr(start, (end - start)));
-        if (line[end] == '\n')
-        {
-            break ;
-        }
         start = end;
     }
     return (words);
