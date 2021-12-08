@@ -56,7 +56,7 @@ void Config::readFile()
     /***************************************/
 }
 
-const std::vector<ServerConfig> Config::server() const
+const std::vector<ServerConfig> &Config::server() const
 {
     return server_;
 }

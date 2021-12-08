@@ -10,7 +10,7 @@ public:
     Config();
     ~Config();
     void readFile(); // 後で引数にファイルパスとして const std::string & をセットする。
-    const std::vector<ServerConfig> server() const;
+    const std::vector<ServerConfig> &server() const;
 private:
     void addServer(const ServerConfig &server_config);
     std::vector<ServerConfig> server_;
