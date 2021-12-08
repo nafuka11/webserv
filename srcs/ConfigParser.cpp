@@ -25,13 +25,15 @@ void ConfigParser::readFile(const std::string &filepath)
     while (std::getline(ifs, line))
     {
         std::vector<std::string> words = splitLine(line);
-        /* del */
+
+        /* 後で消す **************/
         for (size_t i = 0; i < words.size(); i++)
         {
             std::cout << i << ": [" << words.at(i) << "]" << std::endl;
         }
         std::cout << "----------------" << std::endl;
-        /*******/
+        /************************/
+
         // if (split_string[0]に"server"が見つかった)
             // if (split_string[1]に"{"が見つかった)
                 // (ここで、それ以外の文字が[2]以降に入っていたらエラーとする？)
