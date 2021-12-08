@@ -15,6 +15,7 @@ void Config::readFile(const std::string &file_path)
     ConfigParser parser(*this);
 
     parser.readFile(file_path);
+
     // ServerConfig server_config = ServerConfig();
 
     // /* 後でreadした結果をセットするに変更 */

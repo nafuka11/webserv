@@ -12,6 +12,7 @@ public:
     ConfigParser(Config &config);
     ~ConfigParser();
     void readFile(const std::string &file_path);
+    std::vector<std::string> splitLine(const std::string &line/*, const std::vector<std::string> delims*/);
 private:
     class OpenConfigFileException : public std::exception
     {
