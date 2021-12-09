@@ -33,9 +33,10 @@ void ConfigParser::readFile(const std::string &filepath)
         }
         std::cout << "----------------" << std::endl;
         /************************/
-
-        // if (split_string[0]に"server"が見つかった)
+        /* parseLine()  state_ = MAIN_BLCK(init) , SERVER_BLOCK_START, SERVER_BLOCK_DONE, LOCATION_BLOCK_START, LOCATION_BLOCK_DONE, DIRECTIVE_OK*/
+        // if (split_string[0]に"server"が見つかった
             // if (split_string[1]に"{"が見つかった)
+                // state_ = SERVER_BLOCK_START
                 // (ここで、それ以外の文字が[2]以降に入っていたらエラーとする？)
     }
 
@@ -56,12 +57,17 @@ std::vector<std::string> ConfigParser::splitLine(const std::string &line)
             ++start;
         }
         end = start;
-        while (isprint(line[end]) && !(isspace(line[end])))
+        while (isprint(line[end]) && !(isspace(line[end])) && (line[end] != ';'))
         {
             ++end;
         }
         words.push_back(line.substr(start, (end - start)));
         start = end;
+        if (line[start] == ';')
+        {
+            words.push_back(line.substr(start, 1));
+            start++;
+        }
     }
     return (words);
 }
