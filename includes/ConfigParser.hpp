@@ -22,7 +22,8 @@ public:
     void readFile(const std::string &filepath);
     void readAndSplit(std::ifstream &ifs, std::vector<std::vector<std::string> > &config_file);
     std::vector<std::string> splitLine(const std::string &line);
-    void putSplitLine(std::vector<std::vector<std::string> > &config_file);//必要なくなったら消す
+    void putSplitLines(std::vector<std::vector<std::string> > &config_file);//必要なくなったら消す
+    void parseFile(std::vector<std::vector<std::string> > &config_file);
 private:
     class ErrorBlockStartException : public std::exception
     {
