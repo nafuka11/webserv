@@ -9,11 +9,6 @@ const std::string SERVER_BLOCK_DIRECTIVE[3] = {
     "server_name"
 };
 
-// void (*parse_directive_func[3])(ServerConfig&, const std::vector<std::string>&) = {
-// 	&ConfigParser::parseListenDirective,
-// 	&ConfigParser::parseServerNameDirective,
-// };
-
 ConfigParser::ConfigParser(Config &config) : config_(config), state_(PARSE_MAIN_BLOCK)
 {
 }
@@ -30,28 +25,20 @@ void ConfigParser::readFile(const std::string &filepath)
     {
         throw OpenConfigFileException();
     }
+    std::vector<std::vector<std::string> > config_file;
     std::string line;
-
-    while (std::getline(ifs, line))
+    for (int line_num = 0; std::getline(ifs, line); ++line_num)
     {
         const std::vector<std::string> words = splitLine(line);
-
-        /* 後で消す **************/
-        for (size_t i = 0; i < words.size(); i++)
-        {
-            std::cout << i << ": [" << words.at(i) << "]" << std::endl;
-        }
-        std::cout << "----------------" << std::endl;
-        /************************/
-        parseWords(words);
-        /* parseLine()  state_ = MAIN_BLCK(init) , SERVER_BLOCK_START, SERVER_BLOCK_DONE, LOCATION_BLOCK_START, LOCATION_BLOCK_DONE, DIRECTIVE_OK*/
-        // if (split_string[0]に"server"が見つかった
-            // if (split_string[1]に"{"が見つかった)
-                // state_ = SERVER_BLOCK_START
-                // (ここで、それ以外の文字が[2]以降に入っていたらエラーとする？)
+        config_file.push_back(words);
     }
-
-    config_.~Config();//del
+    //de;
+    for (size_t i = 0; i < config_file.size(); ++i)
+    {
+        for (size_t j = 0; j < config_file.at(i).size(); j++)
+            std::cout << j << ": [" << config_file.at(i).at(j) << "]" << std::endl;
+    }
+    //de;
     ifs.close();
 }
 
@@ -90,12 +77,10 @@ void ConfigParser::parseWords(const std::vector<std::string> &words)
     case PARSE_MAIN_BLOCK:
         std::cout << "PARSE_MAIN_BLOCK: " << words[0] << std::endl;
         parseMainBlock(words);
-        state_ = PARSE_SERVER_BLOCK;//del
         break;
     case PARSE_SERVER_BLOCK:
-        // std::cout << "PARSE_SERVER_BLOCK: " << words[0] << std::endl;
-        // parseServerBlock(words);
-        state_ = PARSE_LOCATION_BLOCK;//del
+        std::cout << "PARSE_SERVER_BLOCK: " << words[0] << std::endl;
+        parseServerBlock(words);
         break;
     case PARSE_LOCATION_BLOCK:
     //     std::cout << "PARSE_LOCATION_BLOCK: " << words[0] << std::endl;
@@ -109,24 +94,24 @@ void ConfigParser::parseWords(const std::vector<std::string> &words)
 
 void ConfigParser::parseMainBlock(const std::vector<std::string> &words)
 {
-    if (words[0] == "server")
+    if ((words[0] == "server") &&
+        ((words[1] == "{") && (words.size() == 2)))
     {
-        if (words[1] == "{" && words.size() == 2)
-        {
-            state_ = PARSE_SERVER_BLOCK;
-            return ;
-        }
-        else
-        {
-            throw ErrorMainBlockException();
-        }
+        state_ = PARSE_SERVER_BLOCK;
+        return ;
     }
+    throw ErrorBlockStartException();
     // else if... 配列でmainブロック内に記載可能なディレクティブを持って、処理関数を紐付け。でもいいかも
 }
 
-// void ConfigParser::parseServerBlock(const std::vector<std::string> &words)
-// {
-    // ServerConfig server = ServerConfig();
+void ConfigParser::parseServerBlock(const std::vector<std::string> &words)
+{
+    ServerConfig server = ServerConfig();
+
+    // void (*parse_directive_func[3])(ServerConfig&, const std::vector<std::string>&) = {
+	//     &ConfigParser::parseListenDirective,
+	//     &ConfigParser::parseServerNameDirective,
+    // };
 
     // for (int i = 0; i < 3; ++i)
     // {
@@ -135,7 +120,28 @@ void ConfigParser::parseMainBlock(const std::vector<std::string> &words)
     //         parse_directive_func[i](server, words);
     //     }
     // }
-// }
+    if (words[0] == "listen")
+    {
+        parseListenDirective(server, words);
+    }
+    else if (words[0] == "server_name")
+    {
+        parseServerNameDirective(server, words);
+    }
+    else if (words[0] == "location")
+    {
+        if (words[1] == "{" && words.size() == 2)
+        {
+            state_ = PARSE_LOCATION_BLOCK;
+            return ;
+        }
+        else
+        {
+            throw ErrorBlockStartException();
+        }
+    }
+
+}
 
 // void ConfigParser::parseLocationBlock(const std::vector<std::string> &words)
 // {
@@ -160,8 +166,8 @@ const char *ConfigParser::OpenConfigFileException::what() const throw()
     return ("ConfigParser::OpenConfigFileException");
 }
 
-const char *ConfigParser::ErrorMainBlockException::what() const throw()
+const char *ConfigParser::ErrorBlockStartException::what() const throw()
 {
     //文言考える
-    return ("ConfigParser::ErrorMainBlockException");
+    return ("ConfigParser::ErrorBlockStartException");
 }

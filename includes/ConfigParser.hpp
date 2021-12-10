@@ -29,7 +29,7 @@ public:
     void parseWords(const std::vector<std::string> &words);
     void parseMainBlock(const std::vector<std::string> &words);
     void parseServerBlock(const std::vector<std::string> &words);
-    void parseLocationBlock(const std::vector<std::string> &words);
+    // void parseLocationBlock(const std::vector<std::string> &words);
     void parseListenDirective(ServerConfig &server, const std::vector<std::string> &words);
     void parseServerNameDirective(ServerConfig &server, const std::vector<std::string> &words);
 private:
@@ -38,7 +38,7 @@ private:
         public:
             virtual const char *what() const throw();
     };
-    class ErrorMainBlockException : public std::exception
+    class ErrorBlockStartException : public std::exception
     {
         public:
             virtual const char *what() const throw();
