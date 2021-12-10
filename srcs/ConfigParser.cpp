@@ -27,13 +27,13 @@ void ConfigParser::readFile(const std::string &filepath)
     }
 
     std::vector<std::vector<std::string> > loaded_file;
-    readAndSplit(ifs, loaded_file);
+    readAndSplitFile(ifs, loaded_file);
     putSplitLines(loaded_file);//del
     ifs.close();
     parseFile(loaded_file);
 }
 
-void ConfigParser::readAndSplit(std::ifstream &ifs, std::vector<std::vector<std::string> > &loaded_file)
+void ConfigParser::readAndSplitFile(std::ifstream &ifs, std::vector<std::vector<std::string> > &loaded_file)
 {
     std::string line;
 
@@ -42,6 +42,34 @@ void ConfigParser::readAndSplit(std::ifstream &ifs, std::vector<std::vector<std:
         const std::vector<std::string> words = splitLine(line);
         loaded_file.push_back(words);
     }
+}
+
+std::vector<std::string> ConfigParser::splitLine(const std::string &line)
+{
+    std::vector<std::string> words;
+    size_t start = 0;
+    size_t end = 0;
+
+    while (line[start])
+    {
+        while (isspace(line[start]))
+        {
+            ++start;
+        }
+        end = start;
+        while (isprint(line[end]) && !(isspace(line[end])) && (line[end] != ';'))
+        {
+            ++end;
+        }
+        words.push_back(line.substr(start, (end - start)));
+        start = end;
+        if (line[start] == ';')
+        {
+            words.push_back(line.substr(start, 1));
+            start++;
+        }
+    }
+    return (words);
 }
 
 // 必要なくなったら消す
@@ -102,34 +130,6 @@ void ConfigParser::parseFile(std::vector<std::vector<std::string> > &loaded_file
                 }
         }
     }
-}
-
-std::vector<std::string> ConfigParser::splitLine(const std::string &line)
-{
-    std::vector<std::string> words;
-    size_t start = 0;
-    size_t end = 0;
-
-    while (line[start])
-    {
-        while (isspace(line[start]))
-        {
-            ++start;
-        }
-        end = start;
-        while (isprint(line[end]) && !(isspace(line[end])) && (line[end] != ';'))
-        {
-            ++end;
-        }
-        words.push_back(line.substr(start, (end - start)));
-        start = end;
-        if (line[start] == ';')
-        {
-            words.push_back(line.substr(start, 1));
-            start++;
-        }
-    }
-    return (words);
 }
 
 const char *ConfigParser::ErrorBlockStartException::what() const throw()
