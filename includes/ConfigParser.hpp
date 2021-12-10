@@ -10,11 +10,12 @@ class Config;
 class ConfigParser
 {
 public:
-    enum ContextState
+    enum ConfState
     {
-        MAIN_BLOCK,
-        SERVER_BLOCK,
-        LOCATION_BLOCK
+        CONF_CONTEXT_MAIN,
+        CONF_CONTEXT_SERVER,
+        CONF_CONTEXT_LOCATION,
+        CONF_DONE
     };
 
     ConfigParser(Config &config);
@@ -32,9 +33,13 @@ private:
     void readAndSplitFile(std::ifstream &ifs, std::vector<std::vector<std::string> > &config_file);
     std::vector<std::string> splitLine(const std::string &line);
     void parseFile(std::vector<std::vector<std::string> > &config_file);
-    void putSplitLines(std::vector<std::vector<std::string> > &config_file);//必要なくなったら消す
+    void parseMainContext(std::vector<std::vector<std::string> > &loaded_file, size_t &line_num);
+    void parseServerContext(std::vector<std::vector<std::string> > &loaded_file, size_t &line_num);
+    void parseLocationContext(std::vector<std::vector<std::string> > &loaded_file, size_t &line_num, ServerConfig &server);
+    void putSplitLines(std::vector<std::vector<std::string> > &config_file);// 後で消す
+
     Config &config_;
-    // ParseState state_;
+    ConfState state_;
 };
 
 #endif /* CONFIGPARSER_HPP */

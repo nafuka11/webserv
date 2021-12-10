@@ -10,7 +10,7 @@ const std::string SERVER_BLOCK_DIRECTIVE[3] = {
     "server_name"
 };
 
-ConfigParser::ConfigParser(Config &config) : config_(config)//, state_(PARSE_MAIN_BLOCK)
+ConfigParser::ConfigParser(Config &config) : config_(config), state_(CONF_CONTEXT_MAIN)
 {
 }
 
@@ -21,14 +21,16 @@ ConfigParser::~ConfigParser()
 void ConfigParser::readFile(const std::string &filepath)
 {
     std::ifstream ifs(filepath);
+
     if (!ifs)
     {
         throw SystemError("open", errno);
     }
 
     std::vector<std::vector<std::string> > loaded_file;
+
     readAndSplitFile(ifs, loaded_file);
-    putSplitLines(loaded_file);//del
+    putSplitLines(loaded_file);// 後で消す
     ifs.close();
     parseFile(loaded_file);
 }
@@ -94,40 +96,61 @@ void ConfigParser::parseFile(std::vector<std::vector<std::string> > &loaded_file
         {
             continue ;
         }
-        if ((loaded_file.at(line_num).at(0) == "server")
-            && (loaded_file.at(line_num).at(1) == "{")
-            && (loaded_file.at(line_num).size() == 2))
+        switch (state_)
         {
-                std::cout << "Line." << (line_num + 1) << ": FIND SERVER" << std::endl;//del
+        case CONF_CONTEXT_MAIN:
+            parseMainContext(loaded_file, line_num);
+            break;
+        case CONF_CONTEXT_SERVER:
+            parseServerContext(loaded_file, line_num);
+            break;
+        // case CONTEXT_LOCATION:
+        //     //parseLocationContext();
+        //     break;
+        default:
+            break;
+        }
+    }
+}
 
-                // state_ = SERVER_BLOCK;
-                ++line_num;
-                ServerConfig server = ServerConfig();
-                for (; line_num < loaded_file.size(); ++line_num)
-                {
-                    for (size_t word = 0; word < loaded_file.at(line_num).size(); ++word)
-                    {
-                        if ((loaded_file.at(line_num).at(word) == "}")
-                             && (loaded_file.at(line_num).size() == 1))
-                        {
-                            //state_SERVER_END;
-                            config_.addServer(server);
-                            break ;
-                        }
-                        else if (loaded_file.at(line_num).at(word) == "listen")
-                        {
-                            //構文チェック(引数は正しいか、最後に";"があるか)
-                            ++word;
-                            server.setListen(atoi(loaded_file.at(line_num).at(word).c_str()));
-                        }
-                        else if (loaded_file.at(line_num).at(word) == "server_name")
-                        {
-                            //構文チェック(引数は正しいか、最後に";"があるか)
-                            ++word;
-                            server.setServerName(loaded_file.at(line_num).at(word));
-                        }
-                    }
-                }
+void ConfigParser::parseMainContext(std::vector<std::vector<std::string> > &loaded_file, size_t &line_num)
+{
+    if ((loaded_file.at(line_num).at(0) == "server") //isServerContext()
+         && (loaded_file.at(line_num).at(1) == "{")
+         && (loaded_file.at(line_num).size() == 2))
+    {
+        std::cout << "Line." << (line_num + 1) << ": FIND SERVER" << std::endl; // 後で消す
+        state_ = CONF_CONTEXT_SERVER;
+        return ;
+    }
+}
+
+void ConfigParser::parseServerContext(std::vector<std::vector<std::string> > &loaded_file, size_t &line_num)
+{
+    ServerConfig server = ServerConfig();
+
+    for (; line_num < loaded_file.size(); ++line_num)
+    {
+        for (size_t word = 0; word < loaded_file.at(line_num).size(); ++word)
+        {
+            if ((loaded_file.at(line_num).at(word) == "}")
+                 && (loaded_file.at(line_num).size() == 1))
+            {
+                config_.addServer(server);
+                break ;
+            }
+            else if (loaded_file.at(line_num).at(word) == "listen")
+            {
+                //構文チェック(引数は正しいか、最後に";"があるか)
+                ++word;
+                server.setListen(atoi(loaded_file.at(line_num).at(word).c_str()));
+            }
+            else if (loaded_file.at(line_num).at(word) == "server_name")
+            {
+                //構文チェック(引数は正しいか、最後に";"があるか)
+                ++word;
+                server.setServerName(loaded_file.at(line_num).at(word));
+            }
         }
     }
 }
