@@ -21,6 +21,7 @@ private:
 
     void setupServers();
     void registerEvents();
+    void watchEvents();
 };
 
 #endif /* WEBSERV_HPP */

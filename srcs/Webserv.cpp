@@ -16,9 +16,9 @@ Webserv::~Webserv()
 
 void Webserv::run()
 {
-    for (size_t i = 0; i < servers_.size(); i++)
+    while (true)
     {
-        servers_[i].run();
+        watchEvents();
     }
 }
 
@@ -40,3 +40,6 @@ void Webserv::registerEvents()
     }
 }
 
+void Webserv::watchEvents()
+{
+}
