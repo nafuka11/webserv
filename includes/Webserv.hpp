@@ -22,6 +22,8 @@ private:
     void setupServers();
     void registerEvents();
     void watchEvents();
+    void handleServerEvent(Socket *socket, const struct kevent &event);
+    void handleClientEvent(Socket *socket, const struct kevent &event);
 };
 
 #endif /* WEBSERV_HPP */
