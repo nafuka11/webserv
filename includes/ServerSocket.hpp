@@ -10,7 +10,7 @@ class ServerSocket : public Socket
 public:
     ServerSocket(const ServerConfig &config);
     ~ServerSocket();
-    ClientSocket acceptConnection();
+    ClientSocket *acceptConnection() const;
 
 private:
     const ServerConfig &config_;

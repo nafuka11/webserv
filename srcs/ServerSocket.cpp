@@ -87,7 +87,7 @@ void ServerSocket::listen()
     }
 }
 
-ClientSocket ServerSocket::acceptConnection()
+ClientSocket *ServerSocket::acceptConnection() const
 {
     struct sockaddr_storage address;
     socklen_t address_len = sizeof(struct sockaddr_storage);
@@ -98,6 +98,6 @@ ClientSocket ServerSocket::acceptConnection()
     {
         throw SystemError("accept", errno);
     }
-    ClientSocket clientSocket = ClientSocket(connect_d, address);
+    ClientSocket *clientSocket = new ClientSocket(connect_d, address);
     return clientSocket;
 }
