@@ -15,9 +15,9 @@ public:
 
 private:
     Config config_;
-    std::vector<HTTPServer> servers_;
+    std::map<int, Socket *> sockets_;
 
-    void setServers();
+    void setupServers();
 };
 
 #endif /* WEBSERV_HPP */
