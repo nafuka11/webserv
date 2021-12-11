@@ -76,8 +76,7 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
 
     if (event.flags & EV_EOF)
     {
-        sockets_.erase(client->getFd());
-        client->close();
+        closeClient(client);
         return;
     }
     switch (event.filter)
@@ -95,4 +94,14 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
         }
         break;
     }
+    if (client->getState() == ClientSocket::CLOSE)
+    {
+        closeClient(client);
+    }
+}
+
+void Webserv::closeClient(ClientSocket *client)
+{
+    sockets_.erase(client->getFd());
+    client->close();
 }
