@@ -7,6 +7,7 @@ Webserv::Webserv(const std::string &filepath) : config_(Config())
     (void)filepath;
     config_.readFile();
     setupServers();
+    registerEvents();
 }
 
 Webserv::~Webserv()
@@ -29,3 +30,13 @@ void Webserv::setupServers()
         sockets_.insert(std::make_pair(server->getFd(), server));
     }
 }
+
+void Webserv::registerEvents()
+{
+    for (std::map<int, Socket *>::iterator iter = sockets_.begin();
+         iter != sockets_.end(); ++iter)
+    {
+        poller_.registerServerSocket(iter->second);
+    }
+}
+

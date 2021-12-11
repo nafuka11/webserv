@@ -4,7 +4,8 @@
 #include <string>
 #include <vector>
 #include "Config.hpp"
-#include "HTTPServer.hpp"
+#include "Socket.hpp"
+#include "KqueuePoller.hpp"
 
 class Webserv
 {
@@ -15,9 +16,11 @@ public:
 
 private:
     Config config_;
+    KqueuePoller poller_;
     std::map<int, Socket *> sockets_;
 
     void setupServers();
+    void registerEvents();
 };
 
 #endif /* WEBSERV_HPP */
