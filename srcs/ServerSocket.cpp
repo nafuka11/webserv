@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <cerrno>
 #include "AddressInfoError.hpp"
 #include "SystemError.hpp"
@@ -12,6 +13,7 @@ ServerSocket::ServerSocket(const ServerConfig &config) : Socket(SERVER), config_
 {
     open();
     listen();
+    setNonBlockingFd(fd_);
 }
 
 ServerSocket::~ServerSocket()
@@ -87,6 +89,14 @@ void ServerSocket::listen()
     }
 }
 
+void ServerSocket::setNonBlockingFd(int fd) const
+{
+    if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
+    {
+        throw SystemError("fcntl", errno);
+    }
+}
+
 ClientSocket *ServerSocket::acceptConnection() const
 {
     struct sockaddr_storage address;
@@ -98,6 +108,7 @@ ClientSocket *ServerSocket::acceptConnection() const
     {
         throw SystemError("accept", errno);
     }
+    setNonBlockingFd(connect_d);
     ClientSocket *clientSocket = new ClientSocket(connect_d, address);
     return clientSocket;
 }

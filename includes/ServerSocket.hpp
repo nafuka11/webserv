@@ -18,6 +18,7 @@ private:
     void open();
     int openFromAddress(struct addrinfo *address);
     void listen();
+    void setNonBlockingFd(int fd) const;
 };
 
 #endif /* SERVERSOCKET_HPP */
