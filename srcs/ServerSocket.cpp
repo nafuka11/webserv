@@ -8,9 +8,8 @@
 #include "AddressInfoError.hpp"
 #include "SystemError.hpp"
 
-ServerSocket::ServerSocket(int port) : Socket(SERVER)
+ServerSocket::ServerSocket(const ServerConfig &config) : Socket(SERVER), config_(config)
 {
-    port_ = port;
     open();
     listen();
 }
@@ -22,7 +21,7 @@ ServerSocket::~ServerSocket()
 void ServerSocket::open()
 {
     std::stringstream sstream;
-    sstream << port_;
+    sstream << config_.listen();
     std::string string_port = sstream.str();
 
     struct addrinfo hints = {};
