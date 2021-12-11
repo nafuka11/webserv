@@ -33,9 +33,9 @@ private:
     void readAndSplitFile(std::ifstream &ifs, std::vector<std::vector<std::string> > &config_file);
     std::vector<std::string> splitLine(const std::string &line);
     void parseFile(std::vector<std::vector<std::string> > &config_file);
-    void parseMainContext(std::vector<std::vector<std::string> > &loaded_file, size_t &line_num);
-    void parseServerContext(std::vector<std::vector<std::string> > &loaded_file, size_t &line_num);
-    void parseLocationContext(std::vector<std::vector<std::string> > &loaded_file, size_t &line_num, ServerConfig &server);
+    void parseMainContext(std::vector<std::vector<std::string> > &config_file, size_t &line_num);
+    void parseServerContext(std::vector<std::vector<std::string> > &config_file, size_t &line_num);
+    void parseLocationContext(std::vector<std::vector<std::string> > &config_file, size_t &line_num/*, ServerConfig &server*/);
     void putSplitLines(std::vector<std::vector<std::string> > &config_file);// 後で消す
 
     Config &config_;
