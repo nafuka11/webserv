@@ -154,7 +154,7 @@ void put_server_config(Config &config)
         const_iter != server.end();
         ++const_iter)
     {
-        std::cout << "-----[server_" << count << "]------------------------------"  << std::endl;
+        std::cout << "\n-----[server_" << count << "]------------------------------"  << std::endl;
         put_listen(const_iter);
         put_server_name(const_iter);
         put_allow_methods(const_iter);

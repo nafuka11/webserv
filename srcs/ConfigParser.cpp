@@ -85,6 +85,7 @@ void ConfigParser::putSplitLines(std::vector<std::vector<std::string> > &config_
             std::cout << word << ": [" << config_file.at(line_num).at(word) << "]" << std::endl;
         }
     }
+    std::cout << "-----[end]-----------------------------------\n" << std::endl;
 }
 // 必要なくなったら消す
 
@@ -104,9 +105,6 @@ void ConfigParser::parseFile(std::vector<std::vector<std::string> > &config_file
         case CONF_CONTEXT_SERVER:
             parseServerContext(config_file, line_num);
             break;
-        // case CONTEXT_LOCATION:
-        //     //parseLocationContext();
-        //     break;
         default:
             break;
         }
@@ -115,9 +113,7 @@ void ConfigParser::parseFile(std::vector<std::vector<std::string> > &config_file
 
 void ConfigParser::parseMainContext(std::vector<std::vector<std::string> > &config_file, size_t &line_num)
 {
-    if ((config_file.at(line_num).at(0) == "server") //isServerContext()
-         && (config_file.at(line_num).at(1) == "{")
-         && (config_file.at(line_num).size() == 2))
+    if (isServerContext(config_file, line_num))
     {
         std::cout << "Line." << (line_num + 1) << ": FIND SERVER" << std::endl; // 後で消す
         state_ = CONF_CONTEXT_SERVER;
@@ -139,6 +135,20 @@ void ConfigParser::parseServerContext(std::vector<std::vector<std::string> > &co
                 config_.addServer(server);
                 break ;
             }
+            else if (isLocationContext(config_file, line_num))
+            {
+            //parseLocationContext()
+                std::cout << "Line." << (line_num + 1) << ": FIND LOCATION" << std::endl; // 後で消す
+                for (; line_num < config_file.size(); ++line_num)
+                {
+                    if ((config_file.at(line_num).at(word) == "}")
+                        && (config_file.at(line_num).size() == 1))
+                    {
+                        // parseLocationContext(...);
+                        break ;
+                    }
+                }
+            }
             else if (config_file.at(line_num).at(word) == "listen")
             {
                 //構文チェック(引数は正しいか、最後に";"があるか)
@@ -153,6 +163,28 @@ void ConfigParser::parseServerContext(std::vector<std::vector<std::string> > &co
             }
         }
     }
+}
+
+bool ConfigParser::isServerContext(std::vector<std::vector<std::string> > &config_file, size_t line_num)
+{
+    if ((config_file.at(line_num).at(0) == "server")
+         && (config_file.at(line_num).at(1) == "{")
+         && (config_file.at(line_num).size() == 2))
+    {
+        return true;
+    }
+    return false;
+}
+
+bool ConfigParser::isLocationContext(std::vector<std::vector<std::string> > &config_file, size_t line_num)
+{
+    if ((config_file.at(line_num).at(0) == "location")
+              && (config_file.at(line_num).at(2) == "{")
+              && (config_file.at(line_num).size() == 3))
+    {
+        return true;
+    }
+    return false;
 }
 
 const char *ConfigParser::ErrorBlockStartException::what() const throw()

@@ -36,6 +36,8 @@ private:
     void parseMainContext(std::vector<std::vector<std::string> > &config_file, size_t &line_num);
     void parseServerContext(std::vector<std::vector<std::string> > &config_file, size_t &line_num);
     void parseLocationContext(std::vector<std::vector<std::string> > &config_file, size_t &line_num/*, ServerConfig &server*/);
+    bool isServerContext(std::vector<std::vector<std::string> > &config_file, size_t line_num);
+    bool isLocationContext(std::vector<std::vector<std::string> > &config_file, size_t line_num);
     void putSplitLines(std::vector<std::vector<std::string> > &config_file);// 後で消す
 
     Config &config_;
