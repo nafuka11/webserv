@@ -3,12 +3,14 @@
 #include <iostream>//del;
 #include <string>
 #include "Config.hpp"
+#include "MainConfig.hpp"
 #include "SystemError.hpp"
 
-const std::string SERVER_BLOCK_DIRECTIVE[3] = {
-    "listen",
-    "server_name"
-};
+// const std::string SERVER_BLOCK_DIRECTIVE[3] = {
+//     "listen",
+//     "server_name"
+// };
+
 
 ConfigParser::ConfigParser(Config &config) : config_(config), state_(CONF_CONTEXT_MAIN)
 {
@@ -115,52 +117,55 @@ void ConfigParser::parseMainContext(std::vector<std::vector<std::string> > &conf
 {
     if (isServerContext(config_file, line_num))
     {
-        std::cout << "Line." << (line_num + 1) << ": FIND SERVER" << std::endl; // 後で消す
         state_ = CONF_CONTEXT_SERVER;
+        std::cout << "Line." << (line_num + 1) << ": state " << state_ << std::endl; // 後で消す
         return ;
     }
 }
 
 void ConfigParser::parseServerContext(std::vector<std::vector<std::string> > &config_file, size_t &line_num)
 {
-    ServerConfig server = ServerConfig();
+    MainConfig main = MainConfig();//parseMainContextで作成したオブジェクトを引数でもらう
+    ServerConfig server = ServerConfig(main);
 
     for (; line_num < config_file.size(); ++line_num)
     {
-        for (size_t word = 0; word < config_file.at(line_num).size(); ++word)
+         std::cout << "Line." << (line_num + 1) << std::endl; // 後で消す
+        if (config_file.at(line_num).size() == 0)
         {
-            if ((config_file.at(line_num).at(word) == "}")
-                 && (config_file.at(line_num).size() == 1))
+            continue ;
+        }
+        if ((config_file.at(line_num).at(0) == "}")
+             && (config_file.at(line_num).size() == 1))
+        {
+            config_.addServer(server);
+            state_ = CONF_CONTEXT_MAIN;
+            return ;
+        }
+        else if (isLocationContext(config_file, line_num))
+        {
+            state_ = CONF_CONTEXT_LOCATION;
+        //parseLocationContext()
+            std::cout << "Line." << (line_num + 1) << ": state " << state_ << std::endl; // 後で消す
+            for (; line_num < config_file.size(); ++line_num)
             {
-                config_.addServer(server);
-                break ;
-            }
-            else if (isLocationContext(config_file, line_num))
-            {
-            //parseLocationContext()
-                std::cout << "Line." << (line_num + 1) << ": FIND LOCATION" << std::endl; // 後で消す
-                for (; line_num < config_file.size(); ++line_num)
+                if ((config_file.at(line_num).at(0) == "}")
+                    && (config_file.at(line_num).size() == 1))
                 {
-                    if ((config_file.at(line_num).at(word) == "}")
-                        && (config_file.at(line_num).size() == 1))
-                    {
-                        // parseLocationContext(...);
-                        break ;
-                    }
+                    // parseLocationContext(...);
+                    break ;
                 }
             }
-            else if (config_file.at(line_num).at(word) == "listen")
-            {
-                //構文チェック(引数は正しいか、最後に";"があるか)
-                ++word;
-                server.setListen(atoi(config_file.at(line_num).at(word).c_str()));
-            }
-            else if (config_file.at(line_num).at(word) == "server_name")
-            {
-                //構文チェック(引数は正しいか、最後に";"があるか)
-                ++word;
-                server.setServerName(config_file.at(line_num).at(word));
-            }
+        }
+        else if (config_file.at(line_num).at(0) == "listen")
+        {
+            //構文チェック(引数は正しいか、最後に";"があるか)
+            server.setListen(atoi(config_file.at(line_num).at(1).c_str()));
+        }
+        else if (config_file.at(line_num).at(0) == "server_name")
+        {
+            //構文チェック(引数は正しいか、最後に";"があるか)
+            server.setServerName(config_file.at(line_num).at(1));
         }
     }
 }

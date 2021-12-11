@@ -1,45 +1,55 @@
 #ifndef SERVERCONFIG_HPP
 #define SERVERCONFIG_HPP
 
-#include "LocationConfig.hpp"
 #include <map>
 #include <string>
+#include <vector>
+#include "LocationConfig.hpp"
+
+class MainConfig;
+// class LocationConfig;
 
 class ServerConfig
 {
 public:
-    ServerConfig();
+    ServerConfig(const MainConfig &main_config);
     ~ServerConfig();
 
-    void setListen(const int port);
-    void setServerName(const std::string &name);
     void addAllowMethods(const std::string &method);
-    void setcgiExtension(const std::string &extension);
+    void setAutoIndex(const std::string &autoindex);
     void setClientMaxBodySize(const int size);
     void addErrorPage(const int status_code, const std::string &uri);
-    void setUploadPath(const std::string &path);
+    void addIndex(const std::string &file);
+    void setListen(const int port);
     void addLocation(const std::string &path, const LocationConfig &location_config);
+    void addReturnRedirect(const int status_code, const std::string &uri);
+    void setServerName(const std::string &name);
+    void setUploadPath(const std::string &path);
 
-    const int &listen() const;
-    const std::string serverName() const;
-    const std::vector<std::string> allowMethods() const;
-    const std::string cgiExtension() const;
+    const std::vector<std::string> allowMethod() const;
+    const std::string autoindex() const;
     const int &clientMaxBodySize() const;
     const std::map<int, std::string> errorPage() const;
-    const std::string uploadPath() const;
+    const std::vector<std::string> index() const;
+    const int &listen() const;
     const std::map<std::string, LocationConfig> location() const;
+    const std::map<int, std::string> returnRedirect() const;
+    const std::string serverName() const;
+    const std::string uploadPath() const;
+
 private:
     static const int DEFAULT_PORT;
-    static const int DEFAULT_CLIENT_MAX_BODY_SIZE;
 
-    int listen_;
-    std::string server_name_;
-    std::vector<std::string> allow_methods_;
-    std::string cgi_extension_;
+    std::vector<std::string> allow_method_;
+    std::string autoindex_;
     int client_max_body_size_;
     std::map<int, std::string> error_page_;
-    std::string upload_path_;
+    std::vector<std::string> index_;
+    int listen_;
     std::map<std::string, LocationConfig> location_;
+    std::map<int, std::string> return_;
+    std::string server_name_;
+    std::string upload_path_;
 };
 
 #endif /* SERVERCONFIG_HPP */

@@ -29,6 +29,10 @@ private:
     };
 
     static const std::string SERVER_BLOCK_DIRECTIVE[3];
+    static const int DIRECTIVE_NAME;
+    static const int DIRECTIVE_VALUE;
+    static const int SERVER_BRACES_START;
+    static const int LOCATION_BRACES_START;
 
     void readAndSplitFile(std::ifstream &ifs, std::vector<std::vector<std::string> > &config_file);
     std::vector<std::string> splitLine(const std::string &line);

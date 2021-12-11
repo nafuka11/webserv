@@ -20,7 +20,7 @@ void put_server_name(const_server_iter const_iter)
 
 void put_allow_methods(const_server_iter const_iter)
 {
-    std::vector<std::string> allow_methods = const_iter->allowMethods();
+    std::vector<std::string> allow_methods = const_iter->allowMethod();
     std::vector<std::string>::const_iterator iter = allow_methods.begin();
 
     std::cout << "       allow_methods: ";
@@ -38,11 +38,11 @@ void put_allow_methods(const_server_iter const_iter)
     }
 }
 
-void put_cgi_extension(const_server_iter const_iter)
-{
-    std::string cgi_extension = const_iter->cgiExtension();
-    std::cout << "       cgi_extension: " << cgi_extension <<  std::endl;
-}
+// void put_cgi_extension(const_server_iter const_iter)
+// {
+//     std::string cgi_extension = const_iter->cgiExtension();
+//     std::cout << "       cgi_extension: " << cgi_extension <<  std::endl;
+// }
 
 void put_client_max_body_size(const_server_iter const_iter)
 {
@@ -158,7 +158,7 @@ void put_server_config(Config &config)
         put_listen(const_iter);
         put_server_name(const_iter);
         put_allow_methods(const_iter);
-        put_cgi_extension(const_iter);
+        // put_cgi_extension(const_iter);
         put_client_max_body_size(const_iter);
         put_error_page(const_iter);
         put_upload_path(const_iter);
