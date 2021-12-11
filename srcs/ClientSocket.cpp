@@ -23,8 +23,7 @@ void ClientSocket::receiveRequest()
     if (read_byte <= 0)
     {
         state_ = CLOSE;
-        request_.clear();
-        parser_.clear();
+        clearRequest();
         return;
     }
     buffer[read_byte] = '\0';
@@ -58,8 +57,7 @@ void ClientSocket::sendResponse()
     {
         state_ = CLOSE;
     }
-    request_.clear();
-    parser_.clear();
+    clearRequest();
 }
 
 void ClientSocket::close()
@@ -73,4 +71,10 @@ void ClientSocket::close()
 ClientSocket::State ClientSocket::getState() const
 {
     return state_;
+}
+
+void ClientSocket::clearRequest()
+{
+    request_.clear();
+    parser_.clear();
 }

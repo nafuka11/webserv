@@ -29,6 +29,8 @@ private:
     HTTPResponse response_;
     HTTPParser parser_;
     State state_;
+
+    void clearRequest();
 };
 
 #endif /* CLIENTSOCKET_HPP */
