@@ -19,6 +19,22 @@ ServerSocket::~ServerSocket()
 {
 }
 
+ClientSocket *ServerSocket::acceptConnection() const
+{
+    struct sockaddr_storage address;
+    socklen_t address_len = sizeof(struct sockaddr_storage);
+
+    int connect_d = accept(fd_, reinterpret_cast<struct sockaddr *>(&address), &address_len);
+
+    if (connect_d < 0)
+    {
+        throw SystemError("accept", errno);
+    }
+    setNonBlockingFd(connect_d);
+    ClientSocket *clientSocket = new ClientSocket(connect_d, address);
+    return clientSocket;
+}
+
 void ServerSocket::open()
 {
     std::stringstream sstream;
@@ -94,20 +110,4 @@ void ServerSocket::setNonBlockingFd(int fd) const
     {
         throw SystemError("fcntl", errno);
     }
-}
-
-ClientSocket *ServerSocket::acceptConnection() const
-{
-    struct sockaddr_storage address;
-    socklen_t address_len = sizeof(struct sockaddr_storage);
-
-    int connect_d = accept(fd_, reinterpret_cast<struct sockaddr *>(&address), &address_len);
-
-    if (connect_d < 0)
-    {
-        throw SystemError("accept", errno);
-    }
-    setNonBlockingFd(connect_d);
-    ClientSocket *clientSocket = new ClientSocket(connect_d, address);
-    return clientSocket;
 }
