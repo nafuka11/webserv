@@ -47,6 +47,7 @@ void ClientSocket::receiveRequest()
 
 void ClientSocket::sendResponse()
 {
+    response_.setKeepAlive(request_.canKeepAlive());
     std::string message = response_.toString();
     ::send(fd_, message.c_str(), message.size(), 0);
     if (request_.canKeepAlive())
