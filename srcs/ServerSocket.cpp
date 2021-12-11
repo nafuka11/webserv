@@ -8,7 +8,7 @@
 #include "AddressInfoError.hpp"
 #include "SystemError.hpp"
 
-ServerSocket::ServerSocket(int port) : Socket()
+ServerSocket::ServerSocket(int port) : Socket(SERVER)
 {
     port_ = port;
     open();
