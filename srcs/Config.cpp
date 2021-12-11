@@ -15,7 +15,7 @@ void Config::readFile()
 
     /* 後でreadした結果をセットするに変更 */
     // server_1
-    server_config.setListen(80);
+    server_config.setListen(4242);
     server_config.setServerName("webserv");
     server_config.addAllowMethods("GET");
     server_config.addAllowMethods("POST");
