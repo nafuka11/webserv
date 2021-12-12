@@ -6,12 +6,6 @@
 #include "MainConfig.hpp"
 #include "SystemError.hpp"
 
-// const std::string SERVER_BLOCK_DIRECTIVE[3] = {
-//     "listen",
-//     "server_name"
-// };
-
-
 ConfigParser::ConfigParser(Config &config) : config_(config), state_(CONF_CONTEXT_MAIN)
 {
 }
@@ -79,13 +73,19 @@ std::vector<std::string> ConfigParser::splitLine(const std::string &line)
 // 必要なくなったら消す
 void ConfigParser::putSplitLines(std::vector<std::vector<std::string> > &config_file)
 {
-    for (size_t line_num = 0; line_num < config_file.size(); ++line_num)
+    size_t line_num = 1;
+    for (std::vector<std::vector<std::string> > ::const_iterator vviter = config_file.begin();
+         vviter != config_file.end();
+         ++vviter)
     {
-        std::cout << (line_num + 1) << ")------------------" << std::endl;
-        for (size_t word = 0; word < config_file.at(line_num).size(); ++word)
+        std::cout << "------------------(" << line_num << std::endl;
+        for (std::vector<std::string>::const_iterator viter = vviter->begin();
+             viter != vviter->end();
+             ++viter)
         {
-            std::cout << word << ": [" << config_file.at(line_num).at(word) << "]" << std::endl;
+            std::cout << "[" << *viter << "]" << std::endl;
         }
+        ++line_num;
     }
     std::cout << "-----[end]-----------------------------------\n" << std::endl;
 }
@@ -93,23 +93,13 @@ void ConfigParser::putSplitLines(std::vector<std::vector<std::string> > &config_
 
 void ConfigParser::parseFile(std::vector<std::vector<std::string> > &config_file)
 {
-    for (size_t line_num = 0; line_num < config_file.size(); ++line_num)
+    size_t line_num = 1;
+    for (std::vector<std::vector<std::string> > ::const_iterator vviter = config_file.begin();
+         vviter != config_file.end();
+         ++vviter)
     {
-        if (config_file.at(line_num).size() == 0)
-        {
-            continue ;
-        }
-        switch (state_)
-        {
-        case CONF_CONTEXT_MAIN:
-            parseMainContext(config_file, line_num);
-            break;
-        case CONF_CONTEXT_SERVER:
-            parseServerContext(config_file, line_num);
-            break;
-        default:
-            break;
-        }
+        std::cout << line_num << std::endl;
+        ++line_num;
     }
 }
 
