@@ -85,11 +85,12 @@ std::vector<std::string> ConfigParser::splitLine(const std::string &line)
         {
             ++end;
         }
-        words.push_back(line.substr(start, (end - start)));
+        if ((end - start) != 0)
+            words.push_back(line.substr(start, (end - start)));
         start = end;
         if (line[start] == ';')
         {
-            words.push_back(line.substr(start, 1));
+            words.push_back(";");
             start++;
         }
     }
