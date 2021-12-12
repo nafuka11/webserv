@@ -35,7 +35,7 @@ void ConfigParser::readAndSplitFile(std::ifstream &ifs, std::vector<std::vector<
 {
     std::string line;
 
-    for (int line_num = 0; std::getline(ifs, line); ++line_num)
+    while (std::getline(ifs, line))
     {
         const std::vector<std::string> words = splitLine(line);
         config_file.push_back(words);
