@@ -38,9 +38,9 @@ private:
     static const int SERVER_OPEN_BRACES;
     static const int LOCATION_OPEN_BRACES;
 
-    void readAndSplitFile(std::ifstream &ifs);
+    void readAndSplitLines(std::ifstream &ifs);
     std::vector<std::string> splitLine(const std::string &line);
-    void parseFile();
+    void parseLines();
     void parseMainContext(MainConfig &main_config);
     void parseServerContext(MainConfig &main_config);
     void parseLocationContext(/*, ServerConfig &server*/);
@@ -57,8 +57,8 @@ private:
     void putSplitLines();// 後で消す
 
     std::vector<std::vector<std::string> > config_file_;
-    std::vector<std::vector<std::string> >::const_iterator config_line_;
-    // std::vector<std::string>::const_iterator config_line_words_;
+    std::vector<std::vector<std::string> >::const_iterator parse_line_;
+    std::vector<std::string>::const_iterator parse_line_word_;
     int num_line_;
     Config &config_;
     ConfState state_;

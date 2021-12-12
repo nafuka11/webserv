@@ -51,13 +51,13 @@ void ConfigParser::readFile(const std::string &filepath)
     {
         throw SystemError("open", errno);
     }
-    readAndSplitFile(ifs);
+    readAndSplitLines(ifs);
     putSplitLines();// 後で消す
     ifs.close();
-    parseFile();
+    parseLines();
 }
 
-void ConfigParser::readAndSplitFile(std::ifstream &ifs)
+void ConfigParser::readAndSplitLines(std::ifstream &ifs)
 {
     std::string line;
 
@@ -118,16 +118,17 @@ void ConfigParser::putSplitLines()
 }
 // 必要なくなったら消す
 
-void ConfigParser::parseFile()
+void ConfigParser::parseLines()
 {
     MainConfig main_config = MainConfig();
 
-    for (config_line_ = config_file_.begin();
-         config_line_ != config_file_.end();
-         ++config_line_)
+    for (parse_line_ = config_file_.begin();
+         parse_line_ != config_file_.end();
+         ++parse_line_)
     {
-        if (config_line_->size() == 0) // SEGV on unknown addressを回避するため（parseMainContextで要素[0]を参照した時に発生）
+        if (parse_line_->size() == 0) // SEGV on unknown addressを回避するため（parseMainContextで要素[0]を参照した時に発生）
             continue;
+        parse_line_word_ = parse_line_->begin();
         parseMainContext(main_config);
         ++num_line_;
     }
@@ -144,11 +145,10 @@ void ConfigParser::parseMainContext(MainConfig &main_config)
         &ConfigParser::parseIndexDirective,
         &ConfigParser::parseServerContext
     };
-    std::vector<std::string>::const_iterator line_words = config_line_->begin();
 
     for (int i = 0; i < NUM_MAIN_DIRECTIVE; ++i)
     {
-        if (line_words[DIRECTIVE_NAME] == MAIN_DIRECTIVE[i])
+        if (parse_line_word_[DIRECTIVE_NAME] == MAIN_DIRECTIVE[i])
         {
             (this->*main_directive_func[i])(main_config);
         }
@@ -171,14 +171,13 @@ void ConfigParser::parseAllowMethodDirective(MainConfig &main_config)
     // 構文チェック
 
     main_config.clearAllowMethod();
-    std::vector<std::string>::const_iterator line_words = config_line_->begin();
-    ++line_words;
+    ++parse_line_word_;
 
-    for (; line_words != config_line_->end(); ++line_words)
+    for (; parse_line_word_ != parse_line_->end(); ++parse_line_word_)
     {
-        if (*line_words == ";")
+        if (*parse_line_word_ == ";")
             break ;
-        main_config.addAllowMethod(*line_words);
+        main_config.addAllowMethod(*parse_line_word_);
     }
 }
 
@@ -187,9 +186,8 @@ void ConfigParser::parseAutoindexDirective(MainConfig &main_config)
     std::cout << "Line." << num_line_ << " autoindex" << std::endl; // 後で消す
 
     //構文チェック
-    std::vector<std::string>::const_iterator line_words = config_line_->begin();
 
-    main_config.setAutoIndex(line_words[1]);
+    main_config.setAutoIndex(parse_line_word_[1]);
 }
 
 void ConfigParser::parseCgiExtensionDirective(MainConfig &main_config)
@@ -197,9 +195,7 @@ void ConfigParser::parseCgiExtensionDirective(MainConfig &main_config)
     std::cout << "Line." << num_line_ << " cgi_extension" << std::endl; // 後で消す
 
     //構文チェック
-    std::vector<std::string>::const_iterator line_words = config_line_->begin();
-
-    main_config.setcgiExtension(line_words[1]);
+    main_config.setcgiExtension(parse_line_word_[1]);
 }
 
 void ConfigParser::parseClientMaxBodySizeDirective(MainConfig &main_config)
@@ -207,9 +203,7 @@ void ConfigParser::parseClientMaxBodySizeDirective(MainConfig &main_config)
     std::cout << "Line." << num_line_ << " client_max_body_size" << std::endl; // 後で消す
 
     //構文チェック
-    std::vector<std::string>::const_iterator line_words = config_line_->begin();
-
-    main_config.setClientMaxBodySize(std::atoi(line_words[1].c_str()));
+    main_config.setClientMaxBodySize(std::atoi(parse_line_word_[1].c_str()));
 }
 
 void ConfigParser::parseErrorPageDirective(MainConfig &main_config)
@@ -219,19 +213,19 @@ void ConfigParser::parseErrorPageDirective(MainConfig &main_config)
     //構文チェック
 
     main_config.clearErrorPage();
-    std::vector<std::string>::const_iterator line_words = config_line_->begin();
 
     // ex) error_page 404 /404.html;
-    if (config_line_->size() == 4)
+    if (parse_line_->size() == 4)
     {
-        main_config.addErrorPage(std::atoi(line_words[1].c_str()), line_words[2]);
+        main_config.addErrorPage(std::atoi(parse_line_word_[1].c_str()), parse_line_word_[2]);
+
         return ;
     }
     // ex) error_page 500 502 503 504 /50x.html;
-    std::vector<std::string>::const_iterator status_code = config_line_->begin();
+    std::vector<std::string>::const_iterator status_code = parse_line_->begin();
     ++status_code;
 
-    std::vector<std::string>::const_iterator uri = config_line_->end();
+    std::vector<std::string>::const_iterator uri = parse_line_->end();
     uri = uri - 2;
 
     for (; status_code != uri; ++status_code)
@@ -247,14 +241,13 @@ void ConfigParser::parseIndexDirective(MainConfig &main_config)
     // 構文チェック
 
     main_config.clearIndex();
-    std::vector<std::string>::const_iterator line_words = config_line_->begin();
-    ++line_words;
+    ++parse_line_word_;
 
-    for (; line_words != config_line_->end(); ++line_words)
+   for (; parse_line_word_ != parse_line_->end(); ++parse_line_word_)
     {
-        if (*line_words == ";")
+        if (*parse_line_word_ == ";")
             break ;
-        main_config.addIndex(*line_words);
+        main_config.addIndex(*parse_line_word_);
     }
 }
 
