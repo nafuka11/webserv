@@ -5,15 +5,24 @@
 
 class Socket
 {
+public:
+    enum Type
+    {
+        SERVER,
+        CLIENT
+    };
+
+    Socket(Type type);
+    Socket(Type type, int fd);
+    virtual ~Socket();
+
+    Type getType() const;
+    int getFd() const;
+
 protected:
-    int port_;
+    Type type_;
     int fd_;
     struct sockaddr_storage address_;
-
-public:
-    Socket();
-    Socket(int fd);
-    virtual ~Socket();
 };
 
 #endif /* SOCKET_HPP */

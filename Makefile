@@ -1,7 +1,7 @@
 NAME		:= webserv
 
 INC_DIR		:= ./includes
-SRCS		:= srcs/AddressInfoError.cpp srcs/ClientSocket.cpp srcs/Config.cpp srcs/HTTPParseException.cpp srcs/HTTPParser.cpp srcs/HTTPRequest.cpp srcs/HTTPResponse.cpp srcs/HTTPServer.cpp srcs/LocationConfig.cpp srcs/ServerConfig.cpp srcs/ServerSocket.cpp srcs/Socket.cpp srcs/SystemError.cpp srcs/Webserv.cpp srcs/main.cpp
+SRCS		:= srcs/AddressInfoError.cpp srcs/ClientSocket.cpp srcs/Config.cpp srcs/HTTPParseException.cpp srcs/HTTPParser.cpp srcs/HTTPRequest.cpp srcs/HTTPResponse.cpp srcs/KqueuePoller.cpp srcs/LocationConfig.cpp srcs/ServerConfig.cpp srcs/ServerSocket.cpp srcs/Socket.cpp srcs/SystemError.cpp srcs/Webserv.cpp srcs/main.cpp
 OBJS		:= $(SRCS:.cpp=.o)
 
 CXX			:= clang++
