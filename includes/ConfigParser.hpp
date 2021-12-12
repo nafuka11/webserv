@@ -34,16 +34,18 @@ private:
     static const int SERVER_BRACES_START;
     static const int LOCATION_BRACES_START;
 
-    void readAndSplitFile(std::ifstream &ifs, std::vector<std::vector<std::string> > &config_file);
+    void readAndSplitFile(std::ifstream &ifs);
     std::vector<std::string> splitLine(const std::string &line);
-    void parseFile(std::vector<std::vector<std::string> > &config_file);
-    void parseMainContext(std::vector<std::vector<std::string> > &config_file, size_t &line_num);
-    void parseServerContext(std::vector<std::vector<std::string> > &config_file, size_t &line_num);
-    void parseLocationContext(std::vector<std::vector<std::string> > &config_file, size_t &line_num/*, ServerConfig &server*/);
-    bool isServerContext(std::vector<std::vector<std::string> > &config_file, size_t line_num);
-    bool isLocationContext(std::vector<std::vector<std::string> > &config_file, size_t line_num);
-    void putSplitLines(std::vector<std::vector<std::string> > &config_file);// 後で消す
+    void parseFile();
+    void parseMainContext();
+    void parseServerContext();
+    void parseLocationContext(/*, ServerConfig &server*/);
+    bool isServerContext();
+    bool isLocationContext();
+    void putSplitLines();// 後で消す
 
+    std::vector<std::vector<std::string> > config_file_;
+    int num_line_;
     Config &config_;
     ConfState state_;
 };

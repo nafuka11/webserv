@@ -6,7 +6,10 @@
 #include "MainConfig.hpp"
 #include "SystemError.hpp"
 
-ConfigParser::ConfigParser(Config &config) : config_(config), state_(CONF_CONTEXT_MAIN)
+ConfigParser::ConfigParser(Config &config)
+: num_line_(1),
+  config_(config),
+  state_(CONF_CONTEXT_MAIN)
 {
 }
 
@@ -22,23 +25,20 @@ void ConfigParser::readFile(const std::string &filepath)
     {
         throw SystemError("open", errno);
     }
-
-    std::vector<std::vector<std::string> > config_file;
-
-    readAndSplitFile(ifs, config_file);
-    putSplitLines(config_file);// 後で消す
+    readAndSplitFile(ifs);
+    putSplitLines();// 後で消す
     ifs.close();
-    parseFile(config_file);
+    parseFile();
 }
 
-void ConfigParser::readAndSplitFile(std::ifstream &ifs, std::vector<std::vector<std::string> > &config_file)
+void ConfigParser::readAndSplitFile(std::ifstream &ifs)
 {
     std::string line;
 
     while (std::getline(ifs, line))
     {
         const std::vector<std::string> words = splitLine(line);
-        config_file.push_back(words);
+        config_file_.push_back(words);
     }
 }
 
@@ -71,11 +71,11 @@ std::vector<std::string> ConfigParser::splitLine(const std::string &line)
 }
 
 // 必要なくなったら消す
-void ConfigParser::putSplitLines(std::vector<std::vector<std::string> > &config_file)
+void ConfigParser::putSplitLines()
 {
     size_t line_num = 1;
-    for (std::vector<std::vector<std::string> > ::const_iterator vviter = config_file.begin();
-         vviter != config_file.end();
+    for (std::vector<std::vector<std::string> > ::const_iterator vviter = config_file_.begin();
+         vviter != config_file_.end();
          ++vviter)
     {
         std::cout << "------------------(" << line_num << std::endl;
@@ -91,96 +91,95 @@ void ConfigParser::putSplitLines(std::vector<std::vector<std::string> > &config_
 }
 // 必要なくなったら消す
 
-void ConfigParser::parseFile(std::vector<std::vector<std::string> > &config_file)
+void ConfigParser::parseFile()
 {
-    size_t line_num = 1;
-    for (std::vector<std::vector<std::string> > ::const_iterator vviter = config_file.begin();
-         vviter != config_file.end();
+    for (std::vector<std::vector<std::string> > ::const_iterator vviter = config_file_.begin();
+         vviter != config_file_.end();
          ++vviter)
     {
-        std::cout << line_num << std::endl;
-        ++line_num;
+        parseMainContext();
+        ++num_line_;
     }
 }
 
-void ConfigParser::parseMainContext(std::vector<std::vector<std::string> > &config_file, size_t &line_num)
+void ConfigParser::parseMainContext()
 {
-    if (isServerContext(config_file, line_num))
+    if (isServerContext())
     {
         state_ = CONF_CONTEXT_SERVER;
-        std::cout << "Line." << (line_num + 1) << ": state " << state_ << std::endl; // 後で消す
+        std::cout << "Line." << (num_line_ + 1) << ": state " << state_ << std::endl; // 後で消す
         return ;
     }
 }
 
-void ConfigParser::parseServerContext(std::vector<std::vector<std::string> > &config_file, size_t &line_num)
-{
-    MainConfig main = MainConfig();//parseMainContextで作成したオブジェクトを引数でもらう
-    ServerConfig server = ServerConfig(main);
+// void ConfigParser::parseServerContext()
+// {
+//     MainConfig main = MainConfig();//parseMainContextで作成したオブジェクトを引数でもらう
+//     ServerConfig server = ServerConfig(main);
 
-    for (; line_num < config_file.size(); ++line_num)
-    {
-         std::cout << "Line." << (line_num + 1) << std::endl; // 後で消す
-        if (config_file.at(line_num).size() == 0)
-        {
-            continue ;
-        }
-        if ((config_file.at(line_num).at(0) == "}")
-             && (config_file.at(line_num).size() == 1))
-        {
-            config_.addServer(server);
-            state_ = CONF_CONTEXT_MAIN;
-            return ;
-        }
-        else if (isLocationContext(config_file, line_num))
-        {
-            state_ = CONF_CONTEXT_LOCATION;
-        //parseLocationContext()
-            std::cout << "Line." << (line_num + 1) << ": state " << state_ << std::endl; // 後で消す
-            for (; line_num < config_file.size(); ++line_num)
-            {
-                if ((config_file.at(line_num).at(0) == "}")
-                    && (config_file.at(line_num).size() == 1))
-                {
-                    // parseLocationContext(...);
-                    break ;
-                }
-            }
-        }
-        else if (config_file.at(line_num).at(0) == "listen")
-        {
-            //構文チェック(引数は正しいか、最後に";"があるか)
-            server.setListen(atoi(config_file.at(line_num).at(1).c_str()));
-        }
-        else if (config_file.at(line_num).at(0) == "server_name")
-        {
-            //構文チェック(引数は正しいか、最後に";"があるか)
-            server.setServerName(config_file.at(line_num).at(1));
-        }
-    }
-}
+//     for (; num_line_ < config_file_.size(); ++num_line_)
+//     {
+//          std::cout << "Line." << (num_line_ + 1) << std::endl; // 後で消す
+//         if (config_file_.at(num_line_).size() == 0)
+//         {
+//             continue ;
+//         }
+//         if ((config_file_.at(num_line_).at(0) == "}")
+//              && (config_file_.at(num_line_).size() == 1))
+//         {
+//             config_.addServer(server);
+//             state_ = CONF_CONTEXT_MAIN;
+//             return ;
+//         }
+//         else if (isLocationContext(config_file_))
+//         {
+//             state_ = CONF_CONTEXT_LOCATION;
+//         //parseLocationContext()
+//             std::cout << "Line." << (line_num + 1) << ": state " << state_ << std::endl; // 後で消す
+//             for (; line_num < config_file_.size(); ++line_num)
+//             {
+//                 if ((config_file_.at(line_num).at(0) == "}")
+//                     && (config_file_.at(line_num).size() == 1))
+//                 {
+//                     // parseLocationContext(...);
+//                     break ;
+//                 }
+//             }
+//         }
+//         else if (config_file_.at(line_num).at(0) == "listen")
+//         {
+//             //構文チェック(引数は正しいか、最後に";"があるか)
+//             server.setListen(atoi(config_file_.at(line_num).at(1).c_str()));
+//         }
+//         else if (config_file_.at(line_num).at(0) == "server_name")
+//         {
+//             //構文チェック(引数は正しいか、最後に";"があるか)
+//             server.setServerName(config_file_.at(line_num).at(1));
+//         }
+//     }
+// }
 
-bool ConfigParser::isServerContext(std::vector<std::vector<std::string> > &config_file, size_t line_num)
-{
-    if ((config_file.at(line_num).at(0) == "server")
-         && (config_file.at(line_num).at(1) == "{")
-         && (config_file.at(line_num).size() == 2))
-    {
-        return true;
-    }
-    return false;
-}
+// bool ConfigParser::isServerContext()
+// {
+//     if ((config_file_.at(line_num).at(0) == "server")
+//          && (config_file_.at(line_num).at(1) == "{")
+//          && (config_file_.at(line_num).size() == 2))
+//     {
+//         return true;
+//     }
+//     return false;
+// }
 
-bool ConfigParser::isLocationContext(std::vector<std::vector<std::string> > &config_file, size_t line_num)
-{
-    if ((config_file.at(line_num).at(0) == "location")
-              && (config_file.at(line_num).at(2) == "{")
-              && (config_file.at(line_num).size() == 3))
-    {
-        return true;
-    }
-    return false;
-}
+// bool ConfigParser::isLocationContext()
+// {
+//     if ((config_file_.at(line_num).at(0) == "location")
+//               && (config_file_.at(line_num).at(2) == "{")
+//               && (config_file_.at(line_num).size() == 3))
+//     {
+//         return true;
+//     }
+//     return false;
+// }
 
 const char *ConfigParser::ErrorBlockStartException::what() const throw()
 {
