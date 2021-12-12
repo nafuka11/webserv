@@ -28,23 +28,37 @@ private:
             virtual const char *what() const throw();
     };
 
-    static const std::string SERVER_BLOCK_DIRECTIVE[3];
+    static const std::string MAIN_DIRECTIVE[];
+    static const std::string SERVER_DIRECTIVE[];
+    static const int NUM_MAIN_DIRECTIVE;
+    static const int NUM_SERVER_DIRECTIVE;
+
     static const int DIRECTIVE_NAME;
-    static const int DIRECTIVE_VALUE;
-    static const int SERVER_BRACES_START;
-    static const int LOCATION_BRACES_START;
+
+    static const int SERVER_OPEN_BRACES;
+    static const int LOCATION_OPEN_BRACES;
 
     void readAndSplitFile(std::ifstream &ifs);
     std::vector<std::string> splitLine(const std::string &line);
     void parseFile();
-    void parseMainContext();
-    void parseServerContext();
+    void parseMainContext(MainConfig &main_config);
+    void parseServerContext(MainConfig &main_config);
     void parseLocationContext(/*, ServerConfig &server*/);
-    bool isServerContext();
-    bool isLocationContext();
+
+    void parseAllowMethodDirective(MainConfig &main_config);
+    void parseAutoindexDirective(MainConfig &main_config);
+    void parseCgiExtensionDirective(MainConfig &main_config);
+    void parseClientMaxBodySizeDirective(MainConfig &main_config);
+    void parseErrorPageDirective(MainConfig &main_config);
+    void parseIndexDirective(MainConfig &main_config);
+
+    bool isServerContext(std::vector<std::vector<std::string> > ::const_iterator vviter);
+    bool isLocationContext(std::vector<std::vector<std::string> > ::const_iterator vviter);
     void putSplitLines();// 後で消す
 
     std::vector<std::vector<std::string> > config_file_;
+    std::vector<std::vector<std::string> >::const_iterator config_line_;
+    // std::vector<std::string>::const_iterator config_line_words_;
     int num_line_;
     Config &config_;
     ConfState state_;

@@ -7,7 +7,6 @@
 #include "LocationConfig.hpp"
 
 class MainConfig;
-// class LocationConfig;
 
 class ServerConfig
 {

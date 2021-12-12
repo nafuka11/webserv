@@ -82,17 +82,16 @@ void put_alias(const_location_iter const_iter)
     std::cout << "                          alias: " << const_iter->second.alias() << std::endl;
 }
 
-void put_autoindex(const_location_iter const_iter)
+void put_autoindex(const std::string autoindex)
 {
-    std::cout << "                      autoindex: " << const_iter->second.autoindex() << std::endl;
+    std::cout << "           autoindex: " << autoindex << std::endl;
 }
 
-void put_index(const_location_iter const_iter)
+void put_index(const std::vector<std::string> index)
 {
-    std::vector<std::string> index = const_iter->second.index();
     std::vector<std::string>::const_iterator const_index_iter = index.begin();
 
-    std::cout << "                          index: ";
+    std::cout << "               index: ";
     if (const_index_iter == index.end())
     {
         std::cout << std::endl;
@@ -107,12 +106,11 @@ void put_index(const_location_iter const_iter)
     }
 }
 
-void put_return(const_location_iter const_iter)
+void put_return(const std::map<int, std::string> return_redirect)
 {
-    std::map<int, std::string> return_redirect = const_iter->second.returnRedirect();
     std::map<int, std::string>::const_iterator const_return_iter = return_redirect.begin();
 
-    std::cout << "                         return: ";
+    std::cout << "              return: ";
     if (const_return_iter == return_redirect.end())
     {
         std::cout << std::endl;
@@ -139,9 +137,9 @@ void put_location_config(const_server_iter const_iter)
     {
         std::cout << "            location: " << const_iter->first<< std::endl;
         put_alias(const_iter);
-        put_autoindex(const_iter);
-        put_index(const_iter);
-        put_return(const_iter);
+        put_autoindex(const_iter->second.autoindex());
+        put_index(const_iter->second.index());
+        put_return(const_iter->second.returnRedirect());
     }
 }
 
@@ -155,14 +153,16 @@ void put_server_config(Config &config)
         ++const_iter)
     {
         std::cout << "\n-----[server_" << count << "]------------------------------"  << std::endl;
-        put_listen(const_iter);
-        put_server_name(const_iter);
         put_allow_methods(const_iter);
-        // put_cgi_extension(const_iter);
+        put_autoindex(const_iter->autoindex());
         put_client_max_body_size(const_iter);
         put_error_page(const_iter);
-        put_upload_path(const_iter);
+        put_index(const_iter->index());
+        put_listen(const_iter);
         put_location_config(const_iter);
+        put_return(const_iter->returnRedirect());
+        put_server_name(const_iter);
+        put_upload_path(const_iter);
         count++;
     }
 }

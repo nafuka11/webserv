@@ -1,15 +1,20 @@
 #include "MainConfig.hpp"
 #include "ServerConfig.hpp"
 
+std::string default_allow_method[] = {"GET", "POST", "DELETE"};
+const std::vector<std::string> MainConfig::DEFAULT_ALLOW_METHOD(default_allow_method, std::end(default_allow_method));
+const std::string MainConfig::DEFAULT_AUTOINDEX = "off";
 const int MainConfig::DEFAULT_CLIENT_MAX_BODY_SIZE = 5000;
+std::string default_index[] = {"index.html"};
+const std::vector<std::string> MainConfig::DEFAULT_INDEX(default_index, std::end(default_index));
 
 MainConfig::MainConfig()
-: allow_method_(),
-  autoindex_(),
+: allow_method_(DEFAULT_ALLOW_METHOD),
+  autoindex_(DEFAULT_AUTOINDEX),
   client_max_body_size_(DEFAULT_CLIENT_MAX_BODY_SIZE),
   cgi_extension_(),
   error_page_(),
-  index_(),
+  index_(DEFAULT_INDEX),
   server_()
 {
 }
@@ -53,7 +58,22 @@ void MainConfig::addServer(const ServerConfig &server_config)
     server_.push_back(server_config);
 }
 
-const std::vector<std::string> MainConfig::allowMethods() const
+void MainConfig::clearAllowMethod()
+{
+    allow_method_.clear();
+}
+
+void MainConfig::clearErrorPage()
+{
+    error_page_.clear();
+}
+
+void MainConfig::clearIndex()
+{
+    index_.clear();
+}
+
+const std::vector<std::string> MainConfig::allowMethod() const
 {
     return allow_method_;
 }

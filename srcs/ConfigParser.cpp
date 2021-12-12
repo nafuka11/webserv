@@ -6,6 +6,32 @@
 #include "MainConfig.hpp"
 #include "SystemError.hpp"
 
+const int ConfigParser::NUM_MAIN_DIRECTIVE = 7;
+const int ConfigParser::NUM_SERVER_DIRECTIVE = 10;
+const std::string ConfigParser::MAIN_DIRECTIVE[NUM_MAIN_DIRECTIVE] = {
+    "allow_method",
+    "autoindex",
+    "cgi_extension",
+    "client_max_body_size",
+    "error_page",
+    "index",
+    "server"
+};
+const std::string ConfigParser::SERVER_DIRECTIVE[NUM_SERVER_DIRECTIVE] = {
+    "allow_methods",
+    "autoindex",
+    "client_max_body_size",
+    "error_page",
+    "index",
+    "listen",
+    "location",
+    "return",
+    "server_name",
+    "upload_path"
+};
+const int ConfigParser::DIRECTIVE_NAME = 0;
+const int ConfigParser::SERVER_OPEN_BRACES = 1;
+
 ConfigParser::ConfigParser(Config &config)
 : num_line_(1),
   config_(config),
@@ -93,88 +119,166 @@ void ConfigParser::putSplitLines()
 
 void ConfigParser::parseFile()
 {
-    for (std::vector<std::vector<std::string> > ::const_iterator vviter = config_file_.begin();
-         vviter != config_file_.end();
-         ++vviter)
+    MainConfig main_config = MainConfig();
+
+    for (config_line_ = config_file_.begin();
+         config_line_ != config_file_.end();
+         ++config_line_)
     {
-        parseMainContext();
+        if (config_line_->size() == 0) // SEGV on unknown addressを回避するため（parseMainContextで要素[0]を参照した時に発生）
+            continue;
+        parseMainContext(main_config);
         ++num_line_;
     }
 }
 
-void ConfigParser::parseMainContext()
+void ConfigParser::parseMainContext(MainConfig &main_config)
 {
-    if (isServerContext())
+    void (ConfigParser::*main_directive_func[NUM_MAIN_DIRECTIVE])(MainConfig&) = {
+        &ConfigParser::parseAllowMethodDirective,
+        &ConfigParser::parseAutoindexDirective,
+        &ConfigParser::parseCgiExtensionDirective,
+        &ConfigParser::parseClientMaxBodySizeDirective,
+        &ConfigParser::parseErrorPageDirective,
+        &ConfigParser::parseIndexDirective,
+        &ConfigParser::parseServerContext
+    };
+    std::vector<std::string>::const_iterator line_words = config_line_->begin();
+
+    for (int i = 0; i < NUM_MAIN_DIRECTIVE; ++i)
     {
-        state_ = CONF_CONTEXT_SERVER;
-        std::cout << "Line." << (num_line_ + 1) << ": state " << state_ << std::endl; // 後で消す
-        return ;
+        if (line_words[DIRECTIVE_NAME] == MAIN_DIRECTIVE[i])
+        {
+            (this->*main_directive_func[i])(main_config);
+        }
     }
 }
 
-// void ConfigParser::parseServerContext()
-// {
-//     MainConfig main = MainConfig();//parseMainContextで作成したオブジェクトを引数でもらう
-//     ServerConfig server = ServerConfig(main);
+void ConfigParser::parseServerContext(MainConfig &main_config)
+{
+    std::cout << "Line." << num_line_ << " server" << std::endl; // 後で消す
 
-//     for (; num_line_ < config_file_.size(); ++num_line_)
-//     {
-//          std::cout << "Line." << (num_line_ + 1) << std::endl; // 後で消す
-//         if (config_file_.at(num_line_).size() == 0)
-//         {
-//             continue ;
-//         }
-//         if ((config_file_.at(num_line_).at(0) == "}")
-//              && (config_file_.at(num_line_).size() == 1))
-//         {
-//             config_.addServer(server);
-//             state_ = CONF_CONTEXT_MAIN;
-//             return ;
-//         }
-//         else if (isLocationContext(config_file_))
-//         {
-//             state_ = CONF_CONTEXT_LOCATION;
-//         //parseLocationContext()
-//             std::cout << "Line." << (line_num + 1) << ": state " << state_ << std::endl; // 後で消す
-//             for (; line_num < config_file_.size(); ++line_num)
-//             {
-//                 if ((config_file_.at(line_num).at(0) == "}")
-//                     && (config_file_.at(line_num).size() == 1))
-//                 {
-//                     // parseLocationContext(...);
-//                     break ;
-//                 }
-//             }
-//         }
-//         else if (config_file_.at(line_num).at(0) == "listen")
-//         {
-//             //構文チェック(引数は正しいか、最後に";"があるか)
-//             server.setListen(atoi(config_file_.at(line_num).at(1).c_str()));
-//         }
-//         else if (config_file_.at(line_num).at(0) == "server_name")
-//         {
-//             //構文チェック(引数は正しいか、最後に";"があるか)
-//             server.setServerName(config_file_.at(line_num).at(1));
-//         }
-//     }
-// }
+    ServerConfig server = ServerConfig(main_config);
 
-// bool ConfigParser::isServerContext()
-// {
-//     if ((config_file_.at(line_num).at(0) == "server")
-//          && (config_file_.at(line_num).at(1) == "{")
-//          && (config_file_.at(line_num).size() == 2))
-//     {
-//         return true;
-//     }
-//     return false;
-// }
+    config_.addServer(server);
+}
 
-// bool ConfigParser::isLocationContext()
+void ConfigParser::parseAllowMethodDirective(MainConfig &main_config)
+{
+    std::cout << "Line." << num_line_ << " allow_method" << std::endl; // 後で消す
+
+    // 構文チェック
+
+    main_config.clearAllowMethod();
+    std::vector<std::string>::const_iterator line_words = config_line_->begin();
+    ++line_words;
+
+    for (; line_words != config_line_->end(); ++line_words)
+    {
+        if (*line_words == ";")
+            break ;
+        main_config.addAllowMethod(*line_words);
+    }
+}
+
+void ConfigParser::parseAutoindexDirective(MainConfig &main_config)
+{
+    std::cout << "Line." << num_line_ << " autoindex" << std::endl; // 後で消す
+
+    //構文チェック
+    std::vector<std::string>::const_iterator line_words = config_line_->begin();
+
+    main_config.setAutoIndex(line_words[1]);
+}
+
+void ConfigParser::parseCgiExtensionDirective(MainConfig &main_config)
+{
+    std::cout << "Line." << num_line_ << " cgi_extension" << std::endl; // 後で消す
+
+    //構文チェック
+    std::vector<std::string>::const_iterator line_words = config_line_->begin();
+
+    main_config.setcgiExtension(line_words[1]);
+}
+
+void ConfigParser::parseClientMaxBodySizeDirective(MainConfig &main_config)
+{
+    std::cout << "Line." << num_line_ << " client_max_body_size" << std::endl; // 後で消す
+
+    //構文チェック
+    std::vector<std::string>::const_iterator line_words = config_line_->begin();
+
+    main_config.setClientMaxBodySize(std::atoi(line_words[1].c_str()));
+}
+
+void ConfigParser::parseErrorPageDirective(MainConfig &main_config)
+{
+    std::cout << "Line." << num_line_ << " error_page"  << std::endl; // 後で消す
+
+    //構文チェック
+
+    main_config.clearErrorPage();
+    std::vector<std::string>::const_iterator line_words = config_line_->begin();
+
+    // ex) error_page 404 /404.html;
+    if (config_line_->size() == 4)
+    {
+        main_config.addErrorPage(std::atoi(line_words[1].c_str()), line_words[2]);
+        return ;
+    }
+    // ex) error_page 500 502 503 504 /50x.html;
+    std::vector<std::string>::const_iterator status_code = config_line_->begin();
+    ++status_code;
+
+    std::vector<std::string>::const_iterator uri = config_line_->end();
+    uri = uri - 2;
+
+    for (; status_code != uri; ++status_code)
+    {
+        main_config.addErrorPage(std::atoi(status_code->c_str()), *uri);
+    }
+}
+
+void ConfigParser::parseIndexDirective(MainConfig &main_config)
+{
+    std::cout << "Line." << num_line_ << " index" << std::endl; // 後で消す
+
+    // 構文チェック
+
+    main_config.clearIndex();
+    std::vector<std::string>::const_iterator line_words = config_line_->begin();
+    ++line_words;
+
+    for (; line_words != config_line_->end(); ++line_words)
+    {
+        if (*line_words == ";")
+            break ;
+        main_config.addIndex(*line_words);
+    }
+}
+
+bool ConfigParser::isServerContext(std::vector<std::vector<std::string> > ::const_iterator vviter)
+{
+    std::vector<std::string>::const_iterator viter = vviter->begin();
+
+    if ((viter[DIRECTIVE_NAME] == "server")
+        && (viter[SERVER_OPEN_BRACES] == "{")
+        && (vviter->size() == 2))
+    {
+        return true;
+    }
+    return false;
+}
+
+// bool ConfigParser::isLocationContext(std::vector<std::vector<std::string> > ::const_iterator vviter)
 // {
+//     std::vector<std::string>::const_iterator viter = vviter->begin();
+
 //     if ((config_file_.at(line_num).at(0) == "location")
 //               && (config_file_.at(line_num).at(2) == "{")
 //               && (config_file_.at(line_num).size() == 3))
+//     if (*viter == "location"
+//         && *(++viter) == "{")
 //     {
 //         return true;
 //     }

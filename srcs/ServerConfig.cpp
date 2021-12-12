@@ -1,17 +1,20 @@
 #include "ServerConfig.hpp"
 #include <utility>
-// #include "LocationConfig.hpp"
 #include "MainConfig.hpp"
 
 const int ServerConfig::DEFAULT_PORT = 80;
 
 ServerConfig::ServerConfig(const MainConfig &main_config)
-: allow_method_(),
+: allow_method_(main_config.allowMethod()),
+  autoindex_(main_config.autoindex()),
   client_max_body_size_(main_config.clientMaxBodySize()),
-  error_page_(),
+  error_page_(main_config.errorPage()),
+  index_(main_config.index()),
   listen_(DEFAULT_PORT),
   location_(),
-  server_name_()
+  return_(),
+  server_name_(),
+  upload_path_()
 {
 }
 

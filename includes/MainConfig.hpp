@@ -21,7 +21,11 @@ public:
     void addIndex(const std::string &file);
     void addServer(const ServerConfig &server_config);
 
-    const std::vector<std::string> allowMethods() const;
+    void clearAllowMethod();
+    void clearErrorPage();
+    void clearIndex();
+
+    const std::vector<std::string> allowMethod() const;
     const std::string autoindex() const;
     const int &clientMaxBodySize() const;
     const std::string cgiExtension() const;
@@ -29,7 +33,10 @@ public:
     const std::vector<std::string> index() const;
     const std::vector<ServerConfig> &server() const;
 private:
+    static const std::vector<std::string> DEFAULT_ALLOW_METHOD;
+    static const std::string DEFAULT_AUTOINDEX;
     static const int DEFAULT_CLIENT_MAX_BODY_SIZE;
+    static const std::vector<std::string> DEFAULT_INDEX;
 
     std::vector<std::string> allow_method_;
     std::string autoindex_;
