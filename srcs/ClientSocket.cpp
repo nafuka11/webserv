@@ -7,7 +7,7 @@
 const size_t ClientSocket::BUF_SIZE = 8192;
 
 ClientSocket::ClientSocket(int fd, const struct sockaddr_storage &address)
-    : Socket(fd), parser_(request_), state_(READ)
+    : Socket(CLIENT, fd), parser_(request_), state_(READ)
 {
     address_ = address;
 }
@@ -23,8 +23,7 @@ void ClientSocket::receiveRequest()
     if (read_byte <= 0)
     {
         state_ = CLOSE;
-        request_.clear();
-        parser_.clear();
+        clearRequest();
         return;
     }
     buffer[read_byte] = '\0';
@@ -47,6 +46,7 @@ void ClientSocket::receiveRequest()
 
 void ClientSocket::sendResponse()
 {
+    response_.setKeepAlive(request_.canKeepAlive());
     std::string message = response_.toString();
     ::send(fd_, message.c_str(), message.size(), 0);
     if (request_.canKeepAlive())
@@ -57,8 +57,7 @@ void ClientSocket::sendResponse()
     {
         state_ = CLOSE;
     }
-    request_.clear();
-    parser_.clear();
+    clearRequest();
 }
 
 void ClientSocket::close()
@@ -72,4 +71,10 @@ void ClientSocket::close()
 ClientSocket::State ClientSocket::getState() const
 {
     return state_;
+}
+
+void ClientSocket::clearRequest()
+{
+    request_.clear();
+    parser_.clear();
 }

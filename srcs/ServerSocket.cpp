@@ -1,28 +1,44 @@
 #include "ServerSocket.hpp"
-#include <iostream>
 #include <sstream>
+#include <cerrno>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <unistd.h>
-#include <cerrno>
+#include <fcntl.h>
 #include "AddressInfoError.hpp"
 #include "SystemError.hpp"
 
-ServerSocket::ServerSocket(int port) : Socket()
+ServerSocket::ServerSocket(const ServerConfig &config) : Socket(SERVER), config_(config)
 {
-    port_ = port;
     open();
     listen();
+    setNonBlockingFd(fd_);
 }
 
 ServerSocket::~ServerSocket()
 {
 }
 
+ClientSocket *ServerSocket::acceptConnection() const
+{
+    struct sockaddr_storage address;
+    socklen_t address_len = sizeof(struct sockaddr_storage);
+
+    int connect_d = accept(fd_, reinterpret_cast<struct sockaddr *>(&address), &address_len);
+
+    if (connect_d < 0)
+    {
+        throw SystemError("accept", errno);
+    }
+    setNonBlockingFd(connect_d);
+    ClientSocket *clientSocket = new ClientSocket(connect_d, address);
+    return clientSocket;
+}
+
 void ServerSocket::open()
 {
     std::stringstream sstream;
-    sstream << port_;
+    sstream << config_.listen();
     std::string string_port = sstream.str();
 
     struct addrinfo hints = {};
@@ -88,17 +104,10 @@ void ServerSocket::listen()
     }
 }
 
-ClientSocket ServerSocket::acceptConnection()
+void ServerSocket::setNonBlockingFd(int fd) const
 {
-    struct sockaddr_storage address;
-    socklen_t address_len = sizeof(struct sockaddr_storage);
-
-    int connect_d = accept(fd_, reinterpret_cast<struct sockaddr *>(&address), &address_len);
-
-    if (connect_d < 0)
+    if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
     {
-        throw SystemError("accept", errno);
+        throw SystemError("fcntl", errno);
     }
-    ClientSocket clientSocket = ClientSocket(connect_d, address);
-    return clientSocket;
 }
