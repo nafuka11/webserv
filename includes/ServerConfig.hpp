@@ -4,9 +4,10 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "LocationConfig.hpp"
+// #include "LocationConfig.hpp"
 
 class MainConfig;
+class LocationConfig;
 
 class ServerConfig
 {
@@ -14,7 +15,7 @@ public:
     ServerConfig(const MainConfig &main_config);
     ~ServerConfig();
 
-    void addAllowMethods(const std::string &method);
+    void addAllowMethod(const std::string &method);
     void setAutoIndex(const std::string &autoindex);
     void setClientMaxBodySize(const int size);
     void addErrorPage(const int status_code, const std::string &uri);
@@ -24,6 +25,13 @@ public:
     void addReturnRedirect(const int status_code, const std::string &uri);
     void setServerName(const std::string &name);
     void setUploadPath(const std::string &path);
+
+    void clearAllowMethod();
+    void clearErrorPage(int status_code);
+    void clearIndex();
+    // void clearLocation();
+    void clearReturnRedirect();
+
 
     const std::vector<std::string> allowMethod() const;
     const std::string autoindex() const;

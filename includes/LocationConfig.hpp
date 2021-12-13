@@ -5,12 +5,12 @@
 #include <string>
 #include <vector>
 
-//class ServerConfig;
+class ServerConfig;
 
 class LocationConfig
 {
 public:
-    LocationConfig(/*const ServerConfig &server_config*/);
+    LocationConfig(const ServerConfig &server_config);
     ~LocationConfig();
 
     void setAlias(const std::string &path);

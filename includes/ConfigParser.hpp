@@ -34,6 +34,7 @@ private:
     static const int NUM_SERVER_DIRECTIVE;
 
     static const int DIRECTIVE_NAME;
+    static const int DIRECTIVE_VALUE;
 
     static const int SERVER_OPEN_BRACES;
     static const int LOCATION_OPEN_BRACES;
@@ -42,8 +43,9 @@ private:
     std::vector<std::string> splitLine(const std::string &line);
     void parseLines();
     void parseMainContext(MainConfig &main_config);
+    void parseMainContext();
     void parseServerContext(MainConfig &main_config);
-    void parseLocationContext(/*, ServerConfig &server*/);
+    void parseLocationContext(ServerConfig &server_config);
 
     void parseAllowMethodDirective(MainConfig &main_config);
     void parseAutoindexDirective(MainConfig &main_config);
@@ -51,6 +53,16 @@ private:
     void parseClientMaxBodySizeDirective(MainConfig &main_config);
     void parseErrorPageDirective(MainConfig &main_config);
     void parseIndexDirective(MainConfig &main_config);
+
+    void parseAllowMethodDirective(ServerConfig &main_config);
+    void parseAutoindexDirective(ServerConfig &main_config);
+    void parseClientMaxBodySizeDirective(ServerConfig &main_config);
+    void parseErrorPageDirective(ServerConfig &main_config);
+    void parseIndexDirective(ServerConfig &main_config);
+    void parseListenDirective(ServerConfig &server_config);
+    void parseReturnDirective(ServerConfig &server_config);
+    void parseServerNameDirective(ServerConfig &server_config);
+    void parseUploadPath(ServerConfig &server_config);
 
     bool isServerContext(std::vector<std::vector<std::string> > ::const_iterator vviter);
     bool isLocationContext(std::vector<std::vector<std::string> > ::const_iterator vviter);

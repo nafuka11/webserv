@@ -1,12 +1,12 @@
 #include "LocationConfig.hpp"
-//#include "ServerConfig.hpp"
+#include "ServerConfig.hpp"
 
-LocationConfig::LocationConfig(/*const ServerConfig &server_config*/)
+LocationConfig::LocationConfig(const ServerConfig &server_config)
 : alias_(),
-  allow_method_(),
-  autoindex_(),
-  error_page_(),
-  index_(),
+  allow_method_(server_config.allowMethod()),
+  autoindex_(server_config.autoindex()),
+  error_page_(server_config.errorPage()),
+  index_(server_config.index()),
   return_(),
   upload_path_()
 {

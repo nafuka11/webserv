@@ -3,6 +3,7 @@
 #include <iostream>//del;
 #include <string>
 #include "Config.hpp"
+#include "LocationConfig.hpp"
 #include "MainConfig.hpp"
 #include "SystemError.hpp"
 
@@ -18,7 +19,7 @@ const std::string ConfigParser::MAIN_DIRECTIVE[NUM_MAIN_DIRECTIVE] = {
     "server"
 };
 const std::string ConfigParser::SERVER_DIRECTIVE[NUM_SERVER_DIRECTIVE] = {
-    "allow_methods",
+    "allow_method",
     "autoindex",
     "client_max_body_size",
     "error_page",
@@ -30,6 +31,7 @@ const std::string ConfigParser::SERVER_DIRECTIVE[NUM_SERVER_DIRECTIVE] = {
     "upload_path"
 };
 const int ConfigParser::DIRECTIVE_NAME = 0;
+const int ConfigParser::DIRECTIVE_VALUE = 1;
 const int ConfigParser::SERVER_OPEN_BRACES = 1;
 
 ConfigParser::ConfigParser(Config &config)
@@ -54,7 +56,8 @@ void ConfigParser::readFile(const std::string &filepath)
     readAndSplitLines(ifs);
     putSplitLines();// 後で消す
     ifs.close();
-    parseLines();
+    // parseLines();
+    parseMainContext();
 }
 
 void ConfigParser::readAndSplitLines(std::ifstream &ifs)
@@ -118,24 +121,10 @@ void ConfigParser::putSplitLines()
 }
 // 必要なくなったら消す
 
-void ConfigParser::parseLines()
+// void ConfigParser::parseLines()
+void ConfigParser::parseMainContext()
 {
     MainConfig main_config = MainConfig();
-
-    for (parse_line_ = config_file_.begin();
-         parse_line_ != config_file_.end();
-         ++parse_line_)
-    {
-        if (parse_line_->size() == 0) // SEGV on unknown addressを回避するため（parseMainContextで要素[0]を参照した時に発生）
-            continue;
-        parse_line_word_ = parse_line_->begin();
-        parseMainContext(main_config);
-        ++num_line_;
-    }
-}
-
-void ConfigParser::parseMainContext(MainConfig &main_config)
-{
     void (ConfigParser::*main_directive_func[NUM_MAIN_DIRECTIVE])(MainConfig&) = {
         &ConfigParser::parseAllowMethodDirective,
         &ConfigParser::parseAutoindexDirective,
@@ -146,11 +135,22 @@ void ConfigParser::parseMainContext(MainConfig &main_config)
         &ConfigParser::parseServerContext
     };
 
-    for (int i = 0; i < NUM_MAIN_DIRECTIVE; ++i)
+    for (parse_line_ = config_file_.begin();
+         parse_line_ != config_file_.end();
+         ++parse_line_, ++num_line_)
     {
-        if (parse_line_word_[DIRECTIVE_NAME] == MAIN_DIRECTIVE[i])
+        if (parse_line_->size() == 0)
         {
-            (this->*main_directive_func[i])(main_config);
+            continue;
+        }
+        parse_line_word_ = parse_line_->begin();
+        // parseMainContext(main_config);
+        for (int i = 0; i < NUM_MAIN_DIRECTIVE; ++i)
+        {
+            if (parse_line_word_[DIRECTIVE_NAME] == MAIN_DIRECTIVE[i])
+            {
+                (this->*main_directive_func[i])(main_config);
+            }
         }
     }
 }
@@ -159,11 +159,58 @@ void ConfigParser::parseServerContext(MainConfig &main_config)
 {
     std::cout << "Line." << num_line_ << " server" << std::endl; // 後で消す
 
-    ServerConfig server = ServerConfig(main_config);
+    ServerConfig server_config = ServerConfig(main_config);
+    void (ConfigParser::*server_directive_func[NUM_SERVER_DIRECTIVE])(ServerConfig&) = {
+        &ConfigParser::parseAllowMethodDirective,
+        &ConfigParser::parseAutoindexDirective,
+        &ConfigParser::parseClientMaxBodySizeDirective,
+        &ConfigParser::parseErrorPageDirective,
+        &ConfigParser::parseIndexDirective,
+        &ConfigParser::parseListenDirective,
+        &ConfigParser::parseLocationContext,
+        &ConfigParser::parseReturnDirective,
+        &ConfigParser::parseServerNameDirective,
+        &ConfigParser::parseUploadPath
+    };
+    ++parse_line_;
+    ++num_line_;
+    for (; parse_line_ != config_file_.end(); ++parse_line_, ++num_line_)
+    {
+        if (parse_line_->size() == 0)
+        {
+            continue;
+        }
+        parse_line_word_ = parse_line_->begin();
+        // parseMainContext(main_config);
+        if  (parse_line_word_[DIRECTIVE_NAME] == "}")
+        {
+            break;
+        }
+        for (int i = 0; i < NUM_SERVER_DIRECTIVE; ++i)
+        {
+            if (parse_line_word_[DIRECTIVE_NAME] == SERVER_DIRECTIVE[i])
+            {
+                std::cout << "Line." << num_line_ << " " << SERVER_DIRECTIVE[i] << std::endl; // 後で消す
+                (this->*server_directive_func[i])(server_config);
+            }
+        }
+    }
+    // serverコンテキスト終了チェック
 
-    config_.addServer(server);
+    // 許可しないディレクティブのエラー
+    config_.addServer(server_config);
 }
 
+void ConfigParser::parseLocationContext(ServerConfig &server_config)
+{
+    LocationConfig location_config = LocationConfig(server_config);
+
+    server_config.addLocation(parse_line_word_[1], location_config);
+}
+
+/*
+    main config
+*/
 void ConfigParser::parseAllowMethodDirective(MainConfig &main_config)
 {
     std::cout << "Line." << num_line_ << " allow_method" << std::endl; // 後で消す
@@ -183,61 +230,50 @@ void ConfigParser::parseAllowMethodDirective(MainConfig &main_config)
 
 void ConfigParser::parseAutoindexDirective(MainConfig &main_config)
 {
-    std::cout << "Line." << num_line_ << " autoindex" << std::endl; // 後で消す
-
     //構文チェック
-
-    main_config.setAutoIndex(parse_line_word_[1]);
+    main_config.setAutoIndex(parse_line_word_[DIRECTIVE_VALUE]);
 }
 
 void ConfigParser::parseCgiExtensionDirective(MainConfig &main_config)
 {
-    std::cout << "Line." << num_line_ << " cgi_extension" << std::endl; // 後で消す
-
     //構文チェック
-    main_config.setcgiExtension(parse_line_word_[1]);
+    main_config.setcgiExtension(parse_line_word_[DIRECTIVE_VALUE]);
 }
 
 void ConfigParser::parseClientMaxBodySizeDirective(MainConfig &main_config)
 {
-    std::cout << "Line." << num_line_ << " client_max_body_size" << std::endl; // 後で消す
-
     //構文チェック
-    main_config.setClientMaxBodySize(std::atoi(parse_line_word_[1].c_str()));
+    main_config.setClientMaxBodySize(std::atoi(parse_line_word_[DIRECTIVE_VALUE].c_str()));
 }
 
 void ConfigParser::parseErrorPageDirective(MainConfig &main_config)
 {
-    std::cout << "Line." << num_line_ << " error_page"  << std::endl; // 後で消す
-
     //構文チェック
 
-    main_config.clearErrorPage();
+    std::vector<std::string>::const_iterator status_code;
+    std::vector<std::string>::const_iterator uri;
 
+    status_code = parse_line_->begin();
+    ++status_code;
+    uri = parse_line_->end();
+    uri = uri - 2;
     // ex) error_page 404 /404.html;
     if (parse_line_->size() == 4)
     {
-        main_config.addErrorPage(std::atoi(parse_line_word_[1].c_str()), parse_line_word_[2]);
-
+        main_config.clearErrorPage(std::atoi(status_code->c_str()));
+        main_config.addErrorPage(std::atoi(status_code->c_str()), *uri);
         return ;
     }
     // ex) error_page 500 502 503 504 /50x.html;
-    std::vector<std::string>::const_iterator status_code = parse_line_->begin();
-    ++status_code;
-
-    std::vector<std::string>::const_iterator uri = parse_line_->end();
-    uri = uri - 2;
-
     for (; status_code != uri; ++status_code)
     {
+        main_config.clearErrorPage(std::atoi(status_code->c_str()));
         main_config.addErrorPage(std::atoi(status_code->c_str()), *uri);
     }
 }
 
 void ConfigParser::parseIndexDirective(MainConfig &main_config)
 {
-    std::cout << "Line." << num_line_ << " index" << std::endl; // 後で消す
-
     // 構文チェック
 
     main_config.clearIndex();
@@ -249,6 +285,105 @@ void ConfigParser::parseIndexDirective(MainConfig &main_config)
             break ;
         main_config.addIndex(*parse_line_word_);
     }
+}
+
+/*
+    ServerConfig
+*/
+void ConfigParser::parseAllowMethodDirective(ServerConfig &server_config)
+{
+    // 構文チェック
+
+    server_config.clearAllowMethod();
+    ++parse_line_word_;
+
+    for (; parse_line_word_ != parse_line_->end(); ++parse_line_word_)
+    {
+        if (*parse_line_word_ == ";")
+            break ;
+        server_config.addAllowMethod(*parse_line_word_);
+    }
+}
+void ConfigParser::parseAutoindexDirective(ServerConfig &server_config)
+{
+    //構文チェック
+
+    server_config.setAutoIndex(parse_line_word_[DIRECTIVE_VALUE]);
+}
+
+void ConfigParser::parseClientMaxBodySizeDirective(ServerConfig &server_config)
+{
+    //構文チェック
+    server_config.setClientMaxBodySize(std::atoi(parse_line_word_[DIRECTIVE_VALUE].c_str()));
+}
+
+void ConfigParser::parseErrorPageDirective(ServerConfig &server_config)
+{
+    //構文チェック
+
+    std::vector<std::string>::const_iterator status_code;
+    std::vector<std::string>::const_iterator uri;
+
+    status_code = parse_line_->begin();
+    ++status_code;
+    uri = parse_line_->end();
+    uri = uri - 2;
+    // ex) error_page 404 /404.html;
+    if (parse_line_->size() == 4)
+    {
+        server_config.clearErrorPage(std::atoi(status_code->c_str()));
+        server_config.addErrorPage(std::atoi(status_code->c_str()), *uri);
+        return ;
+    }
+    // ex) error_page 500 502 503 504 /50x.html;
+    for (; status_code != uri; ++status_code)
+    {
+        server_config.clearErrorPage(std::atoi(status_code->c_str()));
+        server_config.addErrorPage(std::atoi(status_code->c_str()), *uri);
+    }
+}
+
+void ConfigParser::parseIndexDirective(ServerConfig &server_config)
+{
+    // 構文チェック
+
+    server_config.clearIndex();
+    ++parse_line_word_;
+
+   for (; parse_line_word_ != parse_line_->end(); ++parse_line_word_)
+    {
+        if (*parse_line_word_ == ";")
+            break ;
+        server_config.addIndex(*parse_line_word_);
+    }
+}
+
+void ConfigParser::parseListenDirective(ServerConfig &server_config)
+{
+    // 構文チェック
+
+    server_config.setListen(std::atoi(parse_line_word_[DIRECTIVE_VALUE].c_str()));
+}
+
+void ConfigParser::parseReturnDirective(ServerConfig &server_config)
+{
+    // 構文チェック
+
+    server_config.addReturnRedirect(std::atoi(parse_line_word_[1].c_str()), parse_line_word_[2]);
+}
+
+void ConfigParser::parseServerNameDirective(ServerConfig &server_config)
+{
+    // 構文チェック
+
+    server_config.setServerName(parse_line_word_[DIRECTIVE_VALUE]);
+}
+
+void ConfigParser::parseUploadPath(ServerConfig &server_config)
+{
+    // 構文チェック
+
+    server_config.setUploadPath(parse_line_word_[DIRECTIVE_VALUE]);
 }
 
 bool ConfigParser::isServerContext(std::vector<std::vector<std::string> > ::const_iterator vviter)

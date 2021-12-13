@@ -1,4 +1,5 @@
 #include "MainConfig.hpp"
+#include "LocationConfig.hpp"
 #include "ServerConfig.hpp"
 
 std::string default_allow_method[] = {"GET", "POST", "DELETE"};
@@ -63,9 +64,15 @@ void MainConfig::clearAllowMethod()
     allow_method_.clear();
 }
 
-void MainConfig::clearErrorPage()
+void MainConfig::clearErrorPage(int status_code)
 {
-    error_page_.clear();
+    // error_page_.clear();
+    std::map<int, std::string>::iterator iter = error_page_.find(status_code);
+
+    if (iter != error_page_.end())
+    {
+        error_page_.erase(iter);
+    }
 }
 
 void MainConfig::clearIndex()

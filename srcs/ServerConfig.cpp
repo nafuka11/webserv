@@ -1,6 +1,7 @@
 #include "ServerConfig.hpp"
 #include <utility>
 #include "MainConfig.hpp"
+#include "LocationConfig.hpp"
 
 const int ServerConfig::DEFAULT_PORT = 80;
 
@@ -22,7 +23,7 @@ ServerConfig::~ServerConfig()
 {
 }
 
-void ServerConfig::addAllowMethods(const std::string &method)
+void ServerConfig::addAllowMethod(const std::string &method)
 {
     allow_method_.push_back(method);
 }
@@ -65,6 +66,42 @@ void ServerConfig::addReturnRedirect(const int status_code, const std::string &u
 void ServerConfig::setServerName(const std::string &name)
 {
     server_name_ = name;
+}
+
+void ServerConfig::setUploadPath(const std::string &path)
+{
+    upload_path_ = path;
+}
+
+void ServerConfig::clearAllowMethod()
+{
+    allow_method_.clear();
+}
+
+void ServerConfig::clearErrorPage(int status_code)
+{
+    // error_page_.clear();
+    std::map<int, std::string>::iterator iter = error_page_.find(status_code);
+
+    if (iter != error_page_.end())
+    {
+        error_page_.erase(iter);
+    }
+}
+
+void ServerConfig::clearIndex()
+{
+    index_.clear();
+}
+
+// void ServerConfig::clearLocation()
+// {
+
+// }
+
+void ServerConfig::clearReturnRedirect()
+{
+    return_.clear(); //同じステータスを探して消去＆上書きする必要あり
 }
 
 const std::vector<std::string> ServerConfig::allowMethod() const
