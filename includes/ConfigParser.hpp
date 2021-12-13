@@ -47,25 +47,27 @@ private:
     void parseServerContext(MainConfig &main_config);
     void parseLocationContext(ServerConfig &server_config);
 
-    void parseAllowMethodDirective(MainConfig &main_config);
-    void parseAutoindexDirective(MainConfig &main_config);
+    template <typename T>
+    void parseAllowMethodDirective(T &config_obj);
+    template <typename T>
+    void parseAutoindexDirective(T &config_obj);
     void parseCgiExtensionDirective(MainConfig &main_config);
-    void parseClientMaxBodySizeDirective(MainConfig &main_config);
-    void parseErrorPageDirective(MainConfig &main_config);
-    void parseIndexDirective(MainConfig &main_config);
-
-    void parseAllowMethodDirective(ServerConfig &main_config);
-    void parseAutoindexDirective(ServerConfig &main_config);
-    void parseClientMaxBodySizeDirective(ServerConfig &main_config);
-    void parseErrorPageDirective(ServerConfig &main_config);
-    void parseIndexDirective(ServerConfig &main_config);
+    template <typename T>
+    void parseClientMaxBodySizeDirective(T &config_obj);
+    template <typename T>
+    void parseErrorPageDirective(T &config_obj);
+    template <typename T>
+    void parseIndexDirective(T &config_obj);
     void parseListenDirective(ServerConfig &server_config);
-    void parseReturnDirective(ServerConfig &server_config);
+    template <typename T>
+    void parseReturnDirective(T &config_obj);
     void parseServerNameDirective(ServerConfig &server_config);
-    void parseUploadPath(ServerConfig &server_config);
+    template <typename T>
+    void parseUploadPath(T &config_obj);
 
     bool isServerContext(std::vector<std::vector<std::string> > ::const_iterator vviter);
     bool isLocationContext(std::vector<std::vector<std::string> > ::const_iterator vviter);
+
     void putSplitLines();// 後で消す
 
     std::vector<std::vector<std::string> > config_file_;
@@ -75,5 +77,90 @@ private:
     Config &config_;
     ConfState state_;
 };
+
+template <typename T>
+void ConfigParser::parseAllowMethodDirective(T &config_obj)
+{
+    // 構文チェック
+    config_obj.clearAllowMethod();
+    ++parse_line_word_;
+
+    for (; parse_line_word_ != parse_line_->end(); ++parse_line_word_)
+    {
+        if (*parse_line_word_ == ";")
+            break ;
+        config_obj.addAllowMethod(*parse_line_word_);
+    }
+}
+
+template <typename T>
+void ConfigParser::parseAutoindexDirective(T &config_obj)
+{
+    //構文チェック
+    config_obj.setAutoIndex(parse_line_word_[DIRECTIVE_VALUE]);
+}
+
+template <typename T>
+void ConfigParser::parseClientMaxBodySizeDirective(T &config_obj)
+{
+    //構文チェック
+    config_obj.setClientMaxBodySize(std::atoi(parse_line_word_[DIRECTIVE_VALUE].c_str()));
+}
+
+template <typename T>
+void ConfigParser::parseErrorPageDirective(T &config_obj)
+{
+    //構文チェック
+
+    std::vector<std::string>::const_iterator status_code;
+    std::vector<std::string>::const_iterator uri;
+
+    status_code = parse_line_->begin();
+    ++status_code;
+    uri = parse_line_->end();
+    uri = uri - 2;
+    // ex) error_page 404 /404.html;
+    if (parse_line_->size() == 4)
+    {
+        config_obj.clearErrorPage(std::atoi(status_code->c_str()));
+        config_obj.addErrorPage(std::atoi(status_code->c_str()), *uri);
+        return ;
+    }
+    // ex) error_page 500 502 503 504 /50x.html;
+    for (; status_code != uri; ++status_code)
+    {
+        config_obj.clearErrorPage(std::atoi(status_code->c_str()));
+        config_obj.addErrorPage(std::atoi(status_code->c_str()), *uri);
+    }
+}
+
+template <typename T>
+void ConfigParser::parseIndexDirective(T &config_obj)
+{
+    // 構文チェック
+    config_obj.clearIndex();
+    ++parse_line_word_;
+
+    for (; parse_line_word_ != parse_line_->end(); ++parse_line_word_)
+    {
+        if (*parse_line_word_ == ";")
+            break ;
+        config_obj.addIndex(*parse_line_word_);
+    }
+}
+
+template <typename T>
+void ConfigParser::parseReturnDirective(T &config_obj)
+{
+    // 構文チェック
+    config_obj.addReturnRedirect(std::atoi(parse_line_word_[1].c_str()), parse_line_word_[2]);
+}
+
+template <typename T>
+void ConfigParser::parseUploadPath(T &config_obj)
+{
+    // 構文チェック
+    config_obj.setUploadPath(parse_line_word_[DIRECTIVE_VALUE]);
+}
 
 #endif /* CONFIGPARSER_HPP */
