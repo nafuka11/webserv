@@ -9,6 +9,7 @@
 
 const int ConfigParser::NUM_MAIN_DIRECTIVE = 7;
 const int ConfigParser::NUM_SERVER_DIRECTIVE = 10;
+const int ConfigParser::NUM_LOCATION_DIRECTIVE = 7;
 const std::string ConfigParser::MAIN_DIRECTIVE[NUM_MAIN_DIRECTIVE] = {
     "allow_method",
     "autoindex",
@@ -28,6 +29,15 @@ const std::string ConfigParser::SERVER_DIRECTIVE[NUM_SERVER_DIRECTIVE] = {
     "location",
     "return",
     "server_name",
+    "upload_path"
+};
+const std::string ConfigParser::LOCATION_DIRECTIVE[NUM_LOCATION_DIRECTIVE] = {
+    "alias",
+    "allow_method",
+    "autoindex",
+    "error_page",
+    "index",
+    "return",
     "upload_path"
 };
 const int ConfigParser::DIRECTIVE_NAME = 0;
@@ -148,6 +158,7 @@ void ConfigParser::parseMainContext()
         {
             if (parse_line_word_[DIRECTIVE_NAME] == MAIN_DIRECTIVE[i])
             {
+                std::cout << "Line." << num_line_ << " " << MAIN_DIRECTIVE[i] << std::endl; // 後で消す
                 (this->*main_directive_func[i])(main_config);
             }
         }
@@ -156,8 +167,6 @@ void ConfigParser::parseMainContext()
 
 void ConfigParser::parseServerContext(MainConfig &main_config)
 {
-    std::cout << "Line." << num_line_ << " server" << std::endl; // 後で消す
-
     ServerConfig server_config = ServerConfig(main_config);
     void (ConfigParser::*server_directive_func[NUM_SERVER_DIRECTIVE])(ServerConfig&) = {
         &ConfigParser::parseAllowMethodDirective,
@@ -201,8 +210,49 @@ void ConfigParser::parseServerContext(MainConfig &main_config)
 void ConfigParser::parseLocationContext(ServerConfig &server_config)
 {
     LocationConfig location_config = LocationConfig(server_config);
+    void (ConfigParser::*location_directive_func[NUM_LOCATION_DIRECTIVE])(LocationConfig&) = {
+        &ConfigParser::parseAliasDirective,
+        &ConfigParser::parseAllowMethodDirective,
+        &ConfigParser::parseAutoindexDirective,
+        &ConfigParser::parseErrorPageDirective,
+        &ConfigParser::parseIndexDirective,
+        &ConfigParser::parseReturnDirective,
+        &ConfigParser::parseUploadPath
+    };
+    ++parse_line_;
+    ++num_line_;
+    for (; parse_line_ != config_file_.end(); ++parse_line_, ++num_line_)
+    {
+        if (parse_line_->size() == 0)
+        {
+            continue;
+        }
+        parse_line_word_ = parse_line_->begin();
+
+        std::cout << "parse_line_word: " << parse_line_word_->size() << std::endl;//del
+        if  (parse_line_word_[DIRECTIVE_NAME] == "}")
+        {
+            break;
+        }
+        for (int i = 0; i < NUM_LOCATION_DIRECTIVE; ++i)
+        {
+            if (parse_line_word_[DIRECTIVE_NAME] == LOCATION_DIRECTIVE[i])
+            {
+                std::cout << "Line." << num_line_ << " " << LOCATION_DIRECTIVE[i] << std::endl; // 後で消す
+                (this->*location_directive_func[i])(location_config);
+            }
+        }
+    }
+
+    // 許可しないディレクティブのエラー
 
     server_config.addLocation(parse_line_word_[1], location_config);
+}
+
+void ConfigParser::parseAliasDirective(LocationConfig &location_config)
+{
+    //構文チェック
+    location_config.setAlias(parse_line_word_[DIRECTIVE_VALUE]);
 }
 
 void ConfigParser::parseCgiExtensionDirective(MainConfig &main_config)

@@ -21,6 +21,11 @@ public:
     void addReturnRedirect(const int status_code, const std::string &uri);
     void setUploadPath(const std::string &path);
 
+    void clearAllowMethod();
+    void clearErrorPage(int status_code);
+    void clearIndex();
+    void clearReturnRedirect();
+
     const std::string alias() const;
     const std::vector<std::string>allowMethod() const;
     const std::string autoindex() const;

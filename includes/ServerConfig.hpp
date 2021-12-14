@@ -35,6 +35,7 @@ public:
 
     const std::vector<std::string> allowMethod() const;
     const std::string autoindex() const;
+    const std::string cgiExtension() const;
     const int &clientMaxBodySize() const;
     const std::map<int, std::string> errorPage() const;
     const std::vector<std::string> index() const;
@@ -49,6 +50,7 @@ private:
 
     std::vector<std::string> allow_method_;
     std::string autoindex_;
+    std::string cgi_extension_;
     int client_max_body_size_;
     std::map<int, std::string> error_page_;
     std::vector<std::string> index_;

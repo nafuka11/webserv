@@ -8,6 +8,7 @@ const int ServerConfig::DEFAULT_PORT = 80;
 ServerConfig::ServerConfig(const MainConfig &main_config)
 : allow_method_(main_config.allowMethod()),
   autoindex_(main_config.autoindex()),
+  cgi_extension_(main_config.cgiExtension()),
   client_max_body_size_(main_config.clientMaxBodySize()),
   error_page_(main_config.errorPage()),
   index_(main_config.index()),
@@ -112,6 +113,11 @@ const std::vector<std::string> ServerConfig::allowMethod() const
 const std::string ServerConfig::autoindex() const
 {
     return autoindex_;
+}
+
+const std::string ServerConfig::cgiExtension() const
+{
+    return cgi_extension_;
 }
 
 const int &ServerConfig::clientMaxBodySize() const

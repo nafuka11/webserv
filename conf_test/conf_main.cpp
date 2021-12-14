@@ -3,114 +3,117 @@
 #include "ServerConfig.hpp"
 #include "LocationConfig.hpp"
 
+enum g_status{
+    SERVER,
+    LOCATION
+};
+
 typedef std::vector<ServerConfig>::const_iterator const_server_iter;
 typedef std::map<std::string, LocationConfig>::const_iterator const_location_iter;
 
-void put_listen(const_server_iter const_iter)
+int g_status;
+
+void put_listen(const int listen, const std::string &space)
 {
-    int listen = const_iter->listen();
-    std::cout << "              listen: " << listen << std::endl;
+    std::cout << space << "listen: " << listen << std::endl;
 }
 
-void put_server_name(const_server_iter const_iter)
+void put_server_name(const std::string &server_name, const std::string &space)
 {
-    std::string server_name = const_iter->serverName();
-    std::cout << "         server_name: " << server_name << std::endl;
+    std::cout << space << "server_name: " << server_name << std::endl;
 }
 
-void put_allow_methods(const_server_iter const_iter)
+void put_allow_methods(const std::vector<std::string> &allow_method, const std::string &space)
 {
-    std::vector<std::string> allow_methods = const_iter->allowMethod();
-    std::vector<std::string>::const_iterator iter = allow_methods.begin();
+    std::string second_space;
+    if (g_status == LOCATION)
+        second_space = "                                    ";
+    else
+        second_space = "                      ";
 
-    std::cout << "       allow_methods: ";
-    if (iter == allow_methods.end())
+    std::cout << space << "allow_method: ";
+
+    for (std::vector<std::string>::const_iterator iter = allow_method.begin();
+        iter != allow_method.end();
+        iter++)
     {
-        std::cout << std::endl;
-        return ;
-    }
-    while (iter != allow_methods.end())
-    {
-        if (iter != allow_methods.begin())
-            std::cout << "                      ";
+        if (iter != allow_method.begin())
+            std::cout << second_space;
         std::cout << *iter << std::endl;
-        ++iter;
     }
 }
 
-// void put_cgi_extension(const_server_iter const_iter)
-// {
-//     std::string cgi_extension = const_iter->cgiExtension();
-//     std::cout << "       cgi_extension: " << cgi_extension <<  std::endl;
-// }
-
-void put_client_max_body_size(const_server_iter const_iter)
+void put_cgi_extension(const std::string &cgi_extension, const std::string &space)
 {
-    int client_max_body_size = const_iter->clientMaxBodySize();
+    std::cout << space << "cgi_extension: " << cgi_extension <<  std::endl;
+}
+
+void put_client_max_body_size(const int client_max_body_size)
+{
     std::cout << "client_max_body_size: " << client_max_body_size << std::endl;
 }
 
-void put_error_page(const_server_iter const_iter)
+void put_error_page(const std::map<int, std::string> &error_page, const std::string &space)
 {
-    std::map<int, std::string> error_page = const_iter->errorPage();
-    std::map<int, std::string>::const_iterator iter = error_page.begin();
+    std::string second_space;
+    if (g_status == LOCATION)
+        second_space = "                                  ";
+    else
+        second_space = "                      ";
 
-    std::cout << "          error_page: ";
-    if (iter == error_page.end())
-    {
-        std::cout << std::endl;
-        return ;
-    }
-    while (iter != error_page.end())
+    std::cout << space <<"error_page: ";
+
+    for (std::map<int, std::string>::const_iterator iter = error_page.begin();
+         iter != error_page.end();
+         ++iter)
     {
         if (iter != error_page.begin())
-            std::cout << "                      ";
+            std::cout << second_space;
         std::cout << iter->first << " "
                   << iter->second << std::endl;
-        ++iter;
     }
 }
 
-void put_upload_path(const_server_iter const_iter)
+void put_upload_path(const std::string &upload_path, const std::string &space)
 {
-    std::string upload_path = const_iter->uploadPath();
-    std::cout << "         upload_path: " << upload_path << std::endl;
+    std::cout << space << "upload_path: " << upload_path << std::endl;
 }
 
-void put_alias(const_location_iter const_iter)
+void put_alias(const std::string &alias, const std::string &space)
 {
-    std::cout << "                          alias: " << const_iter->second.alias() << std::endl;
+    std::cout << space << "alias: " << alias << std::endl;
 }
 
-void put_autoindex(const std::string autoindex)
+void put_autoindex(const std::string &autoindex, const std::string &space)
 {
-    std::cout << "           autoindex: " << autoindex << std::endl;
+    std::cout << space << "autoindex: " << autoindex << std::endl;
 }
 
-void put_index(const std::vector<std::string> index)
+void put_index(const std::vector<std::string> &index, const std::string &space)
 {
-    std::vector<std::string>::const_iterator const_index_iter = index.begin();
+    std::string second_space;
+    if (g_status == LOCATION)
+        second_space = "                             ";
+    else
+        second_space = "                                 ";
 
-    std::cout << "               index: ";
-    if (const_index_iter == index.end())
+    std::cout << space << "index: ";
+
+    for (std::vector<std::string>::const_iterator const_iter = index.begin();
+         const_iter!= index.end();
+         ++const_iter)
     {
-        std::cout << std::endl;
-        return ;
-    }
-    while (const_index_iter != index.end())
-    {
-        if (const_index_iter != index.begin())
+        if (const_iter != index.begin())
             std::cout << "                                 ";
-        std::cout << *const_index_iter << std::endl;
-        ++const_index_iter;
+        std::cout << *const_iter << std::endl;
     }
 }
 
-void put_return(const std::map<int, std::string> return_redirect)
+void put_return(const std::map<int, std::string> &return_redirect, const std::string &space)
 {
     std::map<int, std::string>::const_iterator const_return_iter = return_redirect.begin();
 
-    std::cout << "              return: ";
+    std::cout << space << "return: ";
     if (const_return_iter == return_redirect.end())
     {
         std::cout << std::endl;
@@ -127,42 +130,49 @@ void put_return(const std::map<int, std::string> return_redirect)
 
 }
 
-void put_location_config(const_server_iter const_iter)
+void put_location_config(const std::map<std::string, LocationConfig> &location, const std::string &space)
 {
-    std::map<std::string, LocationConfig> location = const_iter->location();
+    g_status = LOCATION;
 
     for (const_location_iter const_iter = location.begin();
         const_iter != location.end();
         ++const_iter)
     {
-        std::cout << "            location: " << const_iter->first<< std::endl;
-        put_alias(const_iter);
-        put_autoindex(const_iter->second.autoindex());
-        put_index(const_iter->second.index());
-        put_return(const_iter->second.returnRedirect());
+        std::cout << space << "location: " << const_iter->first<< std::endl;
+        put_alias(const_iter->second.alias(), "                      ");
+        put_allow_methods(const_iter->second.allowMethod(), "                      ");
+        put_autoindex(const_iter->second.autoindex(),  "                      ");
+        put_error_page(const_iter->second.errorPage(), "                      ");
+        put_index(const_iter->second.index(), "                      ");
+        put_return(const_iter->second.returnRedirect(), "                      ");
+        put_upload_path(const_iter->second.uploadPath(), "                      ");
     }
+
+    g_status = SERVER;
 }
 
 void put_server_config(Config &config)
 {
     std::vector<ServerConfig> server = config.server();
     int count = 1;
+    g_status = SERVER;
 
     for (const_server_iter const_iter = server.begin();
         const_iter != server.end();
         ++const_iter)
     {
         std::cout << "\n-----[server_" << count << "]------------------------------"  << std::endl;
-        put_allow_methods(const_iter);
-        put_autoindex(const_iter->autoindex());
-        put_client_max_body_size(const_iter);
-        put_error_page(const_iter);
-        put_index(const_iter->index());
-        put_listen(const_iter);
-        put_location_config(const_iter);
-        put_return(const_iter->returnRedirect());
-        put_server_name(const_iter);
-        put_upload_path(const_iter);
+        put_allow_methods(const_iter->allowMethod(), "       ");
+        put_autoindex(const_iter->autoindex(), "           ");
+        put_cgi_extension(const_iter->cgiExtension(), "       ");
+        put_client_max_body_size(const_iter->clientMaxBodySize());
+        put_error_page(const_iter->errorPage(), "          ");
+        put_index(const_iter->index(), "               ");
+        put_listen(const_iter->listen(), "              ");
+        put_return(const_iter->returnRedirect(),  "              ");
+        put_server_name(const_iter->serverName(), "         ");
+        put_upload_path(const_iter->uploadPath(), "         ");
+        put_location_config(const_iter->location(), "            ");
         count++;
     }
 }

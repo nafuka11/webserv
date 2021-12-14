@@ -30,8 +30,10 @@ private:
 
     static const std::string MAIN_DIRECTIVE[];
     static const std::string SERVER_DIRECTIVE[];
+    static const std::string LOCATION_DIRECTIVE[];
     static const int NUM_MAIN_DIRECTIVE;
     static const int NUM_SERVER_DIRECTIVE;
+    static const int NUM_LOCATION_DIRECTIVE;
 
     static const int DIRECTIVE_NAME;
     static const int DIRECTIVE_VALUE;
@@ -42,11 +44,11 @@ private:
     void readAndSplitLines(std::ifstream &ifs);
     std::vector<std::string> splitLine(const std::string &line);
     void parseLines();
-    void parseMainContext(MainConfig &main_config);
     void parseMainContext();
     void parseServerContext(MainConfig &main_config);
     void parseLocationContext(ServerConfig &server_config);
 
+    void parseAliasDirective(LocationConfig &location_config);
     template <typename T>
     void parseAllowMethodDirective(T &config_obj);
     template <typename T>

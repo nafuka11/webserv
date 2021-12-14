@@ -51,6 +51,29 @@ void LocationConfig::setUploadPath(const std::string &path)
     upload_path_ = path;
 }
 
+void LocationConfig::clearAllowMethod()
+{
+    allow_method_.clear();
+}
+void LocationConfig::clearErrorPage(int status_code)
+{
+    // error_page_.clear();
+    std::map<int, std::string>::iterator iter = error_page_.find(status_code);
+
+    if (iter != error_page_.end())
+    {
+        error_page_.erase(iter);
+    }
+}
+void LocationConfig::clearIndex()
+{
+    index_.clear();
+}
+void LocationConfig::clearReturnRedirect()
+{
+    return_.clear(); //同じステータスを探して消去＆上書きする必要あり
+}
+
 const std::string LocationConfig::alias() const
 {
     return alias_;
