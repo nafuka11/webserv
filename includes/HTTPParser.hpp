@@ -47,6 +47,8 @@ private:
     HTTPMethod validateMethod(const std::string &method);
     const std::string &validateUri(const std::string &uri);
     const std::string &validateProtocolVersion(const std::string &protocol_version);
+    const std::pair<std::string, std::string> validateHeader(std::string &name,
+                                                             std::string &value);
     const std::string &validateHeaderName(std::string &name);
     const std::string &validateHeaderValue(const std::string &value);
 

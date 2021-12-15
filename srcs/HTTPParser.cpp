@@ -99,7 +99,7 @@ void HTTPParser::parseHeader(const std::string &line)
     }
     std::string name, value;
     splitHeader(line, name, value);
-    request_.setHeader(validateHeaderName(name), validateHeaderValue(value));
+    request_.setHeader(validateHeader(name, value));
 }
 
 void HTTPParser::parseMessageBody(const std::string &line)
@@ -199,6 +199,14 @@ const std::string &HTTPParser::validateProtocolVersion(const std::string &protoc
         throw HTTPParseException(CODE_400);
     }
     return protocol_version;
+}
+
+const std::pair<std::string, std::string> HTTPParser::validateHeader(std::string &name,
+                                                                     std::string &value)
+{
+    name = validateHeaderName(name);
+    value = validateHeaderValue(value);
+    return std::make_pair(name, value);
 }
 
 const std::string &HTTPParser::validateHeaderName(std::string &name)

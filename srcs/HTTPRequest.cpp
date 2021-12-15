@@ -42,9 +42,9 @@ void HTTPRequest::setProtocolVersion(const std::string &protocol_version)
     protocol_version_ = protocol_version;
 }
 
-void HTTPRequest::setHeader(const std::string &name, const std::string &value)
+void HTTPRequest::setHeader(const std::pair<std::string, std::string> &item)
 {
-    headers_.insert(std::make_pair(name, value));
+    headers_.insert(item);
 }
 
 void HTTPRequest::setMessageBody(const std::string &message_body)
