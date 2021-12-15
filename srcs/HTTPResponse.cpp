@@ -47,6 +47,7 @@ std::map<HTTPStatusCode, std::string> HTTPResponse::setReasonPhrase()
 
     reason_phrase[CODE_200] = "OK";
     reason_phrase[CODE_400] = "Bad Request";
+    reason_phrase[CODE_413] = "Payload Too Large";
     reason_phrase[CODE_501] = "Not Implemented";
     return reason_phrase;
 }
