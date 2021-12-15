@@ -196,7 +196,8 @@ const std::string &HTTPParser::validateUri(const std::string &uri)
     return uri;
 }
 
-const std::string &HTTPParser::validateProtocolVersion(const std::string &protocol_version)
+const std::string &HTTPParser::validateProtocolVersion(
+    const std::string &protocol_version)
 {
     if (protocol_version != "HTTP/1.1")
     {
@@ -212,10 +213,11 @@ const std::pair<std::string, std::string> HTTPParser::validateHeader(std::string
     value = validateHeaderValue(value);
     if (name == "host")
     {
-        if (request_.getHeaders().count("host") != 0)
-        {
-            throw HTTPParseException(CODE_400);
-        }
+        validateHost();
+    }
+    else if (name == "content-length")
+    {
+        validateContentLength(value);
     }
     return std::make_pair(name, value);
 }
@@ -254,6 +256,20 @@ void HTTPParser::validateHost()
     if (request_.getHeaders().count("host") != 0)
     {
         throw HTTPParseException(CODE_400);
+    }
+}
+
+void HTTPParser::validateContentLength(const std::string &value)
+{
+    char *endp = NULL;
+    long length = strtol(value.c_str(), &endp, 10);
+    if (*endp != '\0' || length < 0)
+    {
+        throw HTTPParseException(CODE_400);
+    }
+    if (length > config_.clientMaxBodySize())
+    {
+        throw HTTPParseException(CODE_413);
     }
 }
 
