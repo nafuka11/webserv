@@ -6,6 +6,7 @@
 #include "HTTPRequest.hpp"
 #include "HTTPResponse.hpp"
 #include "HTTPParser.hpp"
+#include "ServerConfig.hpp"
 
 class ClientSocket : public Socket
 {
@@ -17,7 +18,8 @@ public:
         CLOSE
     };
 
-    ClientSocket(int fd, const struct sockaddr_storage &address);
+    ClientSocket(int fd, const struct sockaddr_storage &address,
+                 const ServerConfig &config_);
     ~ClientSocket();
     void receiveRequest();
     void sendResponse();
@@ -26,6 +28,7 @@ public:
 
 private:
     static const size_t BUF_SIZE;
+    const ServerConfig &config_;
     HTTPRequest request_;
     HTTPResponse response_;
     HTTPParser parser_;
