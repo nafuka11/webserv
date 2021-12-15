@@ -9,6 +9,31 @@ PORT = 80
 WEBSERV_PATH = "../webserv"
 SLEEP_TIME = 0.1
 
+RESPONSE_BODY_200 = (
+    b"<html>\r\n"
+    b"<head><title>200 OK</title></head>\r\n"
+    b"<body>\r\n"
+    b"<center><h1>200 OK</h1></center><hr><center>webserv/1.0.0</center>\r\n"
+    b"</body>\r\n"
+    b"</html>\r\n"
+)
+RESPONSE_BODY_501 = (
+    b"<html>\r\n"
+    b"<head><title>501 Not Implemented</title></head>\r\n"
+    b"<body>\r\n"
+    b"<center><h1>501 Not Implemented</h1></center><hr><center>webserv/1.0.0</center>\r\n"
+    b"</body>\r\n"
+    b"</html>\r\n"
+)
+RESPONSE_BODY_400 = (
+    b"<html>\r\n"
+    b"<head><title>400 Bad Request</title></head>\r\n"
+    b"<body>\r\n"
+    b"<center><h1>400 Bad Request</h1></center><hr><center>webserv/1.0.0</center>\r\n"
+    b"</body>\r\n"
+    b"</html>\r\n"
+)
+
 
 @pytest.fixture
 def http_connection() -> HTTPConnection:
@@ -29,14 +54,7 @@ def test_valid(http_connection: HTTPConnection):
     http_connection.request("GET", "/")
     response = http_connection.getresponse()
     actual_body = response.read()
-    expected_body = (
-        b"<html>\r\n"
-        b"<head><title>200 OK</title></head>\r\n"
-        b"<body>\r\n"
-        b"<center><h1>200 OK</h1></center><hr><center>webserv/1.0.0</center>\r\n"
-        b"</body>\r\n"
-        b"</html>\r\n"
-    )
+    expected_body = RESPONSE_BODY_200
     assert response.status == 200
     assert response.reason == "OK"
     assert response.version == 11
@@ -61,14 +79,7 @@ def test_invalid_method(http_connection: HTTPConnection):
     http_connection.request("INVALID", "/")
     response = http_connection.getresponse()
     actual_body = response.read()
-    expected_body = (
-        b"<html>\r\n"
-        b"<head><title>501 Not Implemented</title></head>\r\n"
-        b"<body>\r\n"
-        b"<center><h1>501 Not Implemented</h1></center><hr><center>webserv/1.0.0</center>\r\n"
-        b"</body>\r\n"
-        b"</html>\r\n"
-    )
+    expected_body = RESPONSE_BODY_501
     assert response.status == 501
     assert response.reason == "Not Implemented"
     assert response.version == 11
@@ -81,6 +92,7 @@ def test_invalid_http_version(http_connection: HTTPConnection):
     http_connection.request("GET", "/")
     response = http_connection.getresponse()
     actual_body = response.read()
+    expected_body = RESPONSE_BODY_400
     expected_body = (
         b"<html>\r\n"
         b"<head><title>400 Bad Request</title></head>\r\n"
