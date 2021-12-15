@@ -221,6 +221,10 @@ const std::string &HTTPParser::validateHeaderName(std::string &name)
 
 const std::string &HTTPParser::validateHeaderValue(const std::string &value)
 {
+    if (value.empty())
+    {
+        throw HTTPParseException(CODE_400);
+    }
     return value;
 }
 
