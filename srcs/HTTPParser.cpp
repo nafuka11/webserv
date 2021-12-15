@@ -206,6 +206,13 @@ const std::pair<std::string, std::string> HTTPParser::validateHeader(std::string
 {
     name = validateHeaderName(name);
     value = validateHeaderValue(value);
+    if (name == "host")
+    {
+        if (request_.getHeaders().count("host") != 0)
+        {
+            throw HTTPParseException(CODE_400);
+        }
+    }
     return std::make_pair(name, value);
 }
 
