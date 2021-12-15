@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <cstring>
 
-HTTPParser::HTTPParser(HTTPRequest &request)
-    : request_(request), parse_pos_(0), state_(PARSE_START_LINE)
+HTTPParser::HTTPParser(HTTPRequest &request, const ServerConfig &config)
+    : request_(request), config_(config), parse_pos_(0), state_(PARSE_START_LINE)
 {
 }
 

@@ -2,6 +2,7 @@
 #define HTTPPARSER_HPP
 
 #include "HTTPRequest.hpp"
+#include "ServerConfig.hpp"
 #include <vector>
 
 class HTTPParser
@@ -15,7 +16,7 @@ public:
         PARSE_FINISH
     };
 
-    HTTPParser(HTTPRequest &request);
+    HTTPParser(HTTPRequest &request, const ServerConfig &config);
     ~HTTPParser();
     void clear();
     void parse();
@@ -24,6 +25,7 @@ public:
 
 private:
     HTTPRequest &request_;
+    const ServerConfig &config_;
     std::string raw_message_;
     size_t parse_pos_;
     ParseState state_;
