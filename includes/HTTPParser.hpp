@@ -52,6 +52,7 @@ private:
     const std::string &validateHeaderName(std::string &name);
     const std::string &validateHeaderValue(const std::string &value);
     bool isValidHeaders();
+    void validateHost();
 
     bool isSpace(char c);
     bool isToken(const std::string &str);

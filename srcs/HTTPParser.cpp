@@ -249,6 +249,14 @@ bool HTTPParser::isValidHeaders()
     return true;
 }
 
+void HTTPParser::validateHost()
+{
+    if (request_.getHeaders().count("host") != 0)
+    {
+        throw HTTPParseException(CODE_400);
+    }
+}
+
 bool HTTPParser::isSpace(char c)
 {
     return c == ' ' || c == '\t';
