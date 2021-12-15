@@ -1,0 +1,10 @@
+#ifndef CONFIGERRORTYPE_HPP
+# define CONFIGERRORTYPE_HPP
+
+enum ConfigErrorType
+{
+    UNKNOWN_DIRECTIVE,
+    NOT_ALLOWED_DIECTIVE
+};
+
+#endif
