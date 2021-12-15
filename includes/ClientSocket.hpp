@@ -10,7 +10,8 @@
 class ClientSocket : public Socket
 {
 public:
-    enum State {
+    enum State
+    {
         READ,
         WRITE,
         CLOSE
