@@ -87,6 +87,10 @@ void HTTPParser::parseHeader(const std::string &line)
 {
     if (line.empty())
     {
+        if (!isValidHeaders())
+        {
+            throw HTTPParseException(CODE_400);
+        }
         if (needsParsingMessageBody())
         {
             state_ = PARSE_MESSAGE_BODY;
@@ -233,6 +237,11 @@ const std::string &HTTPParser::validateHeaderValue(const std::string &value)
         throw HTTPParseException(CODE_400);
     }
     return value;
+}
+
+bool HTTPParser::isValidHeaders()
+{
+    return true;
 }
 
 bool HTTPParser::isSpace(char c)
