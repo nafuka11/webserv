@@ -241,6 +241,11 @@ const std::string &HTTPParser::validateHeaderValue(const std::string &value)
 
 bool HTTPParser::isValidHeaders()
 {
+    const std::map<std::string, std::string> headers = request_.getHeaders();
+    if (headers.count("host") == 0)
+    {
+        return false;
+    }
     return true;
 }
 
