@@ -2,6 +2,7 @@
 #define HTTPPARSER_HPP
 
 #include "HTTPRequest.hpp"
+#include "ServerConfig.hpp"
 #include <vector>
 
 class HTTPParser
@@ -15,7 +16,7 @@ public:
         PARSE_FINISH
     };
 
-    HTTPParser(HTTPRequest &request);
+    HTTPParser(HTTPRequest &request, const ServerConfig &config);
     ~HTTPParser();
     void clear();
     void parse();
@@ -24,6 +25,7 @@ public:
 
 private:
     HTTPRequest &request_;
+    const ServerConfig &config_;
     std::string raw_message_;
     size_t parse_pos_;
     ParseState state_;
@@ -45,8 +47,13 @@ private:
     HTTPMethod validateMethod(const std::string &method);
     const std::string &validateUri(const std::string &uri);
     const std::string &validateProtocolVersion(const std::string &protocol_version);
+    const std::pair<std::string, std::string> validateHeader(std::string &name,
+                                                             std::string &value);
     const std::string &validateHeaderName(std::string &name);
     const std::string &validateHeaderValue(const std::string &value);
+    bool isValidHeaders();
+    void validateHost();
+    void validateContentLength(const std::string &value);
 
     bool isSpace(char c);
     bool isToken(const std::string &str);
