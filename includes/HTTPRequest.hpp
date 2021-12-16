@@ -16,7 +16,7 @@ public:
     void setMethod(HTTPMethod method);
     void setUri(const std::string &uri);
     void setProtocolVersion(const std::string &protocol_version);
-    void setHeader(const std::string &name, const std::string &value);
+    void setHeader(const std::pair<std::string, std::string> &item);
     void setMessageBody(const std::string &message_body);
 
     HTTPMethod getMethod() const;

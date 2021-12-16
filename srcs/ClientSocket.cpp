@@ -6,8 +6,9 @@
 
 const size_t ClientSocket::BUF_SIZE = 8192;
 
-ClientSocket::ClientSocket(int fd, const struct sockaddr_storage &address)
-    : Socket(CLIENT, fd), parser_(request_), state_(READ)
+ClientSocket::ClientSocket(int fd, const struct sockaddr_storage &address,
+                           const ServerConfig &config)
+    : Socket(CLIENT, fd), config_(config), parser_(request_, config_), state_(READ)
 {
     address_ = address;
 }
@@ -37,7 +38,7 @@ void ClientSocket::receiveRequest()
             response_.setStatusCode(CODE_200);
         }
     }
-    catch(const HTTPParseException &e)
+    catch (const HTTPParseException &e)
     {
         state_ = WRITE;
         response_.setStatusCode(e.getStatusCode());

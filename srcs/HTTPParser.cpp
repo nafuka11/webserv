@@ -2,9 +2,10 @@
 #include "HTTPParseException.hpp"
 #include <algorithm>
 #include <cstring>
+#include <cstdlib>
 
-HTTPParser::HTTPParser(HTTPRequest &request)
-    : request_(request), parse_pos_(0), state_(PARSE_START_LINE)
+HTTPParser::HTTPParser(HTTPRequest &request, const ServerConfig &config)
+    : request_(request), config_(config), parse_pos_(0), state_(PARSE_START_LINE)
 {
 }
 
@@ -87,6 +88,10 @@ void HTTPParser::parseHeader(const std::string &line)
 {
     if (line.empty())
     {
+        if (!isValidHeaders())
+        {
+            throw HTTPParseException(CODE_400);
+        }
         if (needsParsingMessageBody())
         {
             state_ = PARSE_MESSAGE_BODY;
@@ -99,7 +104,7 @@ void HTTPParser::parseHeader(const std::string &line)
     }
     std::string name, value;
     splitHeader(line, name, value);
-    request_.setHeader(validateHeaderName(name), validateHeaderValue(value));
+    request_.setHeader(validateHeader(name, value));
 }
 
 void HTTPParser::parseMessageBody(const std::string &line)
@@ -192,13 +197,30 @@ const std::string &HTTPParser::validateUri(const std::string &uri)
     return uri;
 }
 
-const std::string &HTTPParser::validateProtocolVersion(const std::string &protocol_version)
+const std::string &HTTPParser::validateProtocolVersion(
+    const std::string &protocol_version)
 {
     if (protocol_version != "HTTP/1.1")
     {
         throw HTTPParseException(CODE_400);
     }
     return protocol_version;
+}
+
+const std::pair<std::string, std::string> HTTPParser::validateHeader(std::string &name,
+                                                                     std::string &value)
+{
+    name = validateHeaderName(name);
+    value = validateHeaderValue(value);
+    if (name == "host")
+    {
+        validateHost();
+    }
+    else if (name == "content-length")
+    {
+        validateContentLength(value);
+    }
+    return std::make_pair(name, value);
 }
 
 const std::string &HTTPParser::validateHeaderName(std::string &name)
@@ -213,7 +235,43 @@ const std::string &HTTPParser::validateHeaderName(std::string &name)
 
 const std::string &HTTPParser::validateHeaderValue(const std::string &value)
 {
+    if (value.empty())
+    {
+        throw HTTPParseException(CODE_400);
+    }
     return value;
+}
+
+bool HTTPParser::isValidHeaders()
+{
+    const std::map<std::string, std::string> headers = request_.getHeaders();
+    if (headers.count("host") == 0)
+    {
+        return false;
+    }
+    return true;
+}
+
+void HTTPParser::validateHost()
+{
+    if (request_.getHeaders().count("host") != 0)
+    {
+        throw HTTPParseException(CODE_400);
+    }
+}
+
+void HTTPParser::validateContentLength(const std::string &value)
+{
+    char *endp = NULL;
+    long length = strtol(value.c_str(), &endp, 10);
+    if (*endp != '\0' || length < 0)
+    {
+        throw HTTPParseException(CODE_400);
+    }
+    if (length > config_.clientMaxBodySize())
+    {
+        throw HTTPParseException(CODE_413);
+    }
 }
 
 bool HTTPParser::isSpace(char c)

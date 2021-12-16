@@ -31,7 +31,7 @@ ClientSocket *ServerSocket::acceptConnection() const
         throw SystemError("accept", errno);
     }
     setNonBlockingFd(connect_d);
-    ClientSocket *clientSocket = new ClientSocket(connect_d, address);
+    ClientSocket *clientSocket = new ClientSocket(connect_d, address, config_);
     return clientSocket;
 }
 
