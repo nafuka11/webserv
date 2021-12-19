@@ -67,7 +67,6 @@ private:
     void parseMainContext();
     void parseServerContext(MainConfig &main_config);
     void parseLocationContext(std::vector<std::string> &parse_line, ServerConfig &server_config);
-
     void parseAlias(std::vector<std::string> &parse_line, LocationConfig &location_config);
     void parseCgiExtension(std::vector<std::string> &parse_line, MainConfig &main_config);
     void parseListen(std::vector<std::string> &parse_line, ServerConfig &server_config);
@@ -104,8 +103,7 @@ private:
 
     std::string filepath_;
     std::vector<std::vector<std::string> > config_file_;
-    size_t pos_line_;
-    size_t num_line_;
+    size_t parse_pos_;
     Config &config_;
     ContextType context_type_;
     DirectiveType directive_type_;
