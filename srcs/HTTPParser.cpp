@@ -35,66 +35,38 @@ bool HTTPParser::finished()
 
 void HTTPParser::parse()
 {
-    while (parseByState())
+    bool need_parse = true;
+
+    while (need_parse)
     {
+        switch (state_)
+        {
+            case PARSE_START_LINE:
+                need_parse = parseStartLine();
+                break;
+            case PARSE_HEADERS:
+                need_parse = parseHeader();
+                break;
+            case PARSE_MESSAGE_BODY:
+                need_parse = parseMessageBody();
+                break;
+            case PARSE_FINISH:
+                need_parse = false;
+                break;
+        }
     }
 }
 
-bool HTTPParser::parseByState()
+bool HTTPParser::parseStartLine()
 {
-    switch (state_)
+    std::string line;
+    if (!tryGetLine(line))
     {
-    case PARSE_FINISH:
         return false;
-    case PARSE_MESSAGE_BODY:
-        if (raw_message_.size() - parse_pos_ < content_length_)
-        {
-            return false;
-        }
-        parseMessageBody();
-        break;
-    default:
-        size_t newline_pos = raw_message_.find(NEWLINE, parse_pos_);
-        if (newline_pos == std::string::npos)
-        {
-            return false;
-        }
-        std::string line = raw_message_.substr(parse_pos_, newline_pos - parse_pos_);
-        try
-        {
-            parseLine(line);
-        }
-        catch (const HTTPParseException &e)
-        {
-            parse_pos_ = newline_pos + NEWLINE.size();
-            throw e;
-        }
-        parse_pos_ = newline_pos + NEWLINE.size();
-        break;
     }
-    return true;
-}
-
-void HTTPParser::parseLine(const std::string &line)
-{
-    switch (state_)
-    {
-    case PARSE_START_LINE:
-        parseStartLine(line);
-        break;
-    case PARSE_HEADERS:
-        parseHeader(line);
-        break;
-    default:
-        break;
-    }
-}
-
-void HTTPParser::parseStartLine(const std::string &line)
-{
     if (line.empty())
     {
-        return;
+        return false;
     }
 
     std::string method, uri, protocol_version;
@@ -103,10 +75,16 @@ void HTTPParser::parseStartLine(const std::string &line)
     request_.setUri(validateUri(uri));
     request_.setProtocolVersion(validateProtocolVersion(protocol_version));
     state_ = PARSE_HEADERS;
+    return true;
 }
 
-void HTTPParser::parseHeader(const std::string &line)
+bool HTTPParser::parseHeader()
 {
+    std::string line;
+    if (!tryGetLine(line))
+    {
+        return false;
+    }
     if (line.empty())
     {
         if (!isValidHeaders())
@@ -121,19 +99,25 @@ void HTTPParser::parseHeader(const std::string &line)
         {
             state_ = PARSE_FINISH;
         }
-        return;
+        return true;
     }
     std::string name, value;
     splitHeader(line, name, value);
     request_.setHeader(validateHeader(name, value));
+    return true;
 }
 
-void HTTPParser::parseMessageBody()
+bool HTTPParser::parseMessageBody()
 {
+    if (raw_message_.size() - parse_pos_ < content_length_)
+    {
+        return false;
+    }
     std::string message_body = raw_message_.substr(parse_pos_, content_length_);
     request_.setMessageBody(message_body);
     parse_pos_ += content_length_;
     state_ = PARSE_FINISH;
+    return true;
 }
 
 bool HTTPParser::needsParsingMessageBody()

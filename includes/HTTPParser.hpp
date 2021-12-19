@@ -32,11 +32,9 @@ private:
     size_t content_length_;
     ParseState state_;
 
-    bool parseByState();
-    void parseLine(const std::string &line);
-    void parseStartLine(const std::string &line);
-    void parseHeader(const std::string &line);
-    void parseMessageBody();
+    bool parseStartLine();
+    bool parseHeader();
+    bool parseMessageBody();
     bool needsParsingMessageBody();
 
     bool tryGetLine(std::string &line);
