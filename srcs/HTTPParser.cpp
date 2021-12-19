@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstring>
 #include <cstdlib>
+#include <cerrno>
 
 const std::string HTTPParser::NEWLINE = "\r\n";
 
@@ -34,23 +35,44 @@ bool HTTPParser::finished()
 
 void HTTPParser::parse()
 {
-    size_t newline_pos;
-
-    while (true)
+    while (parseByState())
     {
-        newline_pos = raw_message_.find("\r\n", parse_pos_);
+    }
+}
+
+bool HTTPParser::parseByState()
+{
+    switch (state_)
+    {
+    case PARSE_FINISH:
+        return false;
+    case PARSE_MESSAGE_BODY:
+        if (raw_message_.size() - parse_pos_ < content_length_)
+        {
+            return false;
+        }
+        parseMessageBody();
+        break;
+    default:
+        size_t newline_pos = raw_message_.find(NEWLINE, parse_pos_);
         if (newline_pos == std::string::npos)
         {
-            break;
+            return false;
         }
         std::string line = raw_message_.substr(parse_pos_, newline_pos - parse_pos_);
-        parseLine(line);
-        if (state_ == PARSE_FINISH)
+        try
         {
-            break;
+            parseLine(line);
         }
-        parse_pos_ = newline_pos + 2;
+        catch (const HTTPParseException &e)
+        {
+            parse_pos_ = newline_pos + NEWLINE.size();
+            throw e;
+        }
+        parse_pos_ = newline_pos + NEWLINE.size();
+        break;
     }
+    return true;
 }
 
 void HTTPParser::parseLine(const std::string &line)
@@ -62,9 +84,6 @@ void HTTPParser::parseLine(const std::string &line)
         break;
     case PARSE_HEADERS:
         parseHeader(line);
-        break;
-    case PARSE_MESSAGE_BODY:
-        parseMessageBody(line);
         break;
     default:
         break;
