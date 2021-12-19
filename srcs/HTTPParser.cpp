@@ -143,6 +143,18 @@ bool HTTPParser::needsParsingMessageBody()
            (headers.count("content-length") || headers.count("transfer-encoding"));
 }
 
+bool HTTPParser::tryGetLine(std::string &line)
+{
+    size_t newline_pos = raw_message_.find(NEWLINE, parse_pos_);
+    if (newline_pos == std::string::npos)
+    {
+        return false;
+    }
+    line = raw_message_.substr(parse_pos_, newline_pos - parse_pos_);
+    parse_pos_ = newline_pos + NEWLINE.size();
+    return true;
+}
+
 void HTTPParser::splitStartLine(const std::string &line,
                                 std::string &method, std::string &uri,
                                 std::string &protocol_version)

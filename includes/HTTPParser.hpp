@@ -39,6 +39,7 @@ private:
     void parseMessageBody();
     bool needsParsingMessageBody();
 
+    bool tryGetLine(std::string &line);
     void splitStartLine(const std::string &line,
                         std::string &method, std::string &uri,
                         std::string &protocol_version);
