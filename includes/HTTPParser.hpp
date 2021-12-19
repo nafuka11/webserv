@@ -34,7 +34,7 @@ private:
     void parseLine(const std::string &line);
     void parseStartLine(const std::string &line);
     void parseHeader(const std::string &line);
-    void parseMessageBody(const std::string &line);
+    void parseMessageBody();
     bool needsParsingMessageBody();
 
     void splitStartLine(const std::string &line,

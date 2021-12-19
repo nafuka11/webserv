@@ -107,9 +107,11 @@ void HTTPParser::parseHeader(const std::string &line)
     request_.setHeader(validateHeader(name, value));
 }
 
-void HTTPParser::parseMessageBody(const std::string &line)
+void HTTPParser::parseMessageBody()
 {
-    request_.setMessageBody(line);
+    std::string message_body = raw_message_.substr(parse_pos_, content_length_);
+    request_.setMessageBody(message_body);
+    parse_pos_ += content_length_;
     state_ = PARSE_FINISH;
 }
 
