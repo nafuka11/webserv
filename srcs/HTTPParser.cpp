@@ -268,6 +268,10 @@ void HTTPParser::validateContentLength(const std::string &value)
     {
         throw HTTPParseException(CODE_400);
     }
+    if ((length == LONG_MAX || length == LONG_MIN) && errno == ERANGE)
+    {
+        throw HTTPParseException(CODE_413);
+    }
     if (config_.clientMaxBodySize() != 0 && length > config_.clientMaxBodySize())
     {
         throw HTTPParseException(CODE_413);
