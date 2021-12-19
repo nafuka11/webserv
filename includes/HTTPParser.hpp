@@ -28,6 +28,7 @@ private:
     const ServerConfig &config_;
     std::string raw_message_;
     size_t parse_pos_;
+    size_t content_length_;
     ParseState state_;
 
     void parseLine(const std::string &line);

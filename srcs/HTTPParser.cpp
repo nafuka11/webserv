@@ -272,6 +272,7 @@ void HTTPParser::validateContentLength(const std::string &value)
     {
         throw HTTPParseException(CODE_413);
     }
+    content_length_ = length;
 }
 
 bool HTTPParser::isSpace(char c)
