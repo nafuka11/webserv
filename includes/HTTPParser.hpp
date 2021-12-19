@@ -24,6 +24,7 @@ public:
     bool finished();
 
 private:
+    static const std::string NEWLINE;
     HTTPRequest &request_;
     const ServerConfig &config_;
     std::string raw_message_;

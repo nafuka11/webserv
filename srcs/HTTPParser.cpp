@@ -4,6 +4,8 @@
 #include <cstring>
 #include <cstdlib>
 
+const std::string HTTPParser::NEWLINE = "\r\n";
+
 HTTPParser::HTTPParser(HTTPRequest &request, const ServerConfig &config)
     : request_(request), config_(config), parse_pos_(0), state_(PARSE_START_LINE)
 {
