@@ -63,6 +63,12 @@ void put_error_page(const std::map<int, std::string> &error_page, const std::str
 
     std::cout << space <<"error_page: ";
 
+    if (error_page.size() == 0)
+    {
+        std::cout << std::endl;
+        return;
+    }
+
     for (std::map<int, std::string>::const_iterator iter = error_page.begin();
          iter != error_page.end();
          ++iter)
@@ -162,7 +168,7 @@ void put_server_config(Config &config)
         ++const_iter)
     {
         std::cout << "\n-----[server_" << count << "]------------------------------"  << std::endl;
-        put_allow_methods(const_iter->allowMethod(), "       ");
+        put_allow_methods(const_iter->allowMethod(), "        ");
         put_autoindex(const_iter->autoindex(), "           ");
         put_cgi_extension(const_iter->cgiExtension(), "       ");
         put_client_max_body_size(const_iter->clientMaxBodySize());

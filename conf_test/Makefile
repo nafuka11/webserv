@@ -5,6 +5,8 @@ OBJS		:= $(SRCS:.cpp=.o)
 
 CXX			:= clang++
 CXXFLAGS	:=  -Wall -Wextra -Werror -std=c++98 -I$(INC_DIR) -pedantic
+# CXXFLAGS	:=  -Wall -Wextra -Werror -std=c++98 -g -fsanitize=address -I$(INC_DIR) -pedantic
+
 
 .PHONY		: all
 all			: $(NAME) ## Build executable

@@ -26,7 +26,7 @@ void LocationConfig::addAllowMethod(const std::string &method)
     allow_method_.push_back(method);
 }
 
-void LocationConfig::setAutoIndex(const std::string &autoindex)
+void LocationConfig::setAutoindex(const std::string &autoindex)
 {
     autoindex_ = autoindex;
 }

@@ -29,7 +29,7 @@ void ServerConfig::addAllowMethod(const std::string &method)
     allow_method_.push_back(method);
 }
 
-void ServerConfig::setAutoIndex(const std::string &autoindex)
+void ServerConfig::setAutoindex(const std::string &autoindex)
 {
     autoindex_ = autoindex;
 }

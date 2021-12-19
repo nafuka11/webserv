@@ -4,7 +4,6 @@
 #include <map>
 #include <string>
 #include <vector>
-// #include "LocationConfig.hpp"
 
 class MainConfig;
 class LocationConfig;
@@ -16,7 +15,7 @@ public:
     ~ServerConfig();
 
     void addAllowMethod(const std::string &method);
-    void setAutoIndex(const std::string &autoindex);
+    void setAutoindex(const std::string &autoindex);
     void setClientMaxBodySize(const int size);
     void addErrorPage(const int status_code, const std::string &uri);
     void addIndex(const std::string &file);

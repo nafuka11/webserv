@@ -24,7 +24,7 @@ void Config::readFile(const std::string &filepath)
     // server_config.setServerName("webserv");
     // server_config.addAllowMethods("GET");
     // server_config.addAllowMethods("POST");
-    // server_config.setcgiExtension("php");
+    // server_config.setCgiExtension("php");
     // server_config.setClientMaxBodySize(1000);
     // server_config.addErrorPage(404, "/html/404.html");
     // server_config.addErrorPage(501, "/html/50x.html");
@@ -33,7 +33,7 @@ void Config::readFile(const std::string &filepath)
     // LocationConfig location_config = LocationConfig();
     // // location_1
     // location_config.setAlias("/test");
-    // location_config.setAutoIndex("off");
+    // location_config.setAutoindex("off");
     // location_config.addIndex("index.html");
     // location_config.addIndex("index.php");
     // location_config.addReturnRedirect(301, "http://$host/index.html");
@@ -45,7 +45,7 @@ void Config::readFile(const std::string &filepath)
     // // location_2
     // LocationConfig location_config2 = LocationConfig();
     // location_config2.setAlias("/test2");
-    // location_config2.setAutoIndex("on");
+    // location_config2.setAutoindex("on");
     // location_config2.addIndex("index2.html");
     // location_config2.addIndex("index2.php");
     // location_config2.addReturnRedirect(301, "http://$host/index2.html");

@@ -29,7 +29,7 @@ void MainConfig::addAllowMethod(const std::string &method)
     allow_method_.push_back(method);
 }
 
-void MainConfig::setAutoIndex(const std::string &autoindex)
+void MainConfig::setAutoindex(const std::string &autoindex)
 {
     autoindex_ = autoindex;
 }
@@ -39,7 +39,7 @@ void MainConfig::setClientMaxBodySize(const int size)
     client_max_body_size_ = size;
 }
 
-void MainConfig::setcgiExtension(const std::string &extension)
+void MainConfig::setCgiExtension(const std::string &extension)
 {
     cgi_extension_ = extension;
 }

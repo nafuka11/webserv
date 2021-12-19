@@ -15,7 +15,7 @@ public:
 
     void setAlias(const std::string &path);
     void addAllowMethod(const std::string &method);
-    void setAutoIndex(const std::string &autoindex);
+    void setAutoindex(const std::string &autoindex);
     void addErrorPage(const int status_code, const std::string &uri);
     void addIndex(const std::string &file);
     void addReturnRedirect(const int status_code, const std::string &uri);
