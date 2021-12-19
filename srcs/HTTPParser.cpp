@@ -18,7 +18,7 @@ HTTPParser::~HTTPParser()
 
 void HTTPParser::clear()
 {
-    raw_message_.clear();
+    raw_message_ = raw_message_.substr(parse_pos_);
     parse_pos_ = 0;
     state_ = PARSE_START_LINE;
 }
