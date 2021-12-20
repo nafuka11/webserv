@@ -36,6 +36,11 @@ void HTTPResponse::appendMessageBody(const char *body)
     message_body_.append(body);
 }
 
+void HTTPResponse::clear()
+{
+    message_body_.clear();
+}
+
 void HTTPResponse::setStatusCode(HTTPStatusCode status_code)
 {
     status_code_ = status_code;

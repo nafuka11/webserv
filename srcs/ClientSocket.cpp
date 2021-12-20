@@ -106,6 +106,7 @@ void ClientSocket::sendResponse()
     if (request_.canKeepAlive())
     {
         state_ = READ_REQUEST;
+        response_.clear();
         poller_.unregisterWriteEvent(this, fd_);
         poller_.registerReadEvent(this, fd_);
     }
