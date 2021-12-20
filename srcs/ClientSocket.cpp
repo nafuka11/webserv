@@ -7,8 +7,9 @@
 const size_t ClientSocket::BUF_SIZE = 8192;
 
 ClientSocket::ClientSocket(int fd, const struct sockaddr_storage &address,
-                           const ServerConfig &config)
-    : Socket(CLIENT, fd), config_(config), parser_(request_, config_), state_(READ_REQUEST)
+                           const ServerConfig &config, const KqueuePoller &poller)
+    : Socket(CLIENT, fd), config_(config), poller_(poller),
+      parser_(request_, config_), state_(READ_REQUEST)
 {
     address_ = address;
 }

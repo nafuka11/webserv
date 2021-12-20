@@ -4,13 +4,14 @@
 #include "Socket.hpp"
 #include "ClientSocket.hpp"
 #include "ServerConfig.hpp"
+#include "KqueuePoller.hpp"
 
 class ServerSocket : public Socket
 {
 public:
     ServerSocket(const ServerConfig &config);
     ~ServerSocket();
-    ClientSocket *acceptConnection() const;
+    ClientSocket *acceptConnection(const KqueuePoller &poller) const;
 
 private:
     const ServerConfig &config_;

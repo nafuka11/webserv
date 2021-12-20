@@ -64,7 +64,7 @@ void Webserv::handleServerEvent(Socket *socket, const struct kevent &event)
     if (event.filter == EVFILT_READ)
     {
         ServerSocket *server = dynamic_cast<ServerSocket *>(socket);
-        ClientSocket *client = server->acceptConnection();
+        ClientSocket *client = server->acceptConnection(poller_);
         sockets_.insert(std::make_pair(client->getFd(), client));
         poller_.registerClientSocket(client);
     }
