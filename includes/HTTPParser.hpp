@@ -24,18 +24,20 @@ public:
     bool finished();
 
 private:
+    static const std::string NEWLINE;
     HTTPRequest &request_;
     const ServerConfig &config_;
     std::string raw_message_;
     size_t parse_pos_;
+    size_t content_length_;
     ParseState state_;
 
-    void parseLine(const std::string &line);
-    void parseStartLine(const std::string &line);
-    void parseHeader(const std::string &line);
-    void parseMessageBody(const std::string &line);
+    bool parseStartLine();
+    bool parseHeader();
+    bool parseMessageBody();
     bool needsParsingMessageBody();
 
+    bool tryGetLine(std::string &line);
     void splitStartLine(const std::string &line,
                         std::string &method, std::string &uri,
                         std::string &protocol_version);

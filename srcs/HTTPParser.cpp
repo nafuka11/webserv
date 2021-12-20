@@ -3,6 +3,9 @@
 #include <algorithm>
 #include <cstring>
 #include <cstdlib>
+#include <cerrno>
+
+const std::string HTTPParser::NEWLINE = "\r\n";
 
 HTTPParser::HTTPParser(HTTPRequest &request, const ServerConfig &config)
     : request_(request), config_(config), parse_pos_(0), state_(PARSE_START_LINE)
@@ -15,7 +18,7 @@ HTTPParser::~HTTPParser()
 
 void HTTPParser::clear()
 {
-    raw_message_.clear();
+    raw_message_ = raw_message_.substr(parse_pos_);
     parse_pos_ = 0;
     state_ = PARSE_START_LINE;
 }
@@ -32,48 +35,38 @@ bool HTTPParser::finished()
 
 void HTTPParser::parse()
 {
-    size_t newline_pos;
+    bool need_parse = true;
 
-    while (true)
+    while (need_parse)
     {
-        newline_pos = raw_message_.find("\r\n", parse_pos_);
-        if (newline_pos == std::string::npos)
+        switch (state_)
         {
-            break;
+            case PARSE_START_LINE:
+                need_parse = parseStartLine();
+                break;
+            case PARSE_HEADERS:
+                need_parse = parseHeader();
+                break;
+            case PARSE_MESSAGE_BODY:
+                need_parse = parseMessageBody();
+                break;
+            case PARSE_FINISH:
+                need_parse = false;
+                break;
         }
-        std::string line = raw_message_.substr(parse_pos_, newline_pos - parse_pos_);
-        parseLine(line);
-        if (state_ == PARSE_FINISH)
-        {
-            break;
-        }
-        parse_pos_ = newline_pos + 2;
     }
 }
 
-void HTTPParser::parseLine(const std::string &line)
+bool HTTPParser::parseStartLine()
 {
-    switch (state_)
+    std::string line;
+    if (!tryGetLine(line))
     {
-    case PARSE_START_LINE:
-        parseStartLine(line);
-        break;
-    case PARSE_HEADERS:
-        parseHeader(line);
-        break;
-    case PARSE_MESSAGE_BODY:
-        parseMessageBody(line);
-        break;
-    default:
-        break;
+        return false;
     }
-}
-
-void HTTPParser::parseStartLine(const std::string &line)
-{
     if (line.empty())
     {
-        return;
+        return false;
     }
 
     std::string method, uri, protocol_version;
@@ -82,10 +75,16 @@ void HTTPParser::parseStartLine(const std::string &line)
     request_.setUri(validateUri(uri));
     request_.setProtocolVersion(validateProtocolVersion(protocol_version));
     state_ = PARSE_HEADERS;
+    return true;
 }
 
-void HTTPParser::parseHeader(const std::string &line)
+bool HTTPParser::parseHeader()
 {
+    std::string line;
+    if (!tryGetLine(line))
+    {
+        return false;
+    }
     if (line.empty())
     {
         if (!isValidHeaders())
@@ -100,17 +99,25 @@ void HTTPParser::parseHeader(const std::string &line)
         {
             state_ = PARSE_FINISH;
         }
-        return;
+        return true;
     }
     std::string name, value;
     splitHeader(line, name, value);
     request_.setHeader(validateHeader(name, value));
+    return true;
 }
 
-void HTTPParser::parseMessageBody(const std::string &line)
+bool HTTPParser::parseMessageBody()
 {
-    request_.setMessageBody(line);
+    if (raw_message_.size() - parse_pos_ < content_length_)
+    {
+        return false;
+    }
+    std::string message_body = raw_message_.substr(parse_pos_, content_length_);
+    request_.setMessageBody(message_body);
+    parse_pos_ += content_length_;
     state_ = PARSE_FINISH;
+    return true;
 }
 
 bool HTTPParser::needsParsingMessageBody()
@@ -118,6 +125,18 @@ bool HTTPParser::needsParsingMessageBody()
     const std::map<std::string, std::string> headers = request_.getHeaders();
     return request_.getMethod() == POST &&
            (headers.count("content-length") || headers.count("transfer-encoding"));
+}
+
+bool HTTPParser::tryGetLine(std::string &line)
+{
+    size_t newline_pos = raw_message_.find(NEWLINE, parse_pos_);
+    if (newline_pos == std::string::npos)
+    {
+        return false;
+    }
+    line = raw_message_.substr(parse_pos_, newline_pos - parse_pos_);
+    parse_pos_ = newline_pos + NEWLINE.size();
+    return true;
 }
 
 void HTTPParser::splitStartLine(const std::string &line,
@@ -268,10 +287,15 @@ void HTTPParser::validateContentLength(const std::string &value)
     {
         throw HTTPParseException(CODE_400);
     }
-    if (length > config_.clientMaxBodySize())
+    if ((length == LONG_MAX || length == LONG_MIN) && errno == ERANGE)
     {
         throw HTTPParseException(CODE_413);
     }
+    if (config_.clientMaxBodySize() != 0 && length > config_.clientMaxBodySize())
+    {
+        throw HTTPParseException(CODE_413);
+    }
+    content_length_ = length;
 }
 
 bool HTTPParser::isSpace(char c)
