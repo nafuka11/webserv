@@ -8,7 +8,7 @@ const size_t ClientSocket::BUF_SIZE = 8192;
 
 ClientSocket::ClientSocket(int fd, const struct sockaddr_storage &address,
                            const ServerConfig &config)
-    : Socket(CLIENT, fd), config_(config), parser_(request_, config_), state_(READ)
+    : Socket(CLIENT, fd), config_(config), parser_(request_, config_), state_(READ_REQUEST)
 {
     address_ = address;
 }
@@ -34,13 +34,13 @@ void ClientSocket::receiveRequest()
         parser_.parse();
         if (parser_.finished())
         {
-            state_ = WRITE;
+            state_ = WRITE_RESPONSE;
             response_.setStatusCode(CODE_200);
         }
     }
     catch (const HTTPParseException &e)
     {
-        state_ = WRITE;
+        state_ = WRITE_RESPONSE;
         response_.setStatusCode(e.getStatusCode());
     }
 }
@@ -52,7 +52,7 @@ void ClientSocket::sendResponse()
     ::send(fd_, message.c_str(), message.size(), 0);
     if (request_.canKeepAlive())
     {
-        state_ = READ;
+        state_ = READ_REQUEST;
     }
     else
     {

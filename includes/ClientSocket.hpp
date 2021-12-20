@@ -13,8 +13,8 @@ class ClientSocket : public Socket
 public:
     enum State
     {
-        READ,
-        WRITE,
+        READ_REQUEST,
+        WRITE_RESPONSE,
         CLOSE
     };
 
