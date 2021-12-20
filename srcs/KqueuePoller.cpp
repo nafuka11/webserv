@@ -19,10 +19,10 @@ KqueuePoller::~KqueuePoller()
     delete[] events_;
 }
 
-void KqueuePoller::registerServerSocket(Socket *socket)
+void KqueuePoller::registerReadEvent(Socket *socket, int fd) const
 {
     struct kevent event_to_set;
-    EV_SET(&event_to_set, socket->getFd(),
+    EV_SET(&event_to_set, fd,
            EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,
            socket);
     int result = kevent(kqueue_d_, &event_to_set, 1, NULL, 0, NULL);
@@ -31,17 +31,37 @@ void KqueuePoller::registerServerSocket(Socket *socket)
         throw SystemError("kevent", errno);
     }
 }
-
-void KqueuePoller::registerClientSocket(Socket *socket)
+void KqueuePoller::registerWriteEvent(Socket *socket, int fd) const
 {
-    struct kevent event_to_set[2];
-    EV_SET(event_to_set, socket->getFd(),
-           EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0,
-           socket);
-    EV_SET(event_to_set + 1, socket->getFd(),
+    struct kevent event_to_set;
+    EV_SET(&event_to_set, fd,
            EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0,
            socket);
-    int result = kevent(kqueue_d_, event_to_set, 2, NULL, 0, NULL);
+    int result = kevent(kqueue_d_, &event_to_set, 1, NULL, 0, NULL);
+    if (result < 0)
+    {
+        throw SystemError("kevent", errno);
+    }
+}
+
+void KqueuePoller::unregisterReadEvent(Socket *socket, int fd) const
+{
+    struct kevent event_to_delete;
+    EV_SET(&event_to_delete, fd,
+           EVFILT_READ, EV_DELETE, 0, 0, socket);
+    int result = kevent(kqueue_d_, &event_to_delete, 1, NULL, 0, NULL);
+    if (result < 0)
+    {
+        throw SystemError("kevent", errno);
+    }
+}
+
+void KqueuePoller::unregisterWriteEvent(Socket *socket, int fd) const
+{
+    struct kevent event_to_delete;
+    EV_SET(&event_to_delete, fd,
+           EVFILT_WRITE, EV_DELETE, 0, 0, socket);
+    int result = kevent(kqueue_d_, &event_to_delete, 1, NULL, 0, NULL);
     if (result < 0)
     {
         throw SystemError("kevent", errno);

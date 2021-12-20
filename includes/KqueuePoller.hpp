@@ -9,8 +9,10 @@ class KqueuePoller
 public:
     KqueuePoller();
     ~KqueuePoller();
-    void registerServerSocket(Socket *socket);
-    void registerClientSocket(Socket *socket);
+    void registerReadEvent(Socket *socket, int fd) const;
+    void registerWriteEvent(Socket *socket, int fd) const;
+    void unregisterReadEvent(Socket *socket, int fd) const;
+    void unregisterWriteEvent(Socket *socket, int fd) const;
     int watchEvents();
     const struct kevent *getEvents();
 

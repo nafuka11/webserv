@@ -36,7 +36,7 @@ void Webserv::registerEvents()
     for (std::map<int, Socket *>::iterator iter = sockets_.begin();
          iter != sockets_.end(); ++iter)
     {
-        poller_.registerServerSocket(iter->second);
+        poller_.registerReadEvent(iter->second, iter->second->getFd());
     }
 }
 
@@ -66,7 +66,7 @@ void Webserv::handleServerEvent(Socket *socket, const struct kevent &event)
         ServerSocket *server = dynamic_cast<ServerSocket *>(socket);
         ClientSocket *client = server->acceptConnection(poller_);
         sockets_.insert(std::make_pair(client->getFd(), client));
-        poller_.registerClientSocket(client);
+        poller_.registerReadEvent(client, client->getFd());
     }
 }
 

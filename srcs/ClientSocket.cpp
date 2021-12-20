@@ -37,12 +37,14 @@ void ClientSocket::receiveRequest()
         {
             state_ = WRITE_RESPONSE;
             response_.setStatusCode(CODE_200);
+            poller_.registerWriteEvent(this, fd_);
         }
     }
     catch (const HTTPParseException &e)
     {
         state_ = WRITE_RESPONSE;
         response_.setStatusCode(e.getStatusCode());
+        poller_.registerWriteEvent(this, fd_);
     }
 }
 
@@ -54,6 +56,8 @@ void ClientSocket::sendResponse()
     if (request_.canKeepAlive())
     {
         state_ = READ_REQUEST;
+        poller_.unregisterWriteEvent(this, fd_);
+        poller_.registerReadEvent(this, fd_);
     }
     else
     {
