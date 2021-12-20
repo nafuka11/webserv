@@ -231,7 +231,6 @@ void ConfigParser::parseMainContext()
             throw ConfigError(NOT_ALLOWED_DIECTIVE, parse_line[DIRECTIVE_NAME], filepath_, (parse_pos_ + 1));
         }
         std::map<DirectiveType, main_parse_func>::const_iterator miter;
-
         miter = MAIN_PARSE_FUNC.find(directive_type_);
         (this->*miter->second)(parse_line, main_config);
     }
@@ -247,8 +246,6 @@ void ConfigParser::parseServerContext(MainConfig &main_config)
     {
         parse_line.clear();
         parse_line = config_file_[parse_pos_];
-
-        std::cout << "parse_pos_:" << parse_pos_ << " " << parse_line[0] << std::endl;
         if (parse_line.size() == 0)
         {
             continue;
@@ -263,7 +260,6 @@ void ConfigParser::parseServerContext(MainConfig &main_config)
             throw ConfigError(NOT_ALLOWED_DIECTIVE, parse_line[DIRECTIVE_NAME], filepath_, (parse_pos_ + 1));
         }
         std::map<DirectiveType, server_parse_func>::const_iterator miter;
-
         miter = SERVER_PARSE_FUNC.find(directive_type_);
         (this->*miter->second)(parse_line, server_config);
     }
@@ -273,19 +269,15 @@ void ConfigParser::parseServerContext(MainConfig &main_config)
 
 void ConfigParser::parseLocationContext(std::vector<std::string> &parse_line, ServerConfig &server_config)
 {
+    LocationConfig location_config = LocationConfig(server_config);
     std::string location_path = parse_line[DIRECTIVE_VALUE];
     ++parse_pos_;
-    std::cout << "parseLocationContext(): size[" << parse_line.size() << "]" << std::endl;
 
-    LocationConfig location_config = LocationConfig(server_config);
     setContextType(CONTEXT_LOCATION);
-
     for (; parse_pos_ < config_file_.size(); ++parse_pos_)
     {
         parse_line.clear();
         parse_line = config_file_[parse_pos_];
-
-        std::cout << "parse_pos_:" << parse_pos_ << " " << parse_line[0] << std::endl;
         if (parse_line.size() == 0)
         {
             continue;
@@ -300,7 +292,6 @@ void ConfigParser::parseLocationContext(std::vector<std::string> &parse_line, Se
             throw ConfigError(NOT_ALLOWED_DIECTIVE, parse_line[DIRECTIVE_NAME], filepath_, (parse_pos_ + 1));
         }
         std::map<DirectiveType, location_parse_func>::const_iterator miter;
-
         miter = LOCATION_PARSE_FUNC.find(directive_type_);
         (this->*miter->second)(parse_line, location_config);
     }
@@ -349,7 +340,6 @@ void ConfigParser::parseAlias(std::vector<std::string> &parse_line, LocationConf
 {
     std::cout << "parseAlias(): size[" << parse_line.size() << "]" << std::endl;
 
-    // validateNumOfArgs(parse_line, 1);
     validateDirectiveEnd(parse_line);
 
     location_config.setAlias(parse_line[DIRECTIVE_VALUE]);
@@ -456,16 +446,28 @@ std::vector<std::string> ConfigParser::validateParameterAllowMethod(std::vector<
     std::vector<std::string>::iterator iter = parse_line.begin();
 
     ++iter;
-    for (;
-         (*iter != ";") && (iter != parse_line.end());
-         ++iter)
+    for (; (*iter != ";") && (iter != parse_line.end()); ++iter)
     {
-        if ((*iter != "GET") && (*iter != "POST") && (*iter != "DELETE"))
-            throw ConfigError(INVALID_PARAMETER, *iter, filepath_, (parse_pos_ + 1));
         param.push_back(*iter);
     }
     return param;
 }
+
+std::map<int, std::string> ConfigParser::validateParamaterErrorPage(std::vector<std::string> &parse_line)
+{
+    std::map<int, std::string> param;
+    std::vector<std::string>::iterator status_code = parse_line.begin();
+    std::vector<std::string>::iterator uri = parse_line.end();
+
+    ++status_code;
+    uri = uri - 2;
+    for (; status_code != uri; ++status_code)
+    {
+        param.insert(std::make_pair(std::atoi(status_code->c_str()), *uri));
+    }
+    return param;
+}
+
 
 std::vector<std::string> ConfigParser::validateParameterIndex(std::vector<std::string> &parse_line)
 {
@@ -473,9 +475,7 @@ std::vector<std::string> ConfigParser::validateParameterIndex(std::vector<std::s
     std::vector<std::string>::iterator iter = parse_line.begin();
 
     ++iter;
-    for (;
-         (*iter != ";") && (iter != parse_line.end());
-         ++iter)
+    for (; (*iter != ";") && (iter != parse_line.end()); ++iter)
     {
         param.push_back(*iter);
     }
@@ -483,24 +483,16 @@ std::vector<std::string> ConfigParser::validateParameterIndex(std::vector<std::s
 }
 
 
-void ConfigParser::validateNumOfArgs(std::vector<std::string> &parse_line, size_t valid_num)
-{
-    size_t count = 0;
-
-    for (;
-         (count < parse_line.size()) && (parse_line[count] != ";");
-         ++count)
-    {std::cout << count << std::endl;}
-    if (count != valid_num)
-        throw ConfigError(INVALID_NUM_OF_ARGS, parse_line[DIRECTIVE_NAME], filepath_, (parse_pos_ + 1));
-}
-
 void ConfigParser::validateDirectiveEnd(std::vector<std::string> &parse_line)
 {
     std::vector<std::string>::iterator iter = std::find(parse_line.begin(), parse_line.end(), ";");
 
     if (iter == parse_line.end())
+    {
         throw ConfigError(NO_SEMICOLON, parse_line[DIRECTIVE_NAME], filepath_, (parse_pos_ + 1));
+    }
     if (++iter != parse_line.end())
+    {
         throw ConfigError(UNEXPECTED, *iter, filepath_, (parse_pos_ + 1));
+    }
 }

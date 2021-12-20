@@ -101,7 +101,7 @@ void put_index(const std::vector<std::string> &index, const std::string &space)
     if (g_status == LOCATION)
         second_space = "                             ";
     else
-        second_space = "                                 ";
+        second_space = "                      ";
 
     std::cout << space << "index: ";
 
@@ -110,7 +110,7 @@ void put_index(const std::vector<std::string> &index, const std::string &space)
          ++const_iter)
     {
         if (const_iter != index.begin())
-            std::cout << "                                 ";
+            std::cout << second_space;
         std::cout << *const_iter << std::endl;
     }
 }

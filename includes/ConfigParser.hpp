@@ -20,7 +20,6 @@ public:
         CONTEXT_SERVER,
         CONTEXT_LOCATION
     };
-
     enum  DirectiveType
     {
         ALIAS,
@@ -41,6 +40,7 @@ public:
     ConfigParser(Config &config);
     ~ConfigParser();
     void readFile(const std::string &filepath);
+
 private:
     static const std::map<DirectiveType, std::vector<ContextType> > ALLOWED_DIRECTIVE;
     static const std::map<DirectiveType, main_parse_func> MAIN_PARSE_FUNC;
@@ -94,9 +94,8 @@ private:
     bool isEndContext(std::vector<std::string> &parse_line);
 
     std::vector<std::string> validateParameterAllowMethod(std::vector<std::string> &parse_line);
+    std::map<int, std::string> validateParamaterErrorPage(std::vector<std::string> &parse_line);
     std::vector<std::string> validateParameterIndex(std::vector<std::string> &parse_line);
-    void validateNumOfArgs(std::vector<std::string> &parse_line, size_t valid_num);
-    void validateNumOfArgsAllowMethod(std::vector<std::string> &param);
     void validateDirectiveEnd(std::vector<std::string> &parse_line);
 
     void putSplitLines();// 後で消す
@@ -114,15 +113,15 @@ void ConfigParser::parseAllowMethod(std::vector<std::string> &parse_line, T &con
 {
     std::cout << "parseAllowMethod(): size[" << parse_line.size() << "]" << std::endl;
 
-    // paramaterのチェック（適切な型か、値か...)
-    std::vector<std::string> param = validateParameterAllowMethod(parse_line);
-    // validateNumOfArgsAllowMethod(param);
     validateDirectiveEnd(parse_line);
+    std::vector<std::string> param = validateParameterAllowMethod(parse_line);
 
     config_obj.clearAllowMethod();
-    for (size_t index = 0; index < param.size(); ++index)
+    for (std::vector<std::string>::iterator iter = param.begin();
+         iter != param.end();
+         ++iter)
     {
-        config_obj.addAllowMethod(param[index]);
+        config_obj.addAllowMethod(*iter);
     }
 }
 
@@ -150,25 +149,14 @@ void ConfigParser::parseErrorPage(std::vector<std::string> &parse_line, T &confi
     std::cout << "parseErrorPage(): size[" << parse_line.size() << "]" << std::endl;
 
     validateDirectiveEnd(parse_line);
-    std::vector<std::string>::const_iterator status_code;
-    std::vector<std::string>::const_iterator uri;
+    std::map<int, std::string> param = validateParamaterErrorPage(parse_line);
 
-    status_code = parse_line.begin();
-    ++status_code;
-
-    uri = parse_line.end();
-    uri = uri - 2;
-
-    if (parse_line.size() == 4)
+    for (std::map<int, std::string>::iterator iter = param.begin();
+         iter != param.end();
+         ++iter)
     {
-        config_obj.clearErrorPage(std::atoi(status_code->c_str()));
-        config_obj.addErrorPage(std::atoi(status_code->c_str()), *uri);
-        return;
-    }
-    for (; status_code  != uri; ++status_code)
-    {
-        config_obj.clearErrorPage(std::atoi(status_code->c_str()));
-        config_obj.addErrorPage(std::atoi(status_code->c_str()), *uri);
+        config_obj.clearErrorPage(iter->first);
+        config_obj.addErrorPage(iter->first, iter->second);
     }
 }
 
@@ -177,19 +165,8 @@ void ConfigParser::parseIndex(std::vector<std::string> &parse_line, T &config_ob
 {
     std::cout << "parseIndex(): size[" << parse_line.size() << "]" << std::endl;
 
-    // // 構文チェック
-    // config_obj.clearIndex();
-    // ++parse_line;
-
-    // for (; parse_line != iter_config_file_->end(); ++parse_line)
-    // {
-    //     if (*parse_line == ";")
-    //         break ;
-    //     config_obj.addIndex(*parse_line);
-    // }
-    // paramaterのチェック（適切な型か、値か...)
     std::vector<std::string> param = validateParameterIndex(parse_line);
-    // validateNumOfArgsIndex(param);
+
     validateDirectiveEnd(parse_line);
 
     config_obj.clearIndex();
@@ -204,6 +181,7 @@ void ConfigParser::parseReturn(std::vector<std::string> &parse_line, T &config_o
 {
     std::cout << "parseReturn(): size[" << parse_line.size() << "]" << std::endl;
 
+    //std::map<int, std::string> param = validateParamaterReturn(parse_line);
     validateDirectiveEnd(parse_line);
     config_obj.addReturnRedirect(std::atoi(parse_line[1].c_str()), parse_line[2]);
 }
