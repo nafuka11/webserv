@@ -74,24 +74,36 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
 {
     ClientSocket *client = dynamic_cast<ClientSocket *>(socket);
 
-    if (event.flags & EV_EOF)
+    switch (client->getState())
     {
-        closeClient(client);
-        return;
-    }
-    switch (event.filter)
-    {
-    case EVFILT_READ:
-        if (client->getState() == ClientSocket::READ)
+    case ClientSocket::READ_REQUEST:
+        if (event.flags & EV_EOF)
+        {
+            closeClient(client);
+            return;
+        }
+        if (event.filter == EVFILT_READ)
         {
             client->receiveRequest();
         }
         break;
-    case EVFILT_WRITE:
-        if (client->getState() == ClientSocket::WRITE)
+    case ClientSocket::READ_FILE:
+        if (event.flags & EV_EOF)
+        {
+            client->closeFile();
+        }
+        if (event.filter == EVFILT_READ)
+        {
+            client->readFile(event.data);
+        }
+        break;
+    case ClientSocket::WRITE_RESPONSE:
+        if (event.filter == EVFILT_WRITE)
         {
             client->sendResponse();
         }
+        break;
+    default:
         break;
     }
     if (client->getState() == ClientSocket::CLOSE)
