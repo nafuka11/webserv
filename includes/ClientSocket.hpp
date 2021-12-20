@@ -16,6 +16,7 @@ public:
     {
         READ_REQUEST,
         WRITE_RESPONSE,
+        READ_FILE,
         CLOSE
     };
 
