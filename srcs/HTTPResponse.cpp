@@ -60,7 +60,10 @@ std::map<HTTPStatusCode, std::string> HTTPResponse::setReasonPhrase()
 
 void HTTPResponse::setProperties()
 {
-    message_body_ = generateHTMLfromStatusCode();
+    if (status_code_ != CODE_200)
+    {
+        message_body_ = generateHTMLfromStatusCode();
+    }
     std::stringstream ss;
     ss << message_body_.size();
     std::string content_length = ss.str();
