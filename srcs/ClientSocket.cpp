@@ -3,6 +3,7 @@
 #include "HTTPParseException.hpp"
 #include <cerrno>
 #include <unistd.h>
+#include <fcntl.h>
 
 const size_t ClientSocket::BUF_SIZE = 8192;
 
@@ -37,7 +38,7 @@ void ClientSocket::receiveRequest()
         {
             state_ = WRITE_RESPONSE;
             response_.setStatusCode(CODE_200);
-            poller_.registerWriteEvent(this, fd_);
+            prepareResponse();
         }
     }
     catch (const HTTPParseException &e)
@@ -46,6 +47,55 @@ void ClientSocket::receiveRequest()
         response_.setStatusCode(e.getStatusCode());
         poller_.registerWriteEvent(this, fd_);
     }
+}
+
+void ClientSocket::prepareResponse()
+{
+    poller_.unregisterReadEvent(this, fd_);
+    if (request_.getMethod() == GET)
+    {
+        openFile();
+    }
+}
+
+void ClientSocket::openFile()
+{
+    std::string path = request_.getUri();
+    file_fd_ = open(path.c_str(), O_RDONLY);
+    if (file_fd_ < 0)
+    {
+        response_.setStatusCode(CODE_404);
+        poller_.registerWriteEvent(this, fd_);
+        return;
+    }
+    setNonBlockingFd(file_fd_);
+    poller_.registerReadEvent(this, file_fd_);
+    state_ = READ_FILE;
+}
+
+void ClientSocket::readFile(intptr_t offset)
+{
+    char buffer[BUF_SIZE];
+    ssize_t read_byte = read(file_fd_, buffer, BUF_SIZE - 1);
+    // TODO: handle read_byte < 0
+    if (read_byte <= 0)
+    {
+        closeFile();
+        return;
+    }
+    buffer[read_byte] = '\0';
+    response_.appendMessageBody(buffer);
+    if (read_byte == offset)
+    {
+        closeFile();
+    }
+}
+
+void ClientSocket::closeFile()
+{
+    ::close(file_fd_);
+    state_ = WRITE_RESPONSE;
+    poller_.registerWriteEvent(this, fd_);
 }
 
 void ClientSocket::sendResponse()

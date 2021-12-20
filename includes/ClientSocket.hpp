@@ -25,6 +25,8 @@ public:
     ~ClientSocket();
     void receiveRequest();
     void sendResponse();
+    void readFile(intptr_t offset);
+    void closeFile();
     void close();
     State getState() const;
 
@@ -36,7 +38,10 @@ private:
     HTTPResponse response_;
     HTTPParser parser_;
     State state_;
+    int file_fd_;
 
+    void prepareResponse();
+    void openFile();
     void clearRequest();
 };
 
