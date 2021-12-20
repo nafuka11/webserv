@@ -22,7 +22,7 @@ ClientSocket::~ClientSocket()
 void ClientSocket::receiveRequest()
 {
     char buffer[BUF_SIZE];
-    int read_byte = recv(fd_, buffer, BUF_SIZE - 1, 0);
+    ssize_t read_byte = recv(fd_, buffer, BUF_SIZE - 1, 0);
     if (read_byte <= 0)
     {
         state_ = CLOSE;
