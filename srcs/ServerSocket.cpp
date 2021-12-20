@@ -4,7 +4,6 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include "AddressInfoError.hpp"
 #include "SystemError.hpp"
 
@@ -101,13 +100,5 @@ void ServerSocket::listen()
     if (::listen(fd_, SOMAXCONN) < 0)
     {
         throw SystemError("listen", errno);
-    }
-}
-
-void ServerSocket::setNonBlockingFd(int fd) const
-{
-    if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
-    {
-        throw SystemError("fcntl", errno);
     }
 }
