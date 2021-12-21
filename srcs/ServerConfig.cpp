@@ -1,21 +1,9 @@
 #include "ServerConfig.hpp"
 #include <utility>
-#include "MainConfig.hpp"
 
 const int ServerConfig::DEFAULT_PORT = 80;
 
-ServerConfig::ServerConfig(const MainConfig &main_config)
-: allow_method_(main_config.allowMethod()),
-  autoindex_(main_config.autoindex()),
-  cgi_extension_(main_config.cgiExtension()),
-  client_max_body_size_(main_config.clientMaxBodySize()),
-  error_page_(main_config.errorPage()),
-  index_(main_config.index()),
-  listen_(DEFAULT_PORT),
-  location_(),
-  return_redirect(),
-  server_name_(),
-  upload_path_()
+ServerConfig::ServerConfig()
 {
 }
 
@@ -26,6 +14,11 @@ ServerConfig::~ServerConfig()
 void ServerConfig::setAutoindex(const std::string &autoindex)
 {
     autoindex_ = autoindex;
+}
+
+void ServerConfig::setCgiExtension(const std::string &extension)
+{
+    cgi_extension_ = extension;
 }
 
 void ServerConfig::setClientMaxBodySize(const int size)

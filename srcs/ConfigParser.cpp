@@ -22,6 +22,193 @@ ConfigParser::~ConfigParser()
 {
 }
 
+void ConfigParser::readFile(const std::string &filepath)
+{
+    filepath_ = filepath;
+    std::ifstream ifs(filepath);
+
+    if (!ifs)
+    {
+        throw SystemError("open", errno);
+    }
+    readAndSplitLines(ifs);
+    putSplitLines();// 後で消す
+    ifs.close();
+    parseMainContext();
+}
+
+void ConfigParser::readAndSplitLines(std::ifstream &ifs)
+{
+    std::string line;
+
+    while (std::getline(ifs, line))
+    {
+        const std::vector<std::string> words = splitLine(line);
+        parse_file_.push_back(words);
+    }
+}
+
+std::vector<std::string> ConfigParser::splitLine(const std::string &line)
+{
+    std::vector<std::string> words;
+    size_t start = 0;
+    size_t end = 0;
+
+    while (line[start])
+    {
+        while (isspace(line[start]))
+        {
+            ++start;
+        }
+        end = start;
+        while (isprint(line[end]) && !(isspace(line[end])) && (line[end] != ';'))
+        {
+            ++end;
+        }
+        if ((end - start) != 0)
+            words.push_back(line.substr(start, (end - start)));
+        start = end;
+        if (line[start] == ';')
+        {
+            words.push_back(";");
+            start++;
+        }
+    }
+    return (words);
+}
+
+// 必要なくなったら消す
+void ConfigParser::putSplitLines()
+{
+    size_t line_num = 1;
+    for (std::vector<std::vector<std::string> > ::const_iterator vviter = parse_file_.begin();
+         vviter != parse_file_.end();
+         ++vviter)
+    {
+        std::cout << "------------------(" << line_num << std::endl;
+        for (std::vector<std::string>::const_iterator viter = vviter->begin();
+             viter != vviter->end();
+             ++viter)
+        {
+            std::cout << "[" << *viter << "]" << std::endl;
+        }
+        ++line_num;
+    }
+    std::cout << "-----[end]-----------------------------------\n" << std::endl;
+}
+// 必要なくなったら消す
+
+void ConfigParser::parseMainContext()
+{
+    MainConfig main_config = MainConfig();
+
+    setContextType(CONTEXT_MAIN);
+    for (; line_pos_ < parse_file_.size(); ++line_pos_)
+    {
+        parse_line_.clear();
+        parse_line_ = parse_file_[line_pos_];
+        if (parse_line_.size() == 0)
+        {
+            continue;
+        }
+        setDirectiveType(parse_line_[DIRECTIVE_NAME]);
+        std::map<DirectiveType, main_parse_func>::const_iterator miter;
+        miter = MAIN_PARSE_FUNC.find(directive_type_);
+        (this->*miter->second)(main_config);
+    }
+}
+
+void ConfigParser::parseServerContext(MainConfig &main_config)
+{
+    ServerConfig server_config = ServerConfig();
+
+    setMainSetting(server_config, main_config);
+    setContextType(CONTEXT_SERVER);
+    ++line_pos_;
+
+    for (; line_pos_ < parse_file_.size(); ++line_pos_)
+    {
+        parse_line_.clear();
+        parse_line_ = parse_file_[line_pos_];
+        if (parse_line_.size() == 0)
+        {
+            continue;
+        }
+        if (isEndContext())
+        {
+            break ;
+        }
+        setDirectiveType(parse_line_[DIRECTIVE_NAME]);
+
+        std::map<DirectiveType, server_parse_func>::const_iterator miter;
+        miter = SERVER_PARSE_FUNC.find(directive_type_);
+        (this->*miter->second)(server_config);
+    }
+    config_.addServer(server_config);
+    setContextType(CONTEXT_MAIN);
+}
+
+void ConfigParser::parseLocationContext(ServerConfig &server_config)
+{
+    LocationConfig location_config = LocationConfig();
+    std::string location_path = parse_line_[DIRECTIVE_VALUE];
+
+    setServerSetting(location_config, server_config);
+    setContextType(CONTEXT_LOCATION);
+    ++line_pos_;
+
+    for (; line_pos_ < parse_file_.size(); ++line_pos_)
+    {
+        parse_line_.clear();
+        parse_line_ = parse_file_[line_pos_];
+        if (parse_line_.size() == 0)
+        {
+            continue;
+        }
+        if (isEndContext())
+        {
+            break ;
+        }
+        setDirectiveType(parse_line_[DIRECTIVE_NAME]);
+
+        std::map<DirectiveType, location_parse_func>::const_iterator miter;
+        miter = LOCATION_PARSE_FUNC.find(directive_type_);
+        (this->*miter->second)(location_config);
+    }
+    server_config.clearLocation(location_path);
+    server_config.addLocation(location_path, location_config);
+    setContextType(CONTEXT_SERVER);
+}
+
+void ConfigParser::parseAlias(LocationConfig &location_config)
+{
+    location_config.setAlias(parse_line_[DIRECTIVE_VALUE]);
+}
+
+void ConfigParser::parseCgiExtension(MainConfig &main_config)
+{
+    main_config.setCgiExtension(parse_line_[DIRECTIVE_VALUE]);
+}
+
+void ConfigParser::parseListen(ServerConfig &server_config)
+{
+    server_config.setListen(std::atoi(parse_line_[DIRECTIVE_VALUE].c_str()));
+}
+
+void ConfigParser::parseServerName(ServerConfig &server_config)
+{
+    server_config.setServerName(parse_line_[DIRECTIVE_VALUE]);
+}
+
+bool ConfigParser::isEndContext()
+{
+    if (parse_line_.size() == 1 && parse_line_[0] == "}")
+    {
+        return true;
+    }
+    return false;
+}
+
 std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > ConfigParser::setAllowedDirective()
 {
     std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > allowed_directive;
@@ -129,167 +316,6 @@ std::map<ConfigParser::DirectiveType, ConfigParser::location_parse_func> ConfigP
     return parse_func;
 }
 
-void ConfigParser::readFile(const std::string &filepath)
-{
-    filepath_ = filepath;
-    std::ifstream ifs(filepath);
-
-    if (!ifs)
-    {
-        throw SystemError("open", errno);
-    }
-    readAndSplitLines(ifs);
-    putSplitLines();// 後で消す
-    ifs.close();
-    parseMainContext();
-}
-
-void ConfigParser::readAndSplitLines(std::ifstream &ifs)
-{
-    std::string line;
-
-    while (std::getline(ifs, line))
-    {
-        const std::vector<std::string> words = splitLine(line);
-        parse_file_.push_back(words);
-    }
-}
-
-std::vector<std::string> ConfigParser::splitLine(const std::string &line)
-{
-    std::vector<std::string> words;
-    size_t start = 0;
-    size_t end = 0;
-
-    while (line[start])
-    {
-        while (isspace(line[start]))
-        {
-            ++start;
-        }
-        end = start;
-        while (isprint(line[end]) && !(isspace(line[end])) && (line[end] != ';'))
-        {
-            ++end;
-        }
-        if ((end - start) != 0)
-            words.push_back(line.substr(start, (end - start)));
-        start = end;
-        if (line[start] == ';')
-        {
-            words.push_back(";");
-            start++;
-        }
-    }
-    return (words);
-}
-
-// 必要なくなったら消す
-void ConfigParser::putSplitLines()
-{
-    size_t line_num = 1;
-    for (std::vector<std::vector<std::string> > ::const_iterator vviter = parse_file_.begin();
-         vviter != parse_file_.end();
-         ++vviter)
-    {
-        std::cout << "------------------(" << line_num << std::endl;
-        for (std::vector<std::string>::const_iterator viter = vviter->begin();
-             viter != vviter->end();
-             ++viter)
-        {
-            std::cout << "[" << *viter << "]" << std::endl;
-        }
-        ++line_num;
-    }
-    std::cout << "-----[end]-----------------------------------\n" << std::endl;
-}
-// 必要なくなったら消す
-
-void ConfigParser::parseMainContext()
-{
-    MainConfig main_config = MainConfig();
-
-    setContextType(CONTEXT_MAIN);
-    for (; line_pos_ < parse_file_.size(); ++line_pos_)
-    {
-        parse_line_.clear();
-        parse_line_ = parse_file_[line_pos_];
-        if (parse_line_.size() == 0)
-        {
-            continue;
-        }
-        setDirectiveType(parse_line_[DIRECTIVE_NAME]);
-        std::map<DirectiveType, main_parse_func>::const_iterator miter;
-        miter = MAIN_PARSE_FUNC.find(directive_type_);
-        (this->*miter->second)(main_config);
-    }
-}
-
-void ConfigParser::parseServerContext(MainConfig &main_config)
-{
-    ServerConfig server_config = ServerConfig(main_config);
-
-    setContextType(CONTEXT_SERVER);
-    ++line_pos_;
-
-    for (; line_pos_ < parse_file_.size(); ++line_pos_)
-    {
-        parse_line_.clear();
-        parse_line_ = parse_file_[line_pos_];
-        if (parse_line_.size() == 0)
-        {
-            continue;
-        }
-        if (isEndContext())
-        {
-            break ;
-        }
-        setDirectiveType(parse_line_[DIRECTIVE_NAME]);
-
-        std::map<DirectiveType, server_parse_func>::const_iterator miter;
-        miter = SERVER_PARSE_FUNC.find(directive_type_);
-        (this->*miter->second)(server_config);
-    }
-    config_.addServer(server_config);
-    setContextType(CONTEXT_MAIN);
-}
-
-void ConfigParser::parseLocationContext(ServerConfig &server_config)
-{
-    LocationConfig location_config = LocationConfig(server_config);
-    std::string location_path = parse_line_[DIRECTIVE_VALUE];
-
-    setContextType(CONTEXT_LOCATION);
-    ++line_pos_;
-
-    for (; line_pos_ < parse_file_.size(); ++line_pos_)
-    {
-        parse_line_.clear();
-        parse_line_ = parse_file_[line_pos_];
-        if (parse_line_.size() == 0)
-        {
-            continue;
-        }
-        if (isEndContext())
-        {
-            break ;
-        }
-        setDirectiveType(parse_line_[DIRECTIVE_NAME]);
-
-        std::map<DirectiveType, location_parse_func>::const_iterator miter;
-        miter = LOCATION_PARSE_FUNC.find(directive_type_);
-        (this->*miter->second)(location_config);
-    }
-    server_config.clearLocation(location_path);
-    server_config.addLocation(location_path, location_config);
-    setContextType(CONTEXT_SERVER);
-}
-
-void ConfigParser::setContextType(ContextType type)
-{
-    context_type_ = type;
-}
-
 void ConfigParser::setDirectiveType(const std::string &directive_name)
 {
     if (directive_name == "alias")
@@ -320,33 +346,28 @@ void ConfigParser::setDirectiveType(const std::string &directive_name)
         directive_type_ = UPLOAD_PATH;
 }
 
-void ConfigParser::parseAlias(LocationConfig &location_config)
+void ConfigParser::setContextType(ContextType type)
 {
-    location_config.setAlias(parse_line_[DIRECTIVE_VALUE]);
+    context_type_ = type;
 }
 
-void ConfigParser::parseCgiExtension(MainConfig &main_config)
+void ConfigParser::setMainSetting(ServerConfig &server_config, const MainConfig &main_config)
 {
-    main_config.setCgiExtension(parse_line_[DIRECTIVE_VALUE]);
+    setAllowMethodParam(server_config, main_config.allowMethod());
+    server_config.setAutoindex(main_config.autoindex());
+    server_config.setCgiExtension(main_config.cgiExtension());
+    server_config.setClientMaxBodySize(main_config.clientMaxBodySize());
+    setErrorPageParam(server_config, main_config.errorPage());
+    setIndexParam(server_config, main_config.index());
 }
 
-void ConfigParser::parseListen(ServerConfig &server_config)
+void ConfigParser::setServerSetting(LocationConfig &location_config, const ServerConfig &server_config)
 {
-    server_config.setListen(std::atoi(parse_line_[DIRECTIVE_VALUE].c_str()));
-}
-
-void ConfigParser::parseServerName(ServerConfig &server_config)
-{
-    server_config.setServerName(parse_line_[DIRECTIVE_VALUE]);
-}
-
-bool ConfigParser::isEndContext()
-{
-    if (parse_line_.size() == 1 && parse_line_[0] == "}")
-    {
-        return true;
-    }
-    return false;
+    setAllowMethodParam(location_config, server_config.allowMethod());
+    location_config.setAutoindex(server_config.autoindex());
+    setErrorPageParam(location_config, server_config.errorPage());
+    setIndexParam(location_config, server_config.index());
+    setReturnRedirectParam(location_config, server_config.returnRedirect());
 }
 
 const std::vector<std::string> ConfigParser::validateParameterAllowMethod()

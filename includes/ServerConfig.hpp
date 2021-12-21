@@ -7,15 +7,14 @@
 
 #include "LocationConfig.hpp"
 
-class MainConfig;
-
 class ServerConfig
 {
 public:
-    ServerConfig(const MainConfig &main_config);
+    ServerConfig();
     ~ServerConfig();
 
     void setAutoindex(const std::string &autoindex);
+    void setCgiExtension(const std::string &extension);
     void setClientMaxBodySize(const int size);
     void setListen(const int port);
     void setServerName(const std::string &name);

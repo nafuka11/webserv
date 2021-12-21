@@ -10,7 +10,7 @@ class ServerConfig;
 class LocationConfig
 {
 public:
-    LocationConfig(const ServerConfig &server_config);
+    LocationConfig();
     ~LocationConfig();
 
     void setAlias(const std::string &path);
