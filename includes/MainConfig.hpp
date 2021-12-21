@@ -4,10 +4,8 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "ServerConfig.hpp"
 
-class ServerConfig;
-class LocationConfig;
+#include "ServerConfig.hpp"
 
 class MainConfig
 {

@@ -1,6 +1,4 @@
 #include "MainConfig.hpp"
-#include "LocationConfig.hpp"
-#include "ServerConfig.hpp"
 
 std::string default_allow_method[] = {"GET", "POST", "DELETE"};
 const std::vector<std::string> MainConfig::DEFAULT_ALLOW_METHOD(default_allow_method, std::end(default_allow_method));
