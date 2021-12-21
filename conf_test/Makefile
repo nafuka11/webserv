@@ -1,12 +1,10 @@
 NAME		:= a.out
 INC_DIR		:= ../includes
-SRCS		:= conf_main.cpp ../srcs/ConfigParser.cpp ../srcs/Config.cpp ../srcs/ConfigError.cpp ../srcs/MainConfig.cpp ../srcs/ServerConfig.cpp ../srcs/LocationConfig.cpp ../srcs/SystemError.cpp
+SRCS		:= conf_main.cpp ../srcs/ConfigParser.cpp ../srcs/Config.cpp ../srcs/MainConfig.cpp ../srcs/ServerConfig.cpp ../srcs/LocationConfig.cpp ../srcs/SystemError.cpp
 OBJS		:= $(SRCS:.cpp=.o)
 
 CXX			:= clang++
-#CXXFLAGS	:=  -Wall -Wextra -Werror -std=c++98 -I$(INC_DIR) -pedantic
-CXXFLAGS	:=  -Wall -Wextra -Werror -std=c++98 -g -fsanitize=address -I$(INC_DIR) -pedantic
-
+CXXFLAGS	:=  -Wall -Wextra -Werror -std=c++98 -I$(INC_DIR) -pedantic
 
 .PHONY		: all
 all			: $(NAME) ## Build executable

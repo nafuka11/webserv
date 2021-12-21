@@ -7,7 +7,7 @@ LocationConfig::LocationConfig(const ServerConfig &server_config)
   autoindex_(server_config.autoindex()),
   error_page_(server_config.errorPage()),
   index_(server_config.index()),
-  return_(),
+  return_redirect(server_config.returnRedirect()),
   upload_path_()
 {
 }
@@ -21,14 +21,19 @@ void LocationConfig::setAlias(const std::string &path)
     alias_ = path;
 }
 
-void LocationConfig::addAllowMethod(const std::string &method)
-{
-    allow_method_.push_back(method);
-}
-
 void LocationConfig::setAutoindex(const std::string &autoindex)
 {
     autoindex_ = autoindex;
+}
+
+void LocationConfig::setUploadPath(const std::string &path)
+{
+    upload_path_ = path;
+}
+
+void LocationConfig::addAllowMethod(const std::string &method)
+{
+    allow_method_.push_back(method);
 }
 
 void LocationConfig::addErrorPage(const int status_code, const std::string &uri)
@@ -43,21 +48,15 @@ void LocationConfig::addIndex(const std::string &file)
 
 void LocationConfig::addReturnRedirect(const int status_code, const std::string &uri)
 {
-    return_.insert(std::make_pair(status_code, uri));
-}
-
-void LocationConfig::setUploadPath(const std::string &path)
-{
-    upload_path_ = path;
+    return_redirect.insert(std::make_pair(status_code, uri));
 }
 
 void LocationConfig::clearAllowMethod()
 {
     allow_method_.clear();
 }
-void LocationConfig::clearErrorPage(int status_code)
+void LocationConfig::clearErrorPage(const int status_code)
 {
-    // error_page_.clear();
     std::map<int, std::string>::iterator iter = error_page_.find(status_code);
 
     if (iter != error_page_.end())
@@ -69,9 +68,14 @@ void LocationConfig::clearIndex()
 {
     index_.clear();
 }
-void LocationConfig::clearReturnRedirect()
+void LocationConfig::clearReturnRedirect(const int status_code)
 {
-    return_.clear(); //同じステータスを探して消去＆上書きする必要あり
+    std::map<int, std::string>::iterator iter = return_redirect.find(status_code);
+
+    if (iter != return_redirect.end())
+    {
+        return_redirect.erase(iter);
+    }
 }
 
 const std::string LocationConfig::alias() const
@@ -101,7 +105,7 @@ const std::vector<std::string> LocationConfig::index() const
 
 const std::map<int, std::string> LocationConfig::returnRedirect() const
 {
-    return return_;
+    return return_redirect;
 }
 
 const std::string LocationConfig::uploadPath() const

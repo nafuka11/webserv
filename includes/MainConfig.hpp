@@ -14,10 +14,10 @@ class MainConfig
 public:
     MainConfig();
     ~MainConfig();
-    void addAllowMethod(const std::string &method);
     void setAutoindex(const std::string &autoindex);
     void setCgiExtension(const std::string &extension);
     void setClientMaxBodySize(const int size);
+    void addAllowMethod(const std::string &method);
     void addErrorPage(const int status_code, const std::string &uri);
     void addIndex(const std::string &file);
     void addServer(const ServerConfig &server_config);

@@ -24,11 +24,6 @@ MainConfig::~MainConfig()
 {
 }
 
-void MainConfig::addAllowMethod(const std::string &method)
-{
-    allow_method_.push_back(method);
-}
-
 void MainConfig::setAutoindex(const std::string &autoindex)
 {
     autoindex_ = autoindex;
@@ -42,6 +37,11 @@ void MainConfig::setClientMaxBodySize(const int size)
 void MainConfig::setCgiExtension(const std::string &extension)
 {
     cgi_extension_ = extension;
+}
+
+void MainConfig::addAllowMethod(const std::string &method)
+{
+    allow_method_.push_back(method);
 }
 
 void MainConfig::addErrorPage(const int status_code, const std::string &uri)
@@ -66,7 +66,6 @@ void MainConfig::clearAllowMethod()
 
 void MainConfig::clearErrorPage(int status_code)
 {
-    // error_page_.clear();
     std::map<int, std::string>::iterator iter = error_page_.find(status_code);
 
     if (iter != error_page_.end())

@@ -14,7 +14,7 @@ ServerConfig::ServerConfig(const MainConfig &main_config)
   index_(main_config.index()),
   listen_(DEFAULT_PORT),
   location_(),
-  return_(),
+  return_redirect(),
   server_name_(),
   upload_path_()
 {
@@ -22,11 +22,6 @@ ServerConfig::ServerConfig(const MainConfig &main_config)
 
 ServerConfig::~ServerConfig()
 {
-}
-
-void ServerConfig::addAllowMethod(const std::string &method)
-{
-    allow_method_.push_back(method);
 }
 
 void ServerConfig::setAutoindex(const std::string &autoindex)
@@ -39,29 +34,9 @@ void ServerConfig::setClientMaxBodySize(const int size)
     client_max_body_size_ = size;
 }
 
-void ServerConfig::addErrorPage(const int status_code, const std::string &uri)
-{
-    error_page_.insert(std::make_pair(status_code, uri));
-}
-
-void ServerConfig::addIndex(const std::string &file)
-{
-    index_.push_back(file);
-}
-
 void ServerConfig::setListen(const int port)
 {
     listen_ = port;
-}
-
-void ServerConfig::addLocation(const std::string &path, const LocationConfig &location_config)
-{
-    location_.insert(std::make_pair(path, location_config));
-}
-
-void ServerConfig::addReturnRedirect(const int status_code, const std::string &uri)
-{
-    return_.insert(std::make_pair(status_code, uri));
 }
 
 void ServerConfig::setServerName(const std::string &name)
@@ -74,14 +49,38 @@ void ServerConfig::setUploadPath(const std::string &path)
     upload_path_ = path;
 }
 
+void ServerConfig::addAllowMethod(const std::string &method)
+{
+    allow_method_.push_back(method);
+}
+
+void ServerConfig::addErrorPage(const int status_code, const std::string &uri)
+{
+    error_page_.insert(std::make_pair(status_code, uri));
+}
+
+void ServerConfig::addIndex(const std::string &file)
+{
+    index_.push_back(file);
+}
+
+void ServerConfig::addLocation(const std::string &path, const LocationConfig &location_config)
+{
+    location_.insert(std::make_pair(path, location_config));
+}
+
+void ServerConfig::addReturnRedirect(const int status_code, const std::string &uri)
+{
+    return_redirect.insert(std::make_pair(status_code, uri));
+}
+
 void ServerConfig::clearAllowMethod()
 {
     allow_method_.clear();
 }
 
-void ServerConfig::clearErrorPage(int status_code)
+void ServerConfig::clearErrorPage(const int status_code)
 {
-    // error_page_.clear();
     std::map<int, std::string>::iterator iter = error_page_.find(status_code);
 
     if (iter != error_page_.end())
@@ -95,14 +94,24 @@ void ServerConfig::clearIndex()
     index_.clear();
 }
 
-// void ServerConfig::clearLocation()
-// {
-
-// }
-
-void ServerConfig::clearReturnRedirect()
+void ServerConfig::clearLocation(const std::string &path)
 {
-    return_.clear(); //同じステータスを探して消去＆上書きする必要あり
+    std::map<std::string, LocationConfig>::iterator iter = location_.find(path);
+
+    if (iter != location_.end())
+    {
+        location_.erase(iter);
+    }
+}
+
+void ServerConfig::clearReturnRedirect(const int status_code)
+{
+    std::map<int, std::string>::iterator iter = return_redirect.find(status_code);
+
+    if (iter != return_redirect.end())
+    {
+        return_redirect.erase(iter);
+    }
 }
 
 const std::vector<std::string> ServerConfig::allowMethod() const
@@ -147,7 +156,7 @@ const std::map<std::string, LocationConfig> ServerConfig::location() const
 
 const std::map<int, std::string> ServerConfig::returnRedirect() const
 {
-    return return_;
+    return return_redirect;
 }
 
 const std::string ServerConfig::serverName() const

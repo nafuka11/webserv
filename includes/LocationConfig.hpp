@@ -14,17 +14,17 @@ public:
     ~LocationConfig();
 
     void setAlias(const std::string &path);
-    void addAllowMethod(const std::string &method);
     void setAutoindex(const std::string &autoindex);
+    void setUploadPath(const std::string &path);
+    void addAllowMethod(const std::string &method);
     void addErrorPage(const int status_code, const std::string &uri);
     void addIndex(const std::string &file);
     void addReturnRedirect(const int status_code, const std::string &uri);
-    void setUploadPath(const std::string &path);
 
     void clearAllowMethod();
-    void clearErrorPage(int status_code);
+    void clearErrorPage(const int status_code);
     void clearIndex();
-    void clearReturnRedirect();
+    void clearReturnRedirect(const int status_code);
 
     const std::string alias() const;
     const std::vector<std::string>allowMethod() const;
@@ -39,7 +39,7 @@ private:
     std::string autoindex_;
     std::map<int, std::string> error_page_;
     std::vector<std::string> index_;
-    std::map<int, std::string> return_;
+    std::map<int, std::string> return_redirect;
     std::string upload_path_;
 };
 

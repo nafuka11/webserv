@@ -2,8 +2,6 @@
 #include <fstream>
 #include <string>
 #include "Config.hpp"
-#include "ConfigErrorType.hpp"
-#include "ConfigError.hpp"
 #include "LocationConfig.hpp"
 #include "MainConfig.hpp"
 #include "SystemError.hpp"
@@ -18,9 +16,7 @@ const int ConfigParser::DIRECTIVE_VALUE = 1;
 const int ConfigParser::SERVER_OPEN_BRACES = 1;
 const int ConfigParser::LOCATION_OPEN_BRACES = 2;
 
-ConfigParser::ConfigParser(Config &config)
-: parse_pos_(0),
-  config_(config)
+ConfigParser::ConfigParser(Config &config) : line_pos_(0), config_(config)
 {
 }
 
@@ -100,7 +96,7 @@ std::map<ConfigParser::DirectiveType, ConfigParser::main_parse_func> ConfigParse
     parse_func[CLIENT_MAX_BODY_SIZE] = &ConfigParser::parseClientMaxBodySize;
     parse_func[ERROR_PAGE] = &ConfigParser::parseErrorPage;
     parse_func[INDEX] = &ConfigParser::parseIndex;
-    parse_func[SERVER] = &ConfigParser::parseServer;
+    parse_func[SERVER] = &ConfigParser::parseServerContext;
     return parse_func;
 }
 
@@ -157,7 +153,7 @@ void ConfigParser::readAndSplitLines(std::ifstream &ifs)
     while (std::getline(ifs, line))
     {
         const std::vector<std::string> words = splitLine(line);
-        config_file_.push_back(words);
+        parse_file_.push_back(words);
     }
 }
 
@@ -194,8 +190,8 @@ std::vector<std::string> ConfigParser::splitLine(const std::string &line)
 void ConfigParser::putSplitLines()
 {
     size_t line_num = 1;
-    for (std::vector<std::vector<std::string> > ::const_iterator vviter = config_file_.begin();
-         vviter != config_file_.end();
+    for (std::vector<std::vector<std::string> > ::const_iterator vviter = parse_file_.begin();
+         vviter != parse_file_.end();
          ++vviter)
     {
         std::cout << "------------------(" << line_num << std::endl;
@@ -214,87 +210,79 @@ void ConfigParser::putSplitLines()
 void ConfigParser::parseMainContext()
 {
     MainConfig main_config = MainConfig();
-    std::vector<std::string> parse_line;
 
     setContextType(CONTEXT_MAIN);
-    for (; parse_pos_ < config_file_.size(); ++parse_pos_)
+    for (; line_pos_ < parse_file_.size(); ++line_pos_)
     {
-        parse_line.clear();
-        parse_line = config_file_[parse_pos_];
-        if (parse_line.size() == 0)
+        parse_line_.clear();
+        parse_line_ = parse_file_[line_pos_];
+        if (parse_line_.size() == 0)
         {
             continue;
         }
-        setDirectiveType(parse_line[DIRECTIVE_NAME]);
-        if (!isAllowedDirective())
-        {
-            throw ConfigError(NOT_ALLOWED_DIECTIVE, parse_line[DIRECTIVE_NAME], filepath_, (parse_pos_ + 1));
-        }
+        setDirectiveType(parse_line_[DIRECTIVE_NAME]);
         std::map<DirectiveType, main_parse_func>::const_iterator miter;
         miter = MAIN_PARSE_FUNC.find(directive_type_);
-        (this->*miter->second)(parse_line, main_config);
+        (this->*miter->second)(main_config);
     }
 }
 
 void ConfigParser::parseServerContext(MainConfig &main_config)
 {
     ServerConfig server_config = ServerConfig(main_config);
-    std::vector<std::string> parse_line;
 
     setContextType(CONTEXT_SERVER);
-    for (; parse_pos_ < config_file_.size(); ++parse_pos_)
+    ++line_pos_;
+
+    for (; line_pos_ < parse_file_.size(); ++line_pos_)
     {
-        parse_line.clear();
-        parse_line = config_file_[parse_pos_];
-        if (parse_line.size() == 0)
+        parse_line_.clear();
+        parse_line_ = parse_file_[line_pos_];
+        if (parse_line_.size() == 0)
         {
             continue;
         }
-        if (isEndContext(parse_line))
+        if (isEndContext())
         {
             break ;
         }
-        setDirectiveType(parse_line[DIRECTIVE_NAME]);
-        if (!isAllowedDirective())
-        {
-            throw ConfigError(NOT_ALLOWED_DIECTIVE, parse_line[DIRECTIVE_NAME], filepath_, (parse_pos_ + 1));
-        }
+        setDirectiveType(parse_line_[DIRECTIVE_NAME]);
+
         std::map<DirectiveType, server_parse_func>::const_iterator miter;
         miter = SERVER_PARSE_FUNC.find(directive_type_);
-        (this->*miter->second)(parse_line, server_config);
+        (this->*miter->second)(server_config);
     }
     config_.addServer(server_config);
     setContextType(CONTEXT_MAIN);
 }
 
-void ConfigParser::parseLocationContext(std::vector<std::string> &parse_line, ServerConfig &server_config)
+void ConfigParser::parseLocationContext(ServerConfig &server_config)
 {
     LocationConfig location_config = LocationConfig(server_config);
-    std::string location_path = parse_line[DIRECTIVE_VALUE];
-    ++parse_pos_;
+    std::string location_path = parse_line_[DIRECTIVE_VALUE];
 
     setContextType(CONTEXT_LOCATION);
-    for (; parse_pos_ < config_file_.size(); ++parse_pos_)
+    ++line_pos_;
+
+    for (; line_pos_ < parse_file_.size(); ++line_pos_)
     {
-        parse_line.clear();
-        parse_line = config_file_[parse_pos_];
-        if (parse_line.size() == 0)
+        parse_line_.clear();
+        parse_line_ = parse_file_[line_pos_];
+        if (parse_line_.size() == 0)
         {
             continue;
         }
-        if (isEndContext(parse_line))
+        if (isEndContext())
         {
             break ;
         }
-        setDirectiveType(parse_line[DIRECTIVE_NAME]);
-        if (!isAllowedDirective())
-        {
-            throw ConfigError(NOT_ALLOWED_DIECTIVE, parse_line[DIRECTIVE_NAME], filepath_, (parse_pos_ + 1));
-        }
+        setDirectiveType(parse_line_[DIRECTIVE_NAME]);
+
         std::map<DirectiveType, location_parse_func>::const_iterator miter;
         miter = LOCATION_PARSE_FUNC.find(directive_type_);
-        (this->*miter->second)(parse_line, location_config);
+        (this->*miter->second)(location_config);
     }
+    server_config.clearLocation(location_path);
     server_config.addLocation(location_path, location_config);
     setContextType(CONTEXT_SERVER);
 }
@@ -332,132 +320,55 @@ void ConfigParser::setDirectiveType(const std::string &directive_name)
         directive_type_ = SERVER_NAME;
     else if (directive_name == "upload_path")
         directive_type_ = UPLOAD_PATH;
-    else
-        throw ConfigError(UNKNOWN_DIRECTIVE, directive_name, filepath_, (parse_pos_ + 1));
 }
 
-void ConfigParser::parseAlias(std::vector<std::string> &parse_line, LocationConfig &location_config)
+void ConfigParser::parseAlias(LocationConfig &location_config)
 {
-    std::cout << "parseAlias(): size[" << parse_line.size() << "]" << std::endl;
-
-    validateDirectiveEnd(parse_line);
-
-    location_config.setAlias(parse_line[DIRECTIVE_VALUE]);
+    location_config.setAlias(parse_line_[DIRECTIVE_VALUE]);
 }
 
-void ConfigParser::parseCgiExtension(std::vector<std::string> &parse_line, MainConfig &main_config)
+void ConfigParser::parseCgiExtension(MainConfig &main_config)
 {
-    std::cout << "parseCgiExtension(): size[" << parse_line.size() << "]" << std::endl;
-
-    validateDirectiveEnd(parse_line);
-    main_config.setCgiExtension(parse_line[DIRECTIVE_VALUE]);
+    main_config.setCgiExtension(parse_line_[DIRECTIVE_VALUE]);
 }
 
-void ConfigParser::parseListen(std::vector<std::string> &parse_line, ServerConfig &server_config)
+void ConfigParser::parseListen(ServerConfig &server_config)
 {
-    std::cout << "parseListen(): size[" << parse_line.size() << "]" << std::endl;
-
-    validateDirectiveEnd(parse_line);
-    server_config.setListen(std::atoi(parse_line[DIRECTIVE_VALUE].c_str()));
+    server_config.setListen(std::atoi(parse_line_[DIRECTIVE_VALUE].c_str()));
 }
 
-void ConfigParser::parseLocation(std::vector<std::string> &parse_line, ServerConfig &server_config)
+void ConfigParser::parseServerName(ServerConfig &server_config)
 {
-    std::cout << "parseLocation(): size[" << parse_line.size() << "]" << std::endl;
-
-    if (!isLocationContext(parse_line))
-    {
-        throw ConfigError(SYNTAXERROR, parse_line[DIRECTIVE_NAME], filepath_, (parse_pos_ + 1));
-    }
-    parseLocationContext(parse_line, server_config);
+    server_config.setServerName(parse_line_[DIRECTIVE_VALUE]);
 }
 
-void ConfigParser::parseServer(std::vector<std::string> &parse_line, MainConfig &main_config)
+bool ConfigParser::isEndContext()
 {
-    std::cout << "parseServer(): size[" << parse_line.size() << "]" << std::endl;
-
-    if (!isServerContext(parse_line))
-    {
-        throw ConfigError(SYNTAXERROR, parse_line[DIRECTIVE_NAME], filepath_, (parse_pos_ + 1));
-    }
-    ++parse_pos_;
-    parseServerContext(main_config);
-}
-
-void ConfigParser::parseServerName(std::vector<std::string> &parse_line, ServerConfig &server_config)
-{
-    std::cout << "parseServerName(): size[" << parse_line.size() << "]" << std::endl;
-
-    validateDirectiveEnd(parse_line);
-    server_config.setServerName(parse_line[DIRECTIVE_VALUE]);
-}
-
-bool ConfigParser::isAllowedDirective()
-{
-    std::map<DirectiveType, std::vector<ContextType> >::const_iterator miter;
-    miter = ALLOWED_DIRECTIVE.find(directive_type_);
-
-    for (std::vector<ContextType>::const_iterator viter = miter->second.begin();
-         viter != miter->second.end();
-         viter++)
-    {
-        if (*viter == context_type_)
-            return true;
-    }
-    return false;
-}
-
-
-bool ConfigParser::isServerContext(std::vector<std::string> &parse_line)
-{
-    if ((parse_line[DIRECTIVE_NAME] == "server")
-        && (parse_line[SERVER_OPEN_BRACES] == "{")
-        && (parse_line.size() == 2))
+    if (parse_line_.size() == 1 && parse_line_[0] == "}")
     {
         return true;
     }
     return false;
 }
 
-bool ConfigParser::isLocationContext(std::vector<std::string> &parse_line)
-{
-    if ((parse_line[DIRECTIVE_NAME] == "server")
-        && (parse_line[LOCATION_OPEN_BRACES] == "{")
-        && (parse_line.size() == 3))
-    {
-        return true;
-    }
-    return false;
-}
-
-bool ConfigParser::isEndContext(std::vector<std::string> &parse_line)
-{
-    if (parse_line.size() == 1 && parse_line[0] == "}")
-    {
-        return true;
-    }
-    return false;
-}
-
-
-std::vector<std::string> ConfigParser::validateParameterAllowMethod(std::vector<std::string> &parse_line)
+const std::vector<std::string> ConfigParser::validateParameterAllowMethod()
 {
     std::vector<std::string> param;
-    std::vector<std::string>::iterator iter = parse_line.begin();
+    std::vector<std::string>::iterator iter = parse_line_.begin();
 
     ++iter;
-    for (; (*iter != ";") && (iter != parse_line.end()); ++iter)
+    for (; (*iter != ";") && (iter != parse_line_.end()); ++iter)
     {
         param.push_back(*iter);
     }
     return param;
 }
 
-std::map<int, std::string> ConfigParser::validateParamaterErrorPage(std::vector<std::string> &parse_line)
+const std::map<int, std::string> ConfigParser::validateParamaterErrorPage()
 {
     std::map<int, std::string> param;
-    std::vector<std::string>::iterator status_code = parse_line.begin();
-    std::vector<std::string>::iterator uri = parse_line.end();
+    std::vector<std::string>::iterator status_code = parse_line_.begin();
+    std::vector<std::string>::iterator uri = parse_line_.end();
 
     ++status_code;
     uri = uri - 2;
@@ -469,30 +380,23 @@ std::map<int, std::string> ConfigParser::validateParamaterErrorPage(std::vector<
 }
 
 
-std::vector<std::string> ConfigParser::validateParameterIndex(std::vector<std::string> &parse_line)
+const std::vector<std::string> ConfigParser::validateParameterIndex()
 {
     std::vector<std::string> param;
-    std::vector<std::string>::iterator iter = parse_line.begin();
+    std::vector<std::string>::iterator iter = parse_line_.begin();
 
     ++iter;
-    for (; (*iter != ";") && (iter != parse_line.end()); ++iter)
+    for (; (*iter != ";") && (iter != parse_line_.end()); ++iter)
     {
         param.push_back(*iter);
     }
     return param;
 }
 
-
-void ConfigParser::validateDirectiveEnd(std::vector<std::string> &parse_line)
+const std::map<int, std::string> ConfigParser::validateParamaterReturn()
 {
-    std::vector<std::string>::iterator iter = std::find(parse_line.begin(), parse_line.end(), ";");
+    std::map<int, std::string> param;
 
-    if (iter == parse_line.end())
-    {
-        throw ConfigError(NO_SEMICOLON, parse_line[DIRECTIVE_NAME], filepath_, (parse_pos_ + 1));
-    }
-    if (++iter != parse_line.end())
-    {
-        throw ConfigError(UNEXPECTED, *iter, filepath_, (parse_pos_ + 1));
-    }
+    param.insert(std::make_pair(std::atoi(parse_line_[1].c_str()), parse_line_[2]));
+    return param;
 }

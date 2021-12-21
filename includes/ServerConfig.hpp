@@ -14,23 +14,22 @@ public:
     ServerConfig(const MainConfig &main_config);
     ~ServerConfig();
 
-    void addAllowMethod(const std::string &method);
     void setAutoindex(const std::string &autoindex);
     void setClientMaxBodySize(const int size);
-    void addErrorPage(const int status_code, const std::string &uri);
-    void addIndex(const std::string &file);
     void setListen(const int port);
-    void addLocation(const std::string &path, const LocationConfig &location_config);
-    void addReturnRedirect(const int status_code, const std::string &uri);
     void setServerName(const std::string &name);
     void setUploadPath(const std::string &path);
+    void addAllowMethod(const std::string &method);
+    void addErrorPage(const int status_code, const std::string &uri);
+    void addIndex(const std::string &file);
+    void addLocation(const std::string &path, const LocationConfig &location_config);
+    void addReturnRedirect(const int status_code, const std::string &uri);
 
     void clearAllowMethod();
-    void clearErrorPage(int status_code);
+    void clearErrorPage(const int status_code);
     void clearIndex();
-    // void clearLocation();
-    void clearReturnRedirect();
-
+    void clearLocation(const std::string &path);
+    void clearReturnRedirect(const int status_code);
 
     const std::vector<std::string> allowMethod() const;
     const std::string autoindex() const;
@@ -55,7 +54,7 @@ private:
     std::vector<std::string> index_;
     int listen_;
     std::map<std::string, LocationConfig> location_;
-    std::map<int, std::string> return_;
+    std::map<int, std::string> return_redirect;
     std::string server_name_;
     std::string upload_path_;
 };

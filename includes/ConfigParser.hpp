@@ -10,16 +10,18 @@ class Config;
 
 class ConfigParser
 {
-    typedef void (ConfigParser::*main_parse_func)(std::vector<std::string>&, MainConfig&);
-    typedef void (ConfigParser::*server_parse_func)(std::vector<std::string>&, ServerConfig&);
-    typedef void (ConfigParser::*location_parse_func)(std::vector<std::string>&, LocationConfig&);
 public:
+    typedef void (ConfigParser::*main_parse_func)(MainConfig&);
+    typedef void (ConfigParser::*server_parse_func)(ServerConfig&);
+    typedef void (ConfigParser::*location_parse_func)(LocationConfig&);
+
     enum ContextType
     {
         CONTEXT_MAIN,
         CONTEXT_SERVER,
         CONTEXT_LOCATION
     };
+
     enum  DirectiveType
     {
         ALIAS,
@@ -66,55 +68,48 @@ private:
     void parseLines();
     void parseMainContext();
     void parseServerContext(MainConfig &main_config);
-    void parseLocationContext(std::vector<std::string> &parse_line, ServerConfig &server_config);
-    void parseAlias(std::vector<std::string> &parse_line, LocationConfig &location_config);
-    void parseCgiExtension(std::vector<std::string> &parse_line, MainConfig &main_config);
-    void parseListen(std::vector<std::string> &parse_line, ServerConfig &server_config);
-    void parseLocation(std::vector<std::string> &parse_line, ServerConfig &server_config);
-    void parseServer(std::vector<std::string> &parse_line, MainConfig &main_config);
-    void parseServerName(std::vector<std::string> &parse_line, ServerConfig &server_config);
+    void parseLocationContext(ServerConfig &server_config);
+    void parseAlias(LocationConfig &location_config);
+    void parseCgiExtension(MainConfig &main_config);
+    void parseListen(ServerConfig &server_config);
+    void parseServerName(ServerConfig &server_config);
     template <typename T>
-    void parseAllowMethod(std::vector<std::string> &parse_line, T &config_obj);
+    void parseAllowMethod(T &config_obj);
     template <typename T>
-    void parseAutoindex(std::vector<std::string> &parse_line, T &config_obj);
+    void parseAutoindex(T &config_obj);
     template <typename T>
-    void parseClientMaxBodySize(std::vector<std::string> &parse_line, T &config_obj);
+    void parseClientMaxBodySize(T &config_obj);
     template <typename T>
-    void parseErrorPage(std::vector<std::string> &parse_line, T &config_obj);
+    void parseErrorPage(T &config_obj);
     template <typename T>
-    void parseIndex(std::vector<std::string> &parse_line, T &config_obj);
+    void parseIndex(T &config_obj);
     template <typename T>
-    void parseReturn(std::vector<std::string> &parse_line, T &config_obj);
+    void parseReturn(T &config_obj);
     template <typename T>
-    void parseUploadPath(std::vector<std::string> &parse_line, T &config_obj);
+    void parseUploadPath(T &config_obj);
 
-    bool isAllowedDirective();
-    bool isServerContext(std::vector<std::string> &parse_line);
-    bool isLocationContext(std::vector<std::string> &parse_line);
-    bool isEndContext(std::vector<std::string> &parse_line);
+    bool isEndContext();
 
-    std::vector<std::string> validateParameterAllowMethod(std::vector<std::string> &parse_line);
-    std::map<int, std::string> validateParamaterErrorPage(std::vector<std::string> &parse_line);
-    std::vector<std::string> validateParameterIndex(std::vector<std::string> &parse_line);
-    void validateDirectiveEnd(std::vector<std::string> &parse_line);
+    const std::vector<std::string> validateParameterAllowMethod();
+    const std::map<int, std::string> validateParamaterErrorPage();
+    const std::vector<std::string> validateParameterIndex();
+    const std::map<int, std::string> validateParamaterReturn();
 
     void putSplitLines();// 後で消す
 
     std::string filepath_;
-    std::vector<std::vector<std::string> > config_file_;
-    size_t parse_pos_;
+    std::vector<std::vector<std::string> > parse_file_;
+    std::vector<std::string> parse_line_;
+    size_t line_pos_;
     Config &config_;
     ContextType context_type_;
     DirectiveType directive_type_;
 };
 
 template <typename T>
-void ConfigParser::parseAllowMethod(std::vector<std::string> &parse_line, T &config_obj)
+void ConfigParser::parseAllowMethod(T &config_obj)
 {
-    std::cout << "parseAllowMethod(): size[" << parse_line.size() << "]" << std::endl;
-
-    validateDirectiveEnd(parse_line);
-    std::vector<std::string> param = validateParameterAllowMethod(parse_line);
+    std::vector<std::string> param = validateParameterAllowMethod();
 
     config_obj.clearAllowMethod();
     for (std::vector<std::string>::iterator iter = param.begin();
@@ -126,30 +121,21 @@ void ConfigParser::parseAllowMethod(std::vector<std::string> &parse_line, T &con
 }
 
 template <typename T>
-void ConfigParser::parseAutoindex(std::vector<std::string> &parse_line, T &config_obj)
+void ConfigParser::parseAutoindex(T &config_obj)
 {
-    std::cout << "parseAutoindex(): size[" << parse_line.size() << "]" << std::endl;
-
-    validateDirectiveEnd(parse_line);
-    config_obj.setAutoindex(parse_line[DIRECTIVE_VALUE]);
+    config_obj.setAutoindex(parse_line_[DIRECTIVE_VALUE]);
 }
 
 template <typename T>
-void ConfigParser::parseClientMaxBodySize(std::vector<std::string> &parse_line, T &config_obj)
+void ConfigParser::parseClientMaxBodySize(T &config_obj)
 {
-    std::cout << "parseClientMaxBodySize(): size[" << parse_line.size() << "]" << std::endl;
-
-    validateDirectiveEnd(parse_line);
-    config_obj.setClientMaxBodySize(std::atoi(parse_line[DIRECTIVE_VALUE].c_str()));
+    config_obj.setClientMaxBodySize(std::atoi(parse_line_[DIRECTIVE_VALUE].c_str()));
 }
 
 template <typename T>
-void ConfigParser::parseErrorPage(std::vector<std::string> &parse_line, T &config_obj)
+void ConfigParser::parseErrorPage(T &config_obj)
 {
-    std::cout << "parseErrorPage(): size[" << parse_line.size() << "]" << std::endl;
-
-    validateDirectiveEnd(parse_line);
-    std::map<int, std::string> param = validateParamaterErrorPage(parse_line);
+    std::map<int, std::string> param = validateParamaterErrorPage();
 
     for (std::map<int, std::string>::iterator iter = param.begin();
          iter != param.end();
@@ -161,15 +147,11 @@ void ConfigParser::parseErrorPage(std::vector<std::string> &parse_line, T &confi
 }
 
 template <typename T>
-void ConfigParser::parseIndex(std::vector<std::string> &parse_line, T &config_obj)
+void ConfigParser::parseIndex(T &config_obj)
 {
-    std::cout << "parseIndex(): size[" << parse_line.size() << "]" << std::endl;
-
-    std::vector<std::string> param = validateParameterIndex(parse_line);
-
-    validateDirectiveEnd(parse_line);
-
+    std::vector<std::string> param = validateParameterIndex();
     config_obj.clearIndex();
+
     for (size_t index = 0; index < param.size(); ++index)
     {
         config_obj.addIndex(param[index]);
@@ -177,22 +159,19 @@ void ConfigParser::parseIndex(std::vector<std::string> &parse_line, T &config_ob
 }
 
 template <typename T>
-void ConfigParser::parseReturn(std::vector<std::string> &parse_line, T &config_obj)
+void ConfigParser::parseReturn(T &config_obj)
 {
-    std::cout << "parseReturn(): size[" << parse_line.size() << "]" << std::endl;
+    std::map<int, std::string> param = validateParamaterReturn();
+    std::map<int, std::string>::iterator iter = param.begin();
 
-    //std::map<int, std::string> param = validateParamaterReturn(parse_line);
-    validateDirectiveEnd(parse_line);
-    config_obj.addReturnRedirect(std::atoi(parse_line[1].c_str()), parse_line[2]);
+    config_obj.clearReturnRedirect(iter->first);
+    config_obj.addReturnRedirect(iter->first, iter->second);
 }
 
 template <typename T>
-void ConfigParser::parseUploadPath(std::vector<std::string> &parse_line, T &config_obj)
+void ConfigParser::parseUploadPath(T &config_obj)
 {
-    std::cout << "parseReturn(): size[" << parse_line.size() << "]" << std::endl;
-
-    validateDirectiveEnd(parse_line);
-    config_obj.setUploadPath(parse_line[DIRECTIVE_VALUE]);
+    config_obj.setUploadPath(parse_line_[DIRECTIVE_VALUE]);
 }
 
 #endif /* CONFIGPARSER_HPP */

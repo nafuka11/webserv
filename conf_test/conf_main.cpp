@@ -117,21 +117,26 @@ void put_index(const std::vector<std::string> &index, const std::string &space)
 
 void put_return(const std::map<int, std::string> &return_redirect, const std::string &space)
 {
-    std::map<int, std::string>::const_iterator const_return_iter = return_redirect.begin();
+    std::string second_space;
+    if (g_status == LOCATION)
+        second_space = "                              ";
+    else
+        second_space = "                      ";
 
     std::cout << space << "return: ";
-    if (const_return_iter == return_redirect.end())
+    if (return_redirect.size() == 0)
     {
         std::cout << std::endl;
-        return ;
+        return;
     }
-    while (const_return_iter != return_redirect.end())
+    for (std::map<int, std::string>::const_iterator iter = return_redirect.begin();
+         iter != return_redirect.end();
+         ++iter)
     {
-        if (const_return_iter != return_redirect.begin())
-            std::cout << "                                 ";
-        std::cout << const_return_iter->first << " "
-                  << const_return_iter->second << std::endl;
-        ++const_return_iter;
+        if (iter != return_redirect.begin())
+            std::cout << second_space;
+        std::cout << iter->first << " "
+                  << iter->second << std::endl;
     }
 
 }
