@@ -13,8 +13,6 @@ const std::map<ConfigParser::DirectiveType, ConfigParser::location_parse_func> C
 
 const int ConfigParser::DIRECTIVE_NAME = 0;
 const int ConfigParser::DIRECTIVE_VALUE = 1;
-const int ConfigParser::SERVER_OPEN_BRACES = 1;
-const int ConfigParser::LOCATION_OPEN_BRACES = 2;
 
 ConfigParser::ConfigParser(Config &config) : line_pos_(0), config_(config)
 {

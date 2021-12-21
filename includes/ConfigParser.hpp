@@ -52,9 +52,6 @@ private:
     static const int DIRECTIVE_NAME;
     static const int DIRECTIVE_VALUE;
 
-    static const int SERVER_OPEN_BRACES;
-    static const int LOCATION_OPEN_BRACES;
-
     static std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > setAllowedDirective();
     static std::map<ConfigParser::DirectiveType, main_parse_func> setMainParseFunc();
     static std::map<ConfigParser::DirectiveType, server_parse_func> setServerParseFunc();
