@@ -172,13 +172,13 @@ void ConfigParser::parseAllowMethod(T &config_obj)
 template <typename T>
 void ConfigParser::parseAutoindex(T &config_obj)
 {
-    config_obj.setAutoindex(parse_line_[DIRECTIVE_VALUE]);
+    config_obj.setAutoindex(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
 
 template <typename T>
 void ConfigParser::parseClientMaxBodySize(T &config_obj)
 {
-    config_obj.setClientMaxBodySize(std::atoi(parse_line_[DIRECTIVE_VALUE].c_str()));
+    config_obj.setClientMaxBodySize(std::atoi(parse_line_[DIRECTIVE_VALUE_INDEX].c_str()));
 }
 
 template <typename T>
@@ -207,7 +207,7 @@ void ConfigParser::parseReturn(T &config_obj)
 template <typename T>
 void ConfigParser::parseUploadPath(T &config_obj)
 {
-    config_obj.setUploadPath(parse_line_[DIRECTIVE_VALUE]);
+    config_obj.setUploadPath(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
 
 #endif /* CONFIGPARSER_HPP */
