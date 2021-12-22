@@ -54,7 +54,7 @@ private:
     std::vector<std::string> index_;
     int listen_;
     std::map<std::string, LocationConfig> location_;
-    std::map<int, std::string> return_redirect;
+    std::map<int, std::string> return_redirect_;
     std::string server_name_;
     std::string upload_path_;
 };

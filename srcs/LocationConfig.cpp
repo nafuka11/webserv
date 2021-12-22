@@ -40,7 +40,7 @@ void LocationConfig::addIndex(const std::string &file)
 
 void LocationConfig::addReturnRedirect(const int status_code, const std::string &uri)
 {
-    return_redirect.insert(std::make_pair(status_code, uri));
+    return_redirect_.insert(std::make_pair(status_code, uri));
 }
 
 void LocationConfig::clearAllowMethod()
@@ -62,11 +62,11 @@ void LocationConfig::clearIndex()
 }
 void LocationConfig::clearReturnRedirect(const int status_code)
 {
-    std::map<int, std::string>::iterator iter = return_redirect.find(status_code);
+    std::map<int, std::string>::iterator iter = return_redirect_.find(status_code);
 
-    if (iter != return_redirect.end())
+    if (iter != return_redirect_.end())
     {
-        return_redirect.erase(iter);
+        return_redirect_.erase(iter);
     }
 }
 
@@ -97,7 +97,7 @@ const std::vector<std::string> LocationConfig::index() const
 
 const std::map<int, std::string> LocationConfig::returnRedirect() const
 {
-    return return_redirect;
+    return return_redirect_;
 }
 
 const std::string LocationConfig::uploadPath() const

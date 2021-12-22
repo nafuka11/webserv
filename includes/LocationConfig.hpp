@@ -37,7 +37,7 @@ private:
     std::string autoindex_;
     std::map<int, std::string> error_page_;
     std::vector<std::string> index_;
-    std::map<int, std::string> return_redirect;
+    std::map<int, std::string> return_redirect_;
     std::string upload_path_;
 };
 
