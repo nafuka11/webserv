@@ -50,8 +50,8 @@ private:
     static const std::map<DirectiveType, server_parse_func> SERVER_PARSE_FUNC;
     static const std::map<DirectiveType, location_parse_func> LOCATION_PARSE_FUNC;
 
-    static const int DIRECTIVE_NAME;
-    static const int DIRECTIVE_VALUE;
+    static const int DIRECTIVE_NAME_INDEX;
+    static const int DIRECTIVE_VALUE_INDEX;
 
     static std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > setAllowedDirective();
     static std::map<ConfigParser::DirectiveType, main_parse_func> setMainParseFunc();

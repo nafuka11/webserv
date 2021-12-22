@@ -15,8 +15,8 @@ const std::map<ConfigParser::DirectiveType, ConfigParser::server_parse_func>
 const std::map<ConfigParser::DirectiveType, ConfigParser::location_parse_func>
     ConfigParser::LOCATION_PARSE_FUNC = ConfigParser::setLocationParseFunc();
 
-const int ConfigParser::DIRECTIVE_NAME = 0;
-const int ConfigParser::DIRECTIVE_VALUE = 1;
+const int ConfigParser::DIRECTIVE_NAME_INDEX = 0;
+const int ConfigParser::DIRECTIVE_VALUE_INDEX = 1;
 
 ConfigParser::ConfigParser(Config &config) : line_pos_(0), config_(config)
 {
@@ -115,7 +115,7 @@ void ConfigParser::parseMainContext()
         {
             continue;
         }
-        setDirectiveType(parse_line_[DIRECTIVE_NAME]);
+        setDirectiveType(parse_line_[DIRECTIVE_NAME_INDEX]);
         std::map<DirectiveType, main_parse_func>::const_iterator miter;
         miter = MAIN_PARSE_FUNC.find(directive_type_);
         (this->*miter->second)(main_config);
@@ -142,7 +142,7 @@ void ConfigParser::parseServerContext(MainConfig &main_config)
         {
             break ;
         }
-        setDirectiveType(parse_line_[DIRECTIVE_NAME]);
+        setDirectiveType(parse_line_[DIRECTIVE_NAME_INDEX]);
 
         std::map<DirectiveType, server_parse_func>::const_iterator miter;
         miter = SERVER_PARSE_FUNC.find(directive_type_);
@@ -155,7 +155,7 @@ void ConfigParser::parseServerContext(MainConfig &main_config)
 void ConfigParser::parseLocationContext(ServerConfig &server_config)
 {
     LocationConfig location_config = LocationConfig();
-    std::string location_path = parse_line_[DIRECTIVE_VALUE];
+    std::string location_path = parse_line_[DIRECTIVE_VALUE_INDEX];
 
     setServerSetting(location_config, server_config);
     setContextType(CONTEXT_LOCATION);
@@ -173,7 +173,7 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
         {
             break ;
         }
-        setDirectiveType(parse_line_[DIRECTIVE_NAME]);
+        setDirectiveType(parse_line_[DIRECTIVE_NAME_INDEX]);
 
         std::map<DirectiveType, location_parse_func>::const_iterator miter;
         miter = LOCATION_PARSE_FUNC.find(directive_type_);
@@ -186,22 +186,22 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
 
 void ConfigParser::parseAlias(LocationConfig &location_config)
 {
-    location_config.setAlias(parse_line_[DIRECTIVE_VALUE]);
+    location_config.setAlias(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
 
 void ConfigParser::parseCgiExtension(MainConfig &main_config)
 {
-    main_config.setCgiExtension(parse_line_[DIRECTIVE_VALUE]);
+    main_config.setCgiExtension(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
 
 void ConfigParser::parseListen(ServerConfig &server_config)
 {
-    server_config.setListen(std::atoi(parse_line_[DIRECTIVE_VALUE].c_str()));
+    server_config.setListen(std::atoi(parse_line_[DIRECTIVE_VALUE_INDEX].c_str()));
 }
 
 void ConfigParser::parseServerName(ServerConfig &server_config)
 {
-    server_config.setServerName(parse_line_[DIRECTIVE_VALUE]);
+    server_config.setServerName(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
 
 bool ConfigParser::isEndContext()
