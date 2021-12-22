@@ -3,7 +3,7 @@
 
 #include <exception>
 #include <string>
-#include <iostream>//del
+#include <iostream> // TODO: 後で消す
 #include "MainConfig.hpp"
 #include "ServerConfig.hpp"
 
@@ -103,7 +103,7 @@ private:
     const std::vector<std::string> validateParameterIndex();
     const std::map<int, std::string> validateParamaterReturn();
 
-    void putSplitLines();// 後で消す
+    void putSplitLines(); // TODO: 後で消す
 
     std::string filepath_;
     std::vector<std::vector<std::string> > parse_file_;
@@ -132,7 +132,7 @@ void ConfigParser::setErrorPageParam(T &config_obj, const std::map<int, std::str
          const_iter != param.end();
          ++const_iter)
     {
-        config_obj.clearErrorPage(const_iter->first); // addErrorPageの中に入れる？
+        config_obj.clearErrorPage(const_iter->first); // TODO: addErrorPageの中に入れる？
         config_obj.addErrorPage(const_iter->first, const_iter->second);
     }
 }

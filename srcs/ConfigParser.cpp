@@ -36,7 +36,7 @@ void ConfigParser::readFile(const std::string &filepath)
         throw SystemError("open", errno);
     }
     readAndSplitLines(ifs);
-    putSplitLines();// 後で消す
+    putSplitLines(); // TODO: 後で消す
     ifs.close();
     parseMainContext();
 }
@@ -81,7 +81,7 @@ std::vector<std::string> ConfigParser::splitLine(const std::string &line)
     return (words);
 }
 
-// 必要なくなったら消す
+// TODO: 後で消す
 void ConfigParser::putSplitLines()
 {
     size_t line_num = 1;
@@ -100,7 +100,6 @@ void ConfigParser::putSplitLines()
     }
     std::cout << "-----[end]-----------------------------------\n" << std::endl;
 }
-// 必要なくなったら消す
 
 void ConfigParser::parseMainContext()
 {
