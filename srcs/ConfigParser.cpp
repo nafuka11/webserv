@@ -373,7 +373,7 @@ void ConfigParser::setLocationConfigFromServer(LocationConfig &location_config, 
     setReturnRedirectParam(location_config, server_config.returnRedirect());
 }
 
-const std::vector<std::string> ConfigParser::validateParameterAllowMethod()
+const std::vector<std::string> ConfigParser::validateAllowMethodParam()
 {
     std::vector<std::string> param;
     std::vector<std::string>::iterator iter = parse_line_.begin();
@@ -386,7 +386,7 @@ const std::vector<std::string> ConfigParser::validateParameterAllowMethod()
     return param;
 }
 
-const std::map<int, std::string> ConfigParser::validateParamaterErrorPage()
+const std::map<int, std::string> ConfigParser::validateErrorPageParam()
 {
     std::map<int, std::string> param;
     std::vector<std::string>::iterator status_code = parse_line_.begin();
@@ -402,7 +402,7 @@ const std::map<int, std::string> ConfigParser::validateParamaterErrorPage()
 }
 
 
-const std::vector<std::string> ConfigParser::validateParameterIndex()
+const std::vector<std::string> ConfigParser::validateIndexParam()
 {
     std::vector<std::string> param;
     std::vector<std::string>::iterator iter = parse_line_.begin();
@@ -415,7 +415,7 @@ const std::vector<std::string> ConfigParser::validateParameterIndex()
     return param;
 }
 
-const std::map<int, std::string> ConfigParser::validateParamaterReturn()
+const std::map<int, std::string> ConfigParser::validateReturnParam()
 {
     std::map<int, std::string> param;
 
