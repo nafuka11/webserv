@@ -84,8 +84,8 @@ private:
     void parseUploadPath(T &config_obj);
     void setDirectiveType(const std::string &directive_name);
     void setContextType(ContextType type);
-    void setMainSetting(ServerConfig &server_config, const MainConfig &main_config);
-    void setServerSetting(LocationConfig &location_config, const ServerConfig &server_config);
+    void setServerConfigFromMain(ServerConfig &server_config, const MainConfig &main_config);
+    void setLocationConfigFromServer(LocationConfig &location_config, const ServerConfig &server_config);
     template <typename T>
     void setAllowMethodParam(T &config_obj, const std::vector<std::string> &param);
     template <typename T>
