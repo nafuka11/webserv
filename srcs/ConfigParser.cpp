@@ -6,10 +6,14 @@
 #include "MainConfig.hpp"
 #include "SystemError.hpp"
 
-const std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > ConfigParser::ALLOWED_DIRECTIVE = ConfigParser::setAllowedDirective();
-const std::map<ConfigParser::DirectiveType, ConfigParser::main_parse_func> ConfigParser::MAIN_PARSE_FUNC = ConfigParser::setMainParseFunc();
-const std::map<ConfigParser::DirectiveType, ConfigParser::server_parse_func> ConfigParser::SERVER_PARSE_FUNC = ConfigParser::setServerParseFunc();
-const std::map<ConfigParser::DirectiveType, ConfigParser::location_parse_func> ConfigParser::LOCATION_PARSE_FUNC = ConfigParser::setLocationParseFunc();
+const std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> >
+    ConfigParser::ALLOWED_DIRECTIVE = ConfigParser::setAllowedDirective();
+const std::map<ConfigParser::DirectiveType, ConfigParser::main_parse_func>
+    ConfigParser::MAIN_PARSE_FUNC = ConfigParser::setMainParseFunc();
+const std::map<ConfigParser::DirectiveType, ConfigParser::server_parse_func>
+    ConfigParser::SERVER_PARSE_FUNC = ConfigParser::setServerParseFunc();
+const std::map<ConfigParser::DirectiveType, ConfigParser::location_parse_func>
+    ConfigParser::LOCATION_PARSE_FUNC = ConfigParser::setLocationParseFunc();
 
 const int ConfigParser::DIRECTIVE_NAME = 0;
 const int ConfigParser::DIRECTIVE_VALUE = 1;
