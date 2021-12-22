@@ -4,8 +4,6 @@
 #include <vector>
 #include "ServerConfig.hpp"
 
-class ConfigParser;
-
 class Config
 {
 public:
