@@ -87,20 +87,20 @@ private:
     void setServerConfigFromMain(ServerConfig &server_config, const MainConfig &main_config);
     void setLocationConfigFromServer(LocationConfig &location_config, const ServerConfig &server_config);
     template <typename T>
-    void setAllowMethodParam(T &config_obj, const std::vector<std::string> &param);
+    void setAllowMethodParams(T &config_obj, const std::vector<std::string> &param);
     template <typename T>
-    void setErrorPageParam(T &config_obj, const std::map<int, std::string> &param);
+    void setErrorPageParams(T &config_obj, const std::map<int, std::string> &param);
     template <typename T>
-    void setIndexParam(T &config_obj, const std::vector<std::string> &param);
+    void setIndexParams(T &config_obj, const std::vector<std::string> &param);
     static std::vector<ContextType> getAllowedContext(DirectiveType state);
     template <typename T>
     void setReturnRedirectParam(T &config_obj, const std::map<int, std::string> &param);
 
     bool isEndContext();
 
-    const std::vector<std::string> validateAllowMethodParam();
-    const std::map<int, std::string> validateErrorPageParam();
-    const std::vector<std::string> validateIndexParam();
+    const std::vector<std::string> validateAllowMethodParams();
+    const std::map<int, std::string> validateErrorPageParams();
+    const std::vector<std::string> validateIndexParams();
     const std::map<int, std::string> validateReturnParam();
 
     void putSplitLines(); // TODO: 後で消す
@@ -115,7 +115,7 @@ private:
 };
 
 template <typename T>
-void ConfigParser::setAllowMethodParam(T &config_obj, const std::vector<std::string> &param)
+void ConfigParser::setAllowMethodParams(T &config_obj, const std::vector<std::string> &param)
 {
     for (std::vector<std::string>::const_iterator const_iter = param.begin();
          const_iter != param.end();
@@ -126,7 +126,7 @@ void ConfigParser::setAllowMethodParam(T &config_obj, const std::vector<std::str
 }
 
 template <typename T>
-void ConfigParser::setErrorPageParam(T &config_obj, const std::map<int, std::string> &param)
+void ConfigParser::setErrorPageParams(T &config_obj, const std::map<int, std::string> &param)
 {
     for (std::map<int, std::string>::const_iterator const_iter = param.begin();
          const_iter != param.end();
@@ -138,7 +138,7 @@ void ConfigParser::setErrorPageParam(T &config_obj, const std::map<int, std::str
 }
 
 template <typename T>
-void ConfigParser::setIndexParam(T &config_obj, const std::vector<std::string> &param)
+void ConfigParser::setIndexParams(T &config_obj, const std::vector<std::string> &param)
 {
     for (std::vector<std::string>::const_iterator const_iter = param.begin();
          const_iter != param.end();
@@ -163,10 +163,10 @@ void ConfigParser::setReturnRedirectParam(T &config_obj, const std::map<int, std
 template <typename T>
 void ConfigParser::parseAllowMethod(T &config_obj)
 {
-    std::vector<std::string> param = validateAllowMethodParam();
+    std::vector<std::string> params = validateAllowMethodParams();
 
     config_obj.clearAllowMethod();
-    setAllowMethodParam(config_obj, param);
+    setAllowMethodParams(config_obj, params);
 }
 
 template <typename T>
@@ -184,17 +184,17 @@ void ConfigParser::parseClientMaxBodySize(T &config_obj)
 template <typename T>
 void ConfigParser::parseErrorPage(T &config_obj)
 {
-    std::map<int, std::string> param = validateErrorPageParam();
-    setErrorPageParam(config_obj, param);
+    std::map<int, std::string> params = validateErrorPageParams();
+    setErrorPageParams(config_obj, params);
 }
 
 template <typename T>
 void ConfigParser::parseIndex(T &config_obj)
 {
-    std::vector<std::string> param = validateIndexParam();
+    std::vector<std::string> params = validateIndexParams();
 
     config_obj.clearIndex();
-    setIndexParam(config_obj, param);
+    setIndexParams(config_obj, params);
 }
 
 template <typename T>

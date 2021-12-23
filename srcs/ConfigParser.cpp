@@ -356,39 +356,39 @@ void ConfigParser::setContextType(ContextType type)
 
 void ConfigParser::setServerConfigFromMain(ServerConfig &server_config, const MainConfig &main_config)
 {
-    setAllowMethodParam(server_config, main_config.allowMethod());
+    setAllowMethodParams(server_config, main_config.allowMethod());
     server_config.setAutoindex(main_config.autoindex());
     server_config.setCgiExtension(main_config.cgiExtension());
     server_config.setClientMaxBodySize(main_config.clientMaxBodySize());
-    setErrorPageParam(server_config, main_config.errorPage());
-    setIndexParam(server_config, main_config.index());
+    setErrorPageParams(server_config, main_config.errorPage());
+    setIndexParams(server_config, main_config.index());
 }
 
 void ConfigParser::setLocationConfigFromServer(LocationConfig &location_config, const ServerConfig &server_config)
 {
-    setAllowMethodParam(location_config, server_config.allowMethod());
+    setAllowMethodParams(location_config, server_config.allowMethod());
     location_config.setAutoindex(server_config.autoindex());
-    setErrorPageParam(location_config, server_config.errorPage());
-    setIndexParam(location_config, server_config.index());
+    setErrorPageParams(location_config, server_config.errorPage());
+    setIndexParams(location_config, server_config.index());
     setReturnRedirectParam(location_config, server_config.returnRedirect());
 }
 
-const std::vector<std::string> ConfigParser::validateAllowMethodParam()
+const std::vector<std::string> ConfigParser::validateAllowMethodParams()
 {
-    std::vector<std::string> param;
+    std::vector<std::string> params;
     std::vector<std::string>::iterator iter = parse_line_.begin();
 
     ++iter;
     for (; (*iter != ";") && (iter != parse_line_.end()); ++iter)
     {
-        param.push_back(*iter);
+        params.push_back(*iter);
     }
-    return param;
+    return params;
 }
 
-const std::map<int, std::string> ConfigParser::validateErrorPageParam()
+const std::map<int, std::string> ConfigParser::validateErrorPageParams()
 {
-    std::map<int, std::string> param;
+    std::map<int, std::string> params;
     std::vector<std::string>::iterator status_code = parse_line_.begin();
     std::vector<std::string>::iterator uri = parse_line_.end();
 
@@ -396,23 +396,23 @@ const std::map<int, std::string> ConfigParser::validateErrorPageParam()
     uri = uri - 2;
     for (; status_code != uri; ++status_code)
     {
-        param.insert(std::make_pair(std::atoi(status_code->c_str()), *uri));
+        params.insert(std::make_pair(std::atoi(status_code->c_str()), *uri));
     }
-    return param;
+    return params;
 }
 
 
-const std::vector<std::string> ConfigParser::validateIndexParam()
+const std::vector<std::string> ConfigParser::validateIndexParams()
 {
-    std::vector<std::string> param;
+    std::vector<std::string> params;
     std::vector<std::string>::iterator iter = parse_line_.begin();
 
     ++iter;
     for (; (*iter != ";") && (iter != parse_line_.end()); ++iter)
     {
-        param.push_back(*iter);
+        params.push_back(*iter);
     }
-    return param;
+    return params;
 }
 
 const std::map<int, std::string> ConfigParser::validateReturnParam()
