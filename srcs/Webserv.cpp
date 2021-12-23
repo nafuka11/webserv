@@ -3,9 +3,7 @@
 
 Webserv::Webserv(const std::string &filepath) : config_(Config())
 {
-    // TODO: Configのファイル読み込み処理実装後、readFileに引数filepathをセットすること
-    (void)filepath;
-    config_.readFile();
+    config_.readFile(filepath);
     setupServers();
     registerEvents();
 }

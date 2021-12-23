@@ -1,12 +1,15 @@
 #include <iostream>
 #include "Webserv.hpp"
 
-int main(void)
+int main(int argc, char *argv[])
 {
     try
     {
-        // TODO: Configのファイル読み込み処理実装後、コマンドライン引数からセットすること
-        Webserv webserv("dummy.conf");
+        if (argc != 2)
+        {
+            throw std::invalid_argument("Invalid argument.");
+        }
+        Webserv webserv(argv[1]);
         webserv.run();
     }
     catch(const std::exception& e)
