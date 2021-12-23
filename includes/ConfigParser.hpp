@@ -53,10 +53,10 @@ private:
     static const int DIRECTIVE_NAME_INDEX;
     static const int DIRECTIVE_VALUE_INDEX;
 
-    static std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > setAllowedDirective();
-    static std::map<ConfigParser::DirectiveType, main_parse_func> setMainParseFunc();
-    static std::map<ConfigParser::DirectiveType, server_parse_func> setServerParseFunc();
-    static std::map<ConfigParser::DirectiveType, location_parse_func> setLocationParseFunc();
+    static std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > createAllowedDirective();
+    static std::map<ConfigParser::DirectiveType, main_parse_func> createMainParseFunc();
+    static std::map<ConfigParser::DirectiveType, server_parse_func> createServerParseFunc();
+    static std::map<ConfigParser::DirectiveType, location_parse_func> createLocationParseFunc();
 
     void readAndSplitLines(std::ifstream &ifs);
     std::vector<std::string> splitLine(const std::string &line);

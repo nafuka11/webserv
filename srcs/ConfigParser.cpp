@@ -7,13 +7,13 @@
 #include "SystemError.hpp"
 
 const std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> >
-    ConfigParser::ALLOWED_DIRECTIVE = ConfigParser::setAllowedDirective();
+    ConfigParser::ALLOWED_DIRECTIVE = ConfigParser::createAllowedDirective();
 const std::map<ConfigParser::DirectiveType, ConfigParser::main_parse_func>
-    ConfigParser::MAIN_PARSE_FUNC = ConfigParser::setMainParseFunc();
+    ConfigParser::MAIN_PARSE_FUNC = ConfigParser::createMainParseFunc();
 const std::map<ConfigParser::DirectiveType, ConfigParser::server_parse_func>
-    ConfigParser::SERVER_PARSE_FUNC = ConfigParser::setServerParseFunc();
+    ConfigParser::SERVER_PARSE_FUNC = ConfigParser::createServerParseFunc();
 const std::map<ConfigParser::DirectiveType, ConfigParser::location_parse_func>
-    ConfigParser::LOCATION_PARSE_FUNC = ConfigParser::setLocationParseFunc();
+    ConfigParser::LOCATION_PARSE_FUNC = ConfigParser::createLocationParseFunc();
 
 const int ConfigParser::DIRECTIVE_NAME_INDEX = 0;
 const int ConfigParser::DIRECTIVE_VALUE_INDEX = 1;
@@ -212,7 +212,7 @@ bool ConfigParser::isEndContext()
     return false;
 }
 
-std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > ConfigParser::setAllowedDirective()
+std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > ConfigParser::createAllowedDirective()
 {
     std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > allowed_directive;
 
@@ -274,7 +274,7 @@ std::vector<ConfigParser::ContextType> ConfigParser::getAllowedContext(Directive
 }
 
 
-std::map<ConfigParser::DirectiveType, ConfigParser::main_parse_func> ConfigParser::setMainParseFunc()
+std::map<ConfigParser::DirectiveType, ConfigParser::main_parse_func> ConfigParser::createMainParseFunc()
 {
     std::map<ConfigParser::DirectiveType, main_parse_func> parse_func;
 
@@ -288,7 +288,7 @@ std::map<ConfigParser::DirectiveType, ConfigParser::main_parse_func> ConfigParse
     return parse_func;
 }
 
-std::map<ConfigParser::DirectiveType, ConfigParser::server_parse_func> ConfigParser::setServerParseFunc()
+std::map<ConfigParser::DirectiveType, ConfigParser::server_parse_func> ConfigParser::createServerParseFunc()
 {
     std::map<ConfigParser::DirectiveType, server_parse_func> parse_func;
 
@@ -305,7 +305,7 @@ std::map<ConfigParser::DirectiveType, ConfigParser::server_parse_func> ConfigPar
     return parse_func;
 }
 
-std::map<ConfigParser::DirectiveType, ConfigParser::location_parse_func> ConfigParser::setLocationParseFunc()
+std::map<ConfigParser::DirectiveType, ConfigParser::location_parse_func> ConfigParser::createLocationParseFunc()
 {
     std::map<ConfigParser::DirectiveType, location_parse_func> parse_func;
 
