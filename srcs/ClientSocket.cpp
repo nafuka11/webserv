@@ -1,9 +1,10 @@
 #include "ClientSocket.hpp"
-#include "SystemError.hpp"
-#include "HTTPParseException.hpp"
 #include <cerrno>
 #include <unistd.h>
 #include <fcntl.h>
+#include "SystemError.hpp"
+#include "HTTPParseException.hpp"
+#include "Uri.hpp"
 
 const size_t ClientSocket::BUF_SIZE = 8192;
 
@@ -60,7 +61,13 @@ void ClientSocket::prepareResponse()
 
 void ClientSocket::openFile()
 {
-    std::string path = request_.getUri();
+    Uri uri = Uri(config_, request_.getUri());
+    if (uri.getNeedAutoIndex())
+    {
+        // TODO: autoindexのHTMLを生成して返す
+    }
+
+    std::string path = uri.getPath();
     file_fd_ = open(path.c_str(), O_RDONLY);
     if (file_fd_ < 0)
     {
