@@ -64,9 +64,7 @@ void ClientSocket::openFile()
     file_fd_ = open(path.c_str(), O_RDONLY);
     if (file_fd_ < 0)
     {
-        response_.setStatusCode(CODE_404);
-        poller_.registerWriteEvent(this, fd_);
-        return;
+        throw HTTPParseException(CODE_404);
     }
     setNonBlockingFd(file_fd_);
     poller_.registerReadEvent(this, file_fd_);
