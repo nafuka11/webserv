@@ -79,7 +79,7 @@ private:
     template <typename T>
     void parseIndex(T &config_obj);
     template <typename T>
-    void parseReturn(T &config_obj);
+    void parseReturnRedirect(T &config_obj);
     template <typename T>
     void parseUploadPath(T &config_obj);
     void setDirectiveType(const std::string &directive_name);
@@ -198,7 +198,7 @@ void ConfigParser::parseIndex(T &config_obj)
 }
 
 template <typename T>
-void ConfigParser::parseReturn(T &config_obj)
+void ConfigParser::parseReturnRedirect(T &config_obj)
 {
     std::map<int, std::string> param = validateReturnParam();
     setReturnRedirectParam(config_obj, param);

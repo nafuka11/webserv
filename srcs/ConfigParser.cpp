@@ -299,7 +299,7 @@ std::map<ConfigParser::DirectiveType, ConfigParser::server_parse_func> ConfigPar
     parse_func[INDEX] = &ConfigParser::parseIndex;
     parse_func[LISTEN] = &ConfigParser::parseListen;
     parse_func[LOCATION] = &ConfigParser::parseLocationContext;
-    parse_func[RETURN] = &ConfigParser::parseReturn;
+    parse_func[RETURN] = &ConfigParser::parseReturnRedirect;
     parse_func[SERVER_NAME] = &ConfigParser::parseServerName;
     parse_func[UPLOAD_PATH] = &ConfigParser::parseUploadPath;
     return parse_func;
@@ -314,7 +314,7 @@ std::map<ConfigParser::DirectiveType, ConfigParser::location_parse_func> ConfigP
     parse_func[AUTOINDEX] = &ConfigParser::parseAutoindex;
     parse_func[ERROR_PAGE] = &ConfigParser::parseErrorPage;
     parse_func[INDEX] = &ConfigParser::parseIndex;
-    parse_func[RETURN] = &ConfigParser::parseReturn;
+    parse_func[RETURN] = &ConfigParser::parseReturnRedirect;
     parse_func[UPLOAD_PATH] = &ConfigParser::parseUploadPath;
     return parse_func;
 }
