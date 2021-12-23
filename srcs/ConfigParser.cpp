@@ -125,7 +125,7 @@ void ConfigParser::parseServerContext(MainConfig &main_config)
 {
     ServerConfig server_config = ServerConfig();
 
-    setServerConfigFromMain(server_config, main_config);
+    initServerConfigFromMain(server_config, main_config);
     setContextType(CONTEXT_SERVER);
     ++line_pos_;
 
@@ -156,7 +156,7 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
     LocationConfig location_config = LocationConfig();
     std::string location_path = parse_line_[DIRECTIVE_VALUE_INDEX];
 
-    setLocationConfigFromServer(location_config, server_config);
+    initLocationConfigFromServer(location_config, server_config);
     setContextType(CONTEXT_LOCATION);
     ++line_pos_;
 
@@ -354,7 +354,7 @@ void ConfigParser::setContextType(ContextType type)
     context_type_ = type;
 }
 
-void ConfigParser::setServerConfigFromMain(ServerConfig &server_config, const MainConfig &main_config)
+void ConfigParser::initServerConfigFromMain(ServerConfig &server_config, const MainConfig &main_config)
 {
     setAllowMethodParams(server_config, main_config.allowMethod());
     server_config.setAutoindex(main_config.autoindex());
@@ -364,7 +364,7 @@ void ConfigParser::setServerConfigFromMain(ServerConfig &server_config, const Ma
     setIndexParams(server_config, main_config.index());
 }
 
-void ConfigParser::setLocationConfigFromServer(LocationConfig &location_config, const ServerConfig &server_config)
+void ConfigParser::initLocationConfigFromServer(LocationConfig &location_config, const ServerConfig &server_config)
 {
     setAllowMethodParams(location_config, server_config.allowMethod());
     location_config.setAutoindex(server_config.autoindex());
