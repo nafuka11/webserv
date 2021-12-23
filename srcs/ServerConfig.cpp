@@ -2,22 +2,28 @@
 #include <utility>
 
 const int ServerConfig::DEFAULT_PORT = 80;
-const int ServerConfig::DEFAULT_CLIENT_MAX_BODY_SIZE = 5000;
 
 ServerConfig::ServerConfig()
-: listen_(DEFAULT_PORT),
-  server_name_(),
-  allow_methods_(),//GET, POST, DELETE
-  cgi_extension_(),
-  client_max_body_size_(DEFAULT_CLIENT_MAX_BODY_SIZE),
-  error_page_(),
-  upload_path_(),
-  location_()
 {
 }
 
 ServerConfig::~ServerConfig()
 {
+}
+
+void ServerConfig::setAutoindex(const std::string &autoindex)
+{
+    autoindex_ = autoindex;
+}
+
+void ServerConfig::setCgiExtension(const std::string &extension)
+{
+    cgi_extension_ = extension;
+}
+
+void ServerConfig::setClientMaxBodySize(const int size)
+{
+    client_max_body_size_ = size;
 }
 
 void ServerConfig::setListen(const int port)
@@ -30,19 +36,14 @@ void ServerConfig::setServerName(const std::string &name)
     server_name_ = name;
 }
 
-void ServerConfig::addAllowMethods(const std::string &method)
+void ServerConfig::setUploadPath(const std::string &path)
 {
-    allow_methods_.push_back(method);
+    upload_path_ = path;
 }
 
-void ServerConfig::setcgiExtension(const std::string &extension)
+void ServerConfig::addAllowMethod(const std::string &method)
 {
-    cgi_extension_ = extension;
-}
-
-void ServerConfig::setClientMaxBodySize(const int size)
-{
-    client_max_body_size_ = size;
+    allow_method_.push_back(method);
 }
 
 void ServerConfig::addErrorPage(const int status_code, const std::string &uri)
@@ -50,9 +51,9 @@ void ServerConfig::addErrorPage(const int status_code, const std::string &uri)
     error_page_.insert(std::make_pair(status_code, uri));
 }
 
-void ServerConfig::setUploadPath(const std::string &path)
+void ServerConfig::addIndex(const std::string &file)
 {
-    upload_path_ = path;
+    index_.push_back(file);
 }
 
 void ServerConfig::addLocation(const std::string &path, const LocationConfig &location_config)
@@ -60,19 +61,59 @@ void ServerConfig::addLocation(const std::string &path, const LocationConfig &lo
     location_.insert(std::make_pair(path, location_config));
 }
 
-const int &ServerConfig::listen() const
+void ServerConfig::addReturnRedirect(const int status_code, const std::string &uri)
 {
-    return listen_;
+    return_redirect_.insert(std::make_pair(status_code, uri));
 }
 
-const std::string ServerConfig::serverName() const
+void ServerConfig::clearAllowMethod()
 {
-    return server_name_;
+    allow_method_.clear();
 }
 
-const std::vector<std::string> ServerConfig::allowMethods() const
+void ServerConfig::clearErrorPage(const int status_code)
 {
-    return allow_methods_;
+    std::map<int, std::string>::iterator iter = error_page_.find(status_code);
+
+    if (iter != error_page_.end())
+    {
+        error_page_.erase(iter);
+    }
+}
+
+void ServerConfig::clearIndex()
+{
+    index_.clear();
+}
+
+void ServerConfig::clearLocation(const std::string &path)
+{
+    std::map<std::string, LocationConfig>::iterator iter = location_.find(path);
+
+    if (iter != location_.end())
+    {
+        location_.erase(iter);
+    }
+}
+
+void ServerConfig::clearReturnRedirect(const int status_code)
+{
+    std::map<int, std::string>::iterator iter = return_redirect_.find(status_code);
+
+    if (iter != return_redirect_.end())
+    {
+        return_redirect_.erase(iter);
+    }
+}
+
+const std::vector<std::string> ServerConfig::allowMethod() const
+{
+    return allow_method_;
+}
+
+const std::string ServerConfig::autoindex() const
+{
+    return autoindex_;
 }
 
 const std::string ServerConfig::cgiExtension() const
@@ -90,12 +131,32 @@ const std::map<int, std::string> ServerConfig::errorPage() const
     return error_page_;
 }
 
-const std::string ServerConfig::uploadPath() const
+const std::vector<std::string> ServerConfig::index() const
 {
-    return upload_path_;
+    return index_;
+}
+
+const int &ServerConfig::listen() const
+{
+    return listen_;
 }
 
 const std::map<std::string, LocationConfig> ServerConfig::location() const
 {
     return location_;
+}
+
+const std::map<int, std::string> ServerConfig::returnRedirect() const
+{
+    return return_redirect_;
+}
+
+const std::string ServerConfig::serverName() const
+{
+    return server_name_;
+}
+
+const std::string ServerConfig::uploadPath() const
+{
+    return upload_path_;
 }
