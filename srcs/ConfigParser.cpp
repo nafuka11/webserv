@@ -48,7 +48,7 @@ void ConfigParser::readAndSplitLines(std::ifstream &ifs)
     while (std::getline(ifs, line))
     {
         const std::vector<std::string> words = splitLine(line);
-        parse_file_.push_back(words);
+        parse_lines_.push_back(words);
     }
 }
 
@@ -85,8 +85,8 @@ std::vector<std::string> ConfigParser::splitLine(const std::string &line)
 void ConfigParser::putSplitLines()
 {
     size_t line_num = 1;
-    for (std::vector<std::vector<std::string> > ::const_iterator vviter = parse_file_.begin();
-         vviter != parse_file_.end();
+    for (std::vector<std::vector<std::string> > ::const_iterator vviter = parse_lines_.begin();
+         vviter != parse_lines_.end();
          ++vviter)
     {
         std::cout << "------------------(" << line_num << std::endl;
@@ -106,10 +106,10 @@ void ConfigParser::parseMainContext()
     MainConfig main_config = MainConfig();
 
     setContextType(CONTEXT_MAIN);
-    for (; line_pos_ < parse_file_.size(); ++line_pos_)
+    for (; line_pos_ < parse_lines_.size(); ++line_pos_)
     {
         parse_line_.clear();
-        parse_line_ = parse_file_[line_pos_];
+        parse_line_ = parse_lines_[line_pos_];
         if (parse_line_.size() == 0)
         {
             continue;
@@ -129,10 +129,10 @@ void ConfigParser::parseServerContext(MainConfig &main_config)
     setContextType(CONTEXT_SERVER);
     ++line_pos_;
 
-    for (; line_pos_ < parse_file_.size(); ++line_pos_)
+    for (; line_pos_ < parse_lines_.size(); ++line_pos_)
     {
         parse_line_.clear();
-        parse_line_ = parse_file_[line_pos_];
+        parse_line_ = parse_lines_[line_pos_];
         if (parse_line_.size() == 0)
         {
             continue;
@@ -160,10 +160,10 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
     setContextType(CONTEXT_LOCATION);
     ++line_pos_;
 
-    for (; line_pos_ < parse_file_.size(); ++line_pos_)
+    for (; line_pos_ < parse_lines_.size(); ++line_pos_)
     {
         parse_line_.clear();
-        parse_line_ = parse_file_[line_pos_];
+        parse_line_ = parse_lines_[line_pos_];
         if (parse_line_.size() == 0)
         {
             continue;

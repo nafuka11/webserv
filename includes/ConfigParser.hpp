@@ -106,7 +106,7 @@ private:
     void putSplitLines(); // TODO: 後で消す
 
     std::string filepath_;
-    std::vector<std::vector<std::string> > parse_file_;
+    std::vector<std::vector<std::string> > parse_lines_;
     std::vector<std::string> parse_line_;
     size_t line_pos_;
     Config &config_;
