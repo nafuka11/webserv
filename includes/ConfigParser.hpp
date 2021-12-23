@@ -87,11 +87,11 @@ private:
     void initServerConfigFromMain(ServerConfig &server_config, const MainConfig &main_config);
     void initLocationConfigFromServer(LocationConfig &location_config, const ServerConfig &server_config);
     template <typename T>
-    void setAllowMethodParams(T &config_obj, const std::vector<std::string> &param);
+    void setAllowMethodParams(T &config_obj, const std::vector<std::string> &params);
     template <typename T>
-    void setErrorPageParams(T &config_obj, const std::map<int, std::string> &param);
+    void setErrorPageParams(T &config_obj, const std::map<int, std::string> &params);
     template <typename T>
-    void setIndexParams(T &config_obj, const std::vector<std::string> &param);
+    void setIndexParams(T &config_obj, const std::vector<std::string> &params);
     static std::vector<ContextType> generateAllowedContext(DirectiveType state);
     template <typename T>
     void setReturnRedirectParam(T &config_obj, const std::map<int, std::string> &param);
@@ -115,10 +115,10 @@ private:
 };
 
 template <typename T>
-void ConfigParser::setAllowMethodParams(T &config_obj, const std::vector<std::string> &param)
+void ConfigParser::setAllowMethodParams(T &config_obj, const std::vector<std::string> &params)
 {
-    for (std::vector<std::string>::const_iterator const_iter = param.begin();
-         const_iter != param.end();
+    for (std::vector<std::string>::const_iterator const_iter = params.begin();
+         const_iter != params.end();
          ++const_iter)
     {
         config_obj.addAllowMethod(*const_iter);
@@ -126,10 +126,10 @@ void ConfigParser::setAllowMethodParams(T &config_obj, const std::vector<std::st
 }
 
 template <typename T>
-void ConfigParser::setErrorPageParams(T &config_obj, const std::map<int, std::string> &param)
+void ConfigParser::setErrorPageParams(T &config_obj, const std::map<int, std::string> &params)
 {
-    for (std::map<int, std::string>::const_iterator const_iter = param.begin();
-         const_iter != param.end();
+    for (std::map<int, std::string>::const_iterator const_iter = params.begin();
+         const_iter != params.end();
          ++const_iter)
     {
         config_obj.clearErrorPage(const_iter->first); // TODO: addErrorPageの中に入れる？
@@ -138,10 +138,10 @@ void ConfigParser::setErrorPageParams(T &config_obj, const std::map<int, std::st
 }
 
 template <typename T>
-void ConfigParser::setIndexParams(T &config_obj, const std::vector<std::string> &param)
+void ConfigParser::setIndexParams(T &config_obj, const std::vector<std::string> &params)
 {
-    for (std::vector<std::string>::const_iterator const_iter = param.begin();
-         const_iter != param.end();
+    for (std::vector<std::string>::const_iterator const_iter = params.begin();
+         const_iter != params.end();
          ++const_iter)
     {
         config_obj.addIndex(*const_iter);
