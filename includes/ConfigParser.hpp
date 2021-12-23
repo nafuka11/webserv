@@ -92,7 +92,7 @@ private:
     void setErrorPageParams(T &config_obj, const std::map<int, std::string> &param);
     template <typename T>
     void setIndexParams(T &config_obj, const std::vector<std::string> &param);
-    static std::vector<ContextType> getAllowedContext(DirectiveType state);
+    static std::vector<ContextType> generateAllowedContext(DirectiveType state);
     template <typename T>
     void setReturnRedirectParam(T &config_obj, const std::map<int, std::string> &param);
 

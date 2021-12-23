@@ -216,23 +216,23 @@ std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > C
 {
     std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > allowed_directive;
 
-    allowed_directive[ALIAS] = getAllowedContext(ALIAS);
-    allowed_directive[ALLOW_METHOD] = getAllowedContext(ALLOW_METHOD);
-    allowed_directive[AUTOINDEX] = getAllowedContext(AUTOINDEX);
-    allowed_directive[CGI_EXTENSION] = getAllowedContext(CGI_EXTENSION);
-    allowed_directive[CLIENT_MAX_BODY_SIZE] = getAllowedContext(CLIENT_MAX_BODY_SIZE);
-    allowed_directive[ERROR_PAGE] = getAllowedContext(ERROR_PAGE);
-    allowed_directive[INDEX] = getAllowedContext(INDEX);
-    allowed_directive[LISTEN] = getAllowedContext(LISTEN);
-    allowed_directive[LOCATION] = getAllowedContext(LOCATION);
-    allowed_directive[RETURN] = getAllowedContext(RETURN);
-    allowed_directive[SERVER] = getAllowedContext(SERVER);
-    allowed_directive[SERVER_NAME] = getAllowedContext(SERVER_NAME);
-    allowed_directive[UPLOAD_PATH] = getAllowedContext(UPLOAD_PATH);
+    allowed_directive[ALIAS] = generateAllowedContext(ALIAS);
+    allowed_directive[ALLOW_METHOD] = generateAllowedContext(ALLOW_METHOD);
+    allowed_directive[AUTOINDEX] = generateAllowedContext(AUTOINDEX);
+    allowed_directive[CGI_EXTENSION] = generateAllowedContext(CGI_EXTENSION);
+    allowed_directive[CLIENT_MAX_BODY_SIZE] = generateAllowedContext(CLIENT_MAX_BODY_SIZE);
+    allowed_directive[ERROR_PAGE] = generateAllowedContext(ERROR_PAGE);
+    allowed_directive[INDEX] = generateAllowedContext(INDEX);
+    allowed_directive[LISTEN] = generateAllowedContext(LISTEN);
+    allowed_directive[LOCATION] = generateAllowedContext(LOCATION);
+    allowed_directive[RETURN] = generateAllowedContext(RETURN);
+    allowed_directive[SERVER] = generateAllowedContext(SERVER);
+    allowed_directive[SERVER_NAME] = generateAllowedContext(SERVER_NAME);
+    allowed_directive[UPLOAD_PATH] = generateAllowedContext(UPLOAD_PATH);
     return allowed_directive;
 }
 
-std::vector<ConfigParser::ContextType> ConfigParser::getAllowedContext(DirectiveType state)
+std::vector<ConfigParser::ContextType> ConfigParser::generateAllowedContext(DirectiveType state)
 {
     std::vector<ContextType> allowed_context;
 
