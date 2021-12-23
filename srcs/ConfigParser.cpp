@@ -78,7 +78,7 @@ std::vector<std::string> ConfigParser::splitLine(const std::string &line)
             start++;
         }
     }
-    return (words);
+    return words;
 }
 
 // TODO: 後で消す
