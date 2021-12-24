@@ -65,6 +65,7 @@ void ClientSocket::openFile()
     if (uri.getNeedAutoIndex())
     {
         // TODO: autoindexのHTMLを生成して返す
+        throw HTTPParseException(CODE_404);
     }
 
     std::string path = uri.getPath();
