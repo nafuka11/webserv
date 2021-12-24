@@ -65,18 +65,20 @@ std::vector<std::string> ConfigParser::splitLine(const std::string &line)
             ++start;
         }
         end = start;
-        while (isprint(line[end]) && !(isspace(line[end])) && (line[end] != ';'))
+        while (isprint(line[end]) && !(isspace(line[end]))
+               && (line[end] != ';') && (line[end] != '{') &&  (line[end] != '}'))
         {
             ++end;
         }
         if ((end - start) != 0)
             words.push_back(line.substr(start, (end - start)));
-        start = end;
-        if (line[start] == ';')
+        if ((line[end] == ';') || (line[end] == '{') || (line[end] == '}'))
         {
-            words.push_back(";");
-            start++;
+            start = end;
+            ++end;
+            words.push_back(line.substr(start, (end - start)));
         }
+        start = end;
     }
     return words;
 }
