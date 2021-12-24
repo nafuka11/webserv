@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include "Config.hpp"
+#include "ConfigError.hpp"
 #include "LocationConfig.hpp"
 #include "MainConfig.hpp"
 #include "SystemError.hpp"
@@ -117,6 +118,8 @@ void ConfigParser::parseMainContext()
             continue;
         }
         setDirectiveType(parse_line_[DIRECTIVE_NAME_INDEX]);
+
+
         std::map<DirectiveType, main_parse_func>::const_iterator miter;
         miter = MAIN_PARSE_FUNC.find(directive_type_);
         (this->*miter->second)(main_config);
@@ -349,6 +352,8 @@ void ConfigParser::setDirectiveType(const std::string &directive_name)
         directive_type_ = SERVER_NAME;
     else if (directive_name == "upload_path")
         directive_type_ = UPLOAD_PATH;
+    else
+        throw ConfigError(UNKOWN_DIRECTIVE, directive_name, filepath_, (line_pos_ + 1));
 }
 
 void ConfigParser::setContextType(ContextType type)
