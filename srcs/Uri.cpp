@@ -35,9 +35,9 @@ void Uri::findPath()
 {
     std::string path = path_;
     const std::map<std::string, LocationConfig> &locations = config_.location();
-    std::map<std::string, LocationConfig>::const_iterator iter = locations.begin();
+    std::map<std::string, LocationConfig>::const_reverse_iterator iter = locations.rbegin();
 
-    for (; iter != locations.end(); ++iter)
+    for (; iter != locations.rend(); ++iter)
     {
         if (!startsWith(path_, iter->first))
         {
