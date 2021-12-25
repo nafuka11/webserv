@@ -96,6 +96,7 @@ private:
     template <typename T>
     void setReturnRedirectParam(T &config_obj, const std::map<int, std::string> &param);
 
+    bool isAllowedDirective();
     bool isEndContext();
 
     const std::vector<std::string> validateAllowMethodParams();

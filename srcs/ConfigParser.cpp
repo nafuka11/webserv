@@ -118,8 +118,10 @@ void ConfigParser::parseMainContext()
             continue;
         }
         setDirectiveType(parse_line_[DIRECTIVE_NAME_INDEX]);
-
-
+        if (!isAllowedDirective())
+        {
+            throw ConfigError(NOT_ALLOWED_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+        }
         std::map<DirectiveType, main_parse_func>::const_iterator miter;
         miter = MAIN_PARSE_FUNC.find(directive_type_);
         (this->*miter->second)(main_config);
@@ -147,6 +149,10 @@ void ConfigParser::parseServerContext(MainConfig &main_config)
             break ;
         }
         setDirectiveType(parse_line_[DIRECTIVE_NAME_INDEX]);
+        if (!isAllowedDirective())
+        {
+            throw ConfigError(NOT_ALLOWED_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+        }
 
         std::map<DirectiveType, server_parse_func>::const_iterator miter;
         miter = SERVER_PARSE_FUNC.find(directive_type_);
@@ -178,6 +184,10 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
             break ;
         }
         setDirectiveType(parse_line_[DIRECTIVE_NAME_INDEX]);
+        if (!isAllowedDirective())
+        {
+            throw ConfigError(NOT_ALLOWED_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+        }
 
         std::map<DirectiveType, location_parse_func>::const_iterator miter;
         miter = LOCATION_PARSE_FUNC.find(directive_type_);
@@ -206,6 +216,21 @@ void ConfigParser::parseListen(ServerConfig &server_config)
 void ConfigParser::parseServerName(ServerConfig &server_config)
 {
     server_config.setServerName(parse_line_[DIRECTIVE_VALUE_INDEX]);
+}
+
+bool ConfigParser::isAllowedDirective()
+{
+    std::map<DirectiveType, std::vector<ContextType> >::const_iterator miter;
+    miter = ALLOWED_DIRECTIVE.find(directive_type_);
+
+    for (std::vector<ContextType>::const_iterator viter = miter->second.begin();
+         viter != miter->second.end();
+         viter++)
+    {
+        if (*viter == context_type_)
+            return true;
+    }
+    return false;
 }
 
 bool ConfigParser::isEndContext()
