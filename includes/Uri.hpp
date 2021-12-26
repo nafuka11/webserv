@@ -11,6 +11,7 @@ public:
     Uri(const ServerConfig &config, const std::string &uri);
     ~Uri();
 
+    std::string getRawUri() const;
     std::string getPath() const;
     bool getNeedAutoIndex() const;
 
