@@ -66,8 +66,25 @@ void ClientSocket::prepareResponse()
 void ClientSocket::handleGET()
 {
     Uri uri = Uri(config_, request_.getUri());
+    std::string path = uri.getPath();
+
     if (uri.getNeedAutoIndex())
     {
+        DIR *dir_p = openDirectory(path.c_str());
+        std::string body = response_.generateAutoindexHTML(uri, dir_p);
+        response_.appendMessageBody(body.c_str());
+        closeDirectory(dir_p);
+        state_ = WRITE_RESPONSE;
+        poller_.registerWriteEvent(this, fd_);
+        return;
+    }
+
+    openFile(path.c_str());
+    setNonBlockingFd(file_fd_);
+    poller_.registerReadEvent(this, file_fd_);
+    state_ = READ_FILE;
+}
+
 void ClientSocket::openFile(const char *path)
 {
     file_fd_ = open(path, O_RDONLY);
