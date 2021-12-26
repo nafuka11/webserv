@@ -1,8 +1,14 @@
 #include "HTTPResponse.hpp"
 #include <sstream>
+#include <iomanip>
 
+const std::string HTTPResponse::CRLF = "\r\n";
 const std::map<HTTPStatusCode, std::string> HTTPResponse::REASON_PHRASE = HTTPResponse::setReasonPhrase();
 const size_t HTTPResponse::DATE_STR_LEN = 40;
+const size_t HTTPResponse::MTIME_STR_LEN = 20;
+const size_t HTTPResponse::AUTOINDEX_FILENAME_WIDTH = 50;
+const size_t HTTPResponse::AUTOINDEX_MTIME_WIDTH = 17;
+const size_t HTTPResponse::AUTOINDEX_FILESIZE_WIDTH = 20;
 
 HTTPResponse::HTTPResponse()
 {
@@ -116,4 +122,151 @@ std::string HTTPResponse::generateDateString() const
 
     strftime(str, sizeof(str), "%a, %d %b %Y %H:%M:%S GMT", now_time);
     return std::string(str);
+}
+
+std::string HTTPResponse::generateAutoindexHTML(const Uri &uri, DIR *dir_p) const
+{
+    std::stringstream ss;
+
+    ss << "<html>" << CRLF
+       << "<head><title>Index of " << uri.getRawUri() << "</title></head>" << CRLF
+       << "<body>" << CRLF
+       << "<h1>Index of " << uri.getRawUri()
+       << "</h1><hr><pre style=\"font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace\"><a href=\"../\">../</a>"
+       << CRLF;
+
+    for (struct dirent *entry = readdir(dir_p); entry != NULL; entry = readdir(dir_p))
+    {
+        if (entry->d_name[0] == '.')
+        {
+            continue;
+        }
+
+        appendFileHTML(ss, uri, entry);
+    }
+
+    ss << "</pre><hr></body>" << CRLF
+       << "</html>" << CRLF;
+
+    return ss.str();
+}
+
+void HTTPResponse::appendFileHTML(std::stringstream &ss,
+                                  const Uri &uri, const struct dirent *entry) const
+{
+    std::string path = uri.getPath() + entry->d_name;
+    struct stat path_stat;
+    if (stat(path.c_str(), &path_stat) < 0)
+    {
+        return;
+    }
+
+    std::string href = generateHref(entry);
+    std::string filename = generateFilename(entry);
+    std::string mtime = generateMtime(&path_stat);
+    size_t mtime_width = AUTOINDEX_FILENAME_WIDTH + 1 - filename.size() + mtime.size();
+
+    ss << "<a href=\"" << escapeUri(href) << "\">"
+       << escapeHTML(filename) << "</a>"
+       << std::setw(mtime_width) << mtime
+       << std::setw(AUTOINDEX_FILESIZE_WIDTH);
+
+    if (S_ISDIR(path_stat.st_mode))
+    {
+        ss << "-" << CRLF;
+    }
+    else
+    {
+        ss << path_stat.st_size << CRLF;
+    }
+}
+
+std::string HTTPResponse::generateHref(const struct dirent *entry) const
+{
+    std::string filename = std::string(entry->d_name);
+    if (entry->d_type == DT_DIR)
+    {
+        filename.append("/");
+    }
+    return filename;
+}
+
+std::string HTTPResponse::generateFilename(const struct dirent *entry) const
+{
+    std::string filename = generateHref(entry);
+    if (filename.size() > AUTOINDEX_FILENAME_WIDTH)
+    {
+        filename = filename.substr(0, AUTOINDEX_FILENAME_WIDTH - 4).append("..>");
+    }
+    return filename;
+}
+
+std::string HTTPResponse::generateMtime(const struct stat *path_stat) const
+{
+    // Format: "01-Jan-1970 00:00"
+    char mtime_str[MTIME_STR_LEN];
+
+    if (S_ISDIR(path_stat->st_mode))
+    {
+        std::string mtime = std::string(AUTOINDEX_MTIME_WIDTH, ' ');
+        mtime.at(0) = '-';
+        return mtime;
+    }
+
+    struct tm *mtime = gmtime(&path_stat->st_mtimespec.tv_sec);
+    strftime(mtime_str, MTIME_STR_LEN, "%d-%b-%Y %H:%M", mtime);
+    return std::string(mtime_str);
+}
+
+std::string HTTPResponse::escapeHTML(const std::string &str) const
+{
+    std::string escaped_str = str;
+    size_t escaped_index = 0;
+
+    for (size_t i = 0; i < str.size(); i++, escaped_index++)
+    {
+        switch (str.at(i))
+        {
+        case '<':
+            escaped_str.replace(escaped_index, 1, "&lt;");
+            escaped_index += 3;
+            break;
+        case '>':
+            escaped_str.replace(escaped_index, 1, "&gt;");
+            escaped_index += 3;
+            break;
+        case '&':
+            escaped_str.replace(escaped_index, 1, "&amp;");
+            escaped_index += 4;
+            break;
+        case '"':
+            escaped_str.replace(escaped_index, 1, "&quot;");
+            escaped_index += 5;
+            break;
+        default:
+            break;
+        }
+    }
+    return escaped_str;
+}
+
+std::string HTTPResponse::escapeUri(const std::string &str) const
+{
+    std::stringstream ss;
+    std::string escape_chars = " \"<>\\^`{|}#%&+;?";
+
+    for (size_t i = 0; i < str.size(); i++)
+    {
+        char c = str.at(i);
+        if ((0x0 <= c && c <= 0x1F) || (0x7F <= c) ||
+            escape_chars.find(c) != std::string::npos)
+        {
+            ss << "%" << std::hex << (int)c;
+        }
+        else
+        {
+            ss << c;
+        }
+    }
+    return ss.str();
 }
