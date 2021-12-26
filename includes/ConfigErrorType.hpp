@@ -3,6 +3,7 @@
 
 enum ConfigErrorType
 {
+    NO_OPEN_DIRECTIVE,
     NOT_ALLOWED_DIRECTIVE,
     UNKOWN_DIRECTIVE
 };

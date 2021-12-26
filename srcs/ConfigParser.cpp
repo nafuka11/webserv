@@ -130,6 +130,10 @@ void ConfigParser::parseMainContext()
 
 void ConfigParser::parseServerContext(MainConfig &main_config)
 {
+    if (!isServerContext())
+    {
+        throw ConfigError(NO_OPEN_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+    }
     ServerConfig server_config = ServerConfig();
 
     initServerConfigFromMain(server_config, main_config);
@@ -216,6 +220,12 @@ void ConfigParser::parseListen(ServerConfig &server_config)
 void ConfigParser::parseServerName(ServerConfig &server_config)
 {
     server_config.setServerName(parse_line_[DIRECTIVE_VALUE_INDEX]);
+}
+
+bool ConfigParser::isServerContext()
+{
+    std::cout << "parse_line_.size(): " << parse_line_.size() << std::endl;
+    return false;
 }
 
 bool ConfigParser::isAllowedDirective()

@@ -17,6 +17,10 @@ void ConfigError::setErrorMessage(const ConfigErrorType error_type, const std::s
 {
     switch (error_type)
     {
+    case NO_OPEN_DIRECTIVE:
+        error_message_ = SERVER_NAME + "directive \"" + error_word
+                         + "\" has no opening “{” in " + filepath  + ":" + std::to_string(line_pos);
+        break;
     case NOT_ALLOWED_DIRECTIVE:
         error_message_ = SERVER_NAME + error_message_ = "\"" + error_word
                          + "\" directive is not allowed here in " + filepath + ":" + std::to_string(line_pos);
