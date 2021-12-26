@@ -42,6 +42,9 @@ private:
 
     void prepareResponse();
     void handleGET();
+    void openFile(const char *path);
+    DIR *openDirectory(const char *path);
+    void closeDirectory(DIR *dir_p);
     void clearRequest();
 };
 

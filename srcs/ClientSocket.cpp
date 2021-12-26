@@ -68,19 +68,32 @@ void ClientSocket::handleGET()
     Uri uri = Uri(config_, request_.getUri());
     if (uri.getNeedAutoIndex())
     {
-        // TODO: autoindexのHTMLを生成して返す
-        throw HTTPParseException(CODE_404);
-    }
-
-    std::string path = uri.getPath();
-    file_fd_ = open(path.c_str(), O_RDONLY);
+void ClientSocket::openFile(const char *path)
+{
+    file_fd_ = open(path, O_RDONLY);
     if (file_fd_ < 0)
     {
         throw HTTPParseException(CODE_404);
     }
-    setNonBlockingFd(file_fd_);
-    poller_.registerReadEvent(this, file_fd_);
-    state_ = READ_FILE;
+}
+
+DIR *ClientSocket::openDirectory(const char *path)
+{
+    DIR *dir_p = opendir(path);
+    if (dir_p == NULL)
+    {
+        throw HTTPParseException(CODE_404);
+    }
+    return dir_p;
+}
+
+void ClientSocket::closeDirectory(DIR *dir_p)
+{
+    int result = closedir(dir_p);
+    if (result < 0)
+    {
+        throw SystemError("closedir", errno);
+    }
 }
 
 void ClientSocket::readFile(intptr_t offset)
