@@ -1,14 +1,17 @@
 #include "ClientSocket.hpp"
-#include "SystemError.hpp"
-#include "HTTPParseException.hpp"
 #include <cerrno>
 #include <unistd.h>
+#include <fcntl.h>
+#include "SystemError.hpp"
+#include "HTTPParseException.hpp"
+#include "Uri.hpp"
 
 const size_t ClientSocket::BUF_SIZE = 8192;
 
 ClientSocket::ClientSocket(int fd, const struct sockaddr_storage &address,
-                           const ServerConfig &config)
-    : Socket(CLIENT, fd), config_(config), parser_(request_, config_), state_(READ)
+                           const ServerConfig &config, const KqueuePoller &poller)
+    : Socket(CLIENT, fd), config_(config), poller_(poller),
+      parser_(request_, config_), state_(READ_REQUEST)
 {
     address_ = address;
 }
@@ -20,7 +23,7 @@ ClientSocket::~ClientSocket()
 void ClientSocket::receiveRequest()
 {
     char buffer[BUF_SIZE];
-    int read_byte = recv(fd_, buffer, BUF_SIZE - 1, 0);
+    ssize_t read_byte = recv(fd_, buffer, BUF_SIZE - 1, 0);
     if (read_byte <= 0)
     {
         state_ = CLOSE;
@@ -34,15 +37,71 @@ void ClientSocket::receiveRequest()
         parser_.parse();
         if (parser_.finished())
         {
-            state_ = WRITE;
+            state_ = WRITE_RESPONSE;
             response_.setStatusCode(CODE_200);
+            prepareResponse();
         }
     }
     catch (const HTTPParseException &e)
     {
-        state_ = WRITE;
+        state_ = WRITE_RESPONSE;
         response_.setStatusCode(e.getStatusCode());
+        poller_.registerWriteEvent(this, fd_);
     }
+}
+
+void ClientSocket::prepareResponse()
+{
+    poller_.unregisterReadEvent(this, fd_);
+    if (request_.getMethod() == GET)
+    {
+        openFile();
+    }
+}
+
+void ClientSocket::openFile()
+{
+    Uri uri = Uri(config_, request_.getUri());
+    if (uri.getNeedAutoIndex())
+    {
+        // TODO: autoindexのHTMLを生成して返す
+        throw HTTPParseException(CODE_404);
+    }
+
+    std::string path = uri.getPath();
+    file_fd_ = open(path.c_str(), O_RDONLY);
+    if (file_fd_ < 0)
+    {
+        throw HTTPParseException(CODE_404);
+    }
+    setNonBlockingFd(file_fd_);
+    poller_.registerReadEvent(this, file_fd_);
+    state_ = READ_FILE;
+}
+
+void ClientSocket::readFile(intptr_t offset)
+{
+    char buffer[BUF_SIZE];
+    ssize_t read_byte = read(file_fd_, buffer, BUF_SIZE - 1);
+    // TODO: handle read_byte < 0
+    if (read_byte <= 0)
+    {
+        closeFile();
+        return;
+    }
+    buffer[read_byte] = '\0';
+    response_.appendMessageBody(buffer);
+    if (read_byte == offset)
+    {
+        closeFile();
+    }
+}
+
+void ClientSocket::closeFile()
+{
+    ::close(file_fd_);
+    state_ = WRITE_RESPONSE;
+    poller_.registerWriteEvent(this, fd_);
 }
 
 void ClientSocket::sendResponse()
@@ -52,7 +111,10 @@ void ClientSocket::sendResponse()
     ::send(fd_, message.c_str(), message.size(), 0);
     if (request_.canKeepAlive())
     {
-        state_ = READ;
+        state_ = READ_REQUEST;
+        response_.clear();
+        poller_.unregisterWriteEvent(this, fd_);
+        poller_.registerReadEvent(this, fd_);
     }
     else
     {

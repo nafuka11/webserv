@@ -4,7 +4,6 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include "AddressInfoError.hpp"
 #include "SystemError.hpp"
 
@@ -19,7 +18,7 @@ ServerSocket::~ServerSocket()
 {
 }
 
-ClientSocket *ServerSocket::acceptConnection() const
+ClientSocket *ServerSocket::acceptConnection(const KqueuePoller &poller) const
 {
     struct sockaddr_storage address;
     socklen_t address_len = sizeof(struct sockaddr_storage);
@@ -31,7 +30,7 @@ ClientSocket *ServerSocket::acceptConnection() const
         throw SystemError("accept", errno);
     }
     setNonBlockingFd(connect_d);
-    ClientSocket *clientSocket = new ClientSocket(connect_d, address, config_);
+    ClientSocket *clientSocket = new ClientSocket(connect_d, address, config_, poller);
     return clientSocket;
 }
 
@@ -101,13 +100,5 @@ void ServerSocket::listen()
     if (::listen(fd_, SOMAXCONN) < 0)
     {
         throw SystemError("listen", errno);
-    }
-}
-
-void ServerSocket::setNonBlockingFd(int fd) const
-{
-    if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
-    {
-        throw SystemError("fcntl", errno);
     }
 }

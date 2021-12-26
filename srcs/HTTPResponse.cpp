@@ -31,6 +31,16 @@ std::string HTTPResponse::toString()
     return ss.str();
 }
 
+void HTTPResponse::appendMessageBody(const char *body)
+{
+    message_body_.append(body);
+}
+
+void HTTPResponse::clear()
+{
+    message_body_.clear();
+}
+
 void HTTPResponse::setStatusCode(HTTPStatusCode status_code)
 {
     status_code_ = status_code;
@@ -47,6 +57,7 @@ std::map<HTTPStatusCode, std::string> HTTPResponse::setReasonPhrase()
 
     reason_phrase[CODE_200] = "OK";
     reason_phrase[CODE_400] = "Bad Request";
+    reason_phrase[CODE_404] = "Not Found";
     reason_phrase[CODE_413] = "Payload Too Large";
     reason_phrase[CODE_501] = "Not Implemented";
     return reason_phrase;
@@ -54,7 +65,10 @@ std::map<HTTPStatusCode, std::string> HTTPResponse::setReasonPhrase()
 
 void HTTPResponse::setProperties()
 {
-    message_body_ = generateHTMLfromStatusCode();
+    if (status_code_ != CODE_200)
+    {
+        message_body_ = generateHTMLfromStatusCode();
+    }
     std::stringstream ss;
     ss << message_body_.size();
     std::string content_length = ss.str();
