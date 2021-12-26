@@ -1,53 +1,6 @@
-import pytest
-from datetime import datetime
+from http import HTTPStatus
 from http.client import HTTPConnection
-import subprocess
-import time
-
-HOST = "localhost"
-PORT = 80
-WEBSERV_PATH = "../webserv"
-SLEEP_TIME = 0.1
-
-RESPONSE_BODY_200 = (
-    b"<html>\r\n"
-    b"<head><title>200 OK</title></head>\r\n"
-    b"<body>\r\n"
-    b"<center><h1>200 OK</h1></center><hr><center>webserv/1.0.0</center>\r\n"
-    b"</body>\r\n"
-    b"</html>\r\n"
-)
-RESPONSE_BODY_501 = (
-    b"<html>\r\n"
-    b"<head><title>501 Not Implemented</title></head>\r\n"
-    b"<body>\r\n"
-    b"<center><h1>501 Not Implemented</h1></center><hr><center>webserv/1.0.0</center>\r\n"
-    b"</body>\r\n"
-    b"</html>\r\n"
-)
-RESPONSE_BODY_400 = (
-    b"<html>\r\n"
-    b"<head><title>400 Bad Request</title></head>\r\n"
-    b"<body>\r\n"
-    b"<center><h1>400 Bad Request</h1></center><hr><center>webserv/1.0.0</center>\r\n"
-    b"</body>\r\n"
-    b"</html>\r\n"
-)
-
-
-@pytest.fixture
-def http_connection() -> HTTPConnection:
-    connection = HTTPConnection(HOST, PORT)
-    yield connection
-    connection.close()
-
-
-@pytest.fixture(scope="session", autouse=True)
-def server():
-    process = subprocess.Popen(WEBSERV_PATH)
-    time.sleep(SLEEP_TIME)
-    yield
-    process.terminate()
+from tests.helper import assert_response
 
 
 def test_valid(http_connection: HTTPConnection):
