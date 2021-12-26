@@ -96,10 +96,11 @@ private:
     template <typename T>
     void setReturnRedirectParam(T &config_obj, const std::map<int, std::string> &param);
 
-    bool isServerContext();
     bool isAllowedDirective();
     bool isEndContext();
 
+    void validateStartServerContext();
+    void validateStartLocationContext();
     const std::vector<std::string> validateAllowMethodParams();
     const std::map<int, std::string> validateErrorPageParams();
     const std::vector<std::string> validateIndexParams();

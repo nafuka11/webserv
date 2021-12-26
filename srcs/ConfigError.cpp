@@ -17,6 +17,10 @@ void ConfigError::setErrorMessage(const ConfigErrorType error_type, const std::s
 {
     switch (error_type)
     {
+    //invalid number of arguments in “location” directive in /etc/nginx/sites-enabled/default:5
+    case INVALID_NUM_OF_ARGS:
+        error_message_ = SERVER_NAME + "invalid number of arguments in \"" + error_word + "\" directive in " + filepath + ":" + std::to_string(line_pos);
+        break;
     case NO_OPEN_DIRECTIVE:
         error_message_ = SERVER_NAME + "directive \"" + error_word
                          + "\" has no opening “{” in " + filepath  + ":" + std::to_string(line_pos);
@@ -24,6 +28,9 @@ void ConfigError::setErrorMessage(const ConfigErrorType error_type, const std::s
     case NOT_ALLOWED_DIRECTIVE:
         error_message_ = SERVER_NAME + error_message_ = "\"" + error_word
                          + "\" directive is not allowed here in " + filepath + ":" + std::to_string(line_pos);
+        break;
+    case UNEXPECTED:
+        error_message_ = SERVER_NAME + "unexpected \"" + error_word + "\" in " + filepath + ":"  + std::to_string(line_pos);
         break;
     case UNKOWN_DIRECTIVE:
         error_message_ = SERVER_NAME + "unknown directive \"" + error_word

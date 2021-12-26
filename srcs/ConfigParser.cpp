@@ -130,13 +130,11 @@ void ConfigParser::parseMainContext()
 
 void ConfigParser::parseServerContext(MainConfig &main_config)
 {
-    if (!isServerContext())
-    {
-        throw ConfigError(NO_OPEN_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
-    }
-    ServerConfig server_config = ServerConfig();
+    validateStartServerContext();
 
+    ServerConfig server_config = ServerConfig();
     initServerConfigFromMain(server_config, main_config);
+
     setContextType(CONTEXT_SERVER);
     ++line_pos_;
 
@@ -168,10 +166,12 @@ void ConfigParser::parseServerContext(MainConfig &main_config)
 
 void ConfigParser::parseLocationContext(ServerConfig &server_config)
 {
+    validateStartLocationContext();
+
     LocationConfig location_config = LocationConfig();
     std::string location_path = parse_line_[DIRECTIVE_VALUE_INDEX];
-
     initLocationConfigFromServer(location_config, server_config);
+
     setContextType(CONTEXT_LOCATION);
     ++line_pos_;
 
@@ -222,10 +222,45 @@ void ConfigParser::parseServerName(ServerConfig &server_config)
     server_config.setServerName(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
 
-bool ConfigParser::isServerContext()
+void ConfigParser::validateStartServerContext()
 {
-    std::cout << "parse_line_.size(): " << parse_line_.size() << std::endl;
-    return false;
+    std::vector<std::string>::iterator iter = std::find(parse_line_.begin(), parse_line_.end(), "{");
+    if (iter == parse_line_.end())
+    {
+        throw ConfigError(NO_OPEN_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+    }
+    if (parse_line_.size() == 2)
+    {
+        return;
+    }
+
+    size_t open_brace_index = std::distance(parse_line_.begin(), iter);
+    size_t unexpected_index = DIRECTIVE_VALUE_INDEX;
+    if (open_brace_index == DIRECTIVE_VALUE_INDEX)
+    {
+        unexpected_index = open_brace_index + 1;
+    }
+    throw ConfigError(UNEXPECTED, parse_line_[unexpected_index], filepath_, (line_pos_ + 1));
+}
+
+void ConfigParser::validateStartLocationContext()
+{
+    std::vector<std::string>::iterator iter = std::find(parse_line_.begin(), parse_line_.end(), "{");
+    if (iter == parse_line_.end())
+    {
+        throw ConfigError(NO_OPEN_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+    }
+
+    size_t open_brace_index = std::distance(parse_line_.begin(), iter);
+    if (parse_line_.size() == 3 && open_brace_index == 2)
+    {
+        return ;
+    }
+    if (open_brace_index == 1 || (open_brace_index + 1) == parse_line_.size())
+    {
+        throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+    }
+    throw ConfigError(UNEXPECTED, parse_line_[open_brace_index + 1], filepath_, (line_pos_ + 1));
 }
 
 bool ConfigParser::isAllowedDirective()
