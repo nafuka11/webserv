@@ -206,13 +206,6 @@ std::string HTTPResponse::generateMtime(const struct stat *path_stat) const
     // Format: "01-Jan-1970 00:00"
     char mtime_str[MTIME_STR_LEN];
 
-    if (S_ISDIR(path_stat->st_mode))
-    {
-        std::string mtime = std::string(AUTOINDEX_MTIME_WIDTH, ' ');
-        mtime.at(0) = '-';
-        return mtime;
-    }
-
     struct tm *mtime = gmtime(&path_stat->st_mtimespec.tv_sec);
     strftime(mtime_str, MTIME_STR_LEN, "%d-%b-%Y %H:%M", mtime);
     return std::string(mtime_str);
