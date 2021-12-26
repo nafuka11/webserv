@@ -34,7 +34,7 @@ void Webserv::registerEvents()
     for (std::map<int, Socket *>::iterator iter = sockets_.begin();
          iter != sockets_.end(); ++iter)
     {
-        poller_.registerServerSocket(iter->second);
+        poller_.registerReadEvent(iter->second, iter->second->getFd());
     }
 }
 
@@ -62,9 +62,9 @@ void Webserv::handleServerEvent(Socket *socket, const struct kevent &event)
     if (event.filter == EVFILT_READ)
     {
         ServerSocket *server = dynamic_cast<ServerSocket *>(socket);
-        ClientSocket *client = server->acceptConnection();
+        ClientSocket *client = server->acceptConnection(poller_);
         sockets_.insert(std::make_pair(client->getFd(), client));
-        poller_.registerClientSocket(client);
+        poller_.registerReadEvent(client, client->getFd());
     }
 }
 
@@ -72,24 +72,36 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
 {
     ClientSocket *client = dynamic_cast<ClientSocket *>(socket);
 
-    if (event.flags & EV_EOF)
+    switch (client->getState())
     {
-        closeClient(client);
-        return;
-    }
-    switch (event.filter)
-    {
-    case EVFILT_READ:
-        if (client->getState() == ClientSocket::READ)
+    case ClientSocket::READ_REQUEST:
+        if (event.flags & EV_EOF)
+        {
+            closeClient(client);
+            return;
+        }
+        if (event.filter == EVFILT_READ)
         {
             client->receiveRequest();
         }
         break;
-    case EVFILT_WRITE:
-        if (client->getState() == ClientSocket::WRITE)
+    case ClientSocket::READ_FILE:
+        if (event.flags & EV_EOF)
+        {
+            client->closeFile();
+        }
+        if (event.filter == EVFILT_READ)
+        {
+            client->readFile(event.data);
+        }
+        break;
+    case ClientSocket::WRITE_RESPONSE:
+        if (event.filter == EVFILT_WRITE)
         {
             client->sendResponse();
         }
+        break;
+    default:
         break;
     }
     if (client->getState() == ClientSocket::CLOSE)

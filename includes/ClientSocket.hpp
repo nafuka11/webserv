@@ -7,33 +7,41 @@
 #include "HTTPResponse.hpp"
 #include "HTTPParser.hpp"
 #include "ServerConfig.hpp"
+#include "KqueuePoller.hpp"
 
 class ClientSocket : public Socket
 {
 public:
     enum State
     {
-        READ,
-        WRITE,
+        READ_REQUEST,
+        WRITE_RESPONSE,
+        READ_FILE,
         CLOSE
     };
 
     ClientSocket(int fd, const struct sockaddr_storage &address,
-                 const ServerConfig &config_);
+                 const ServerConfig &config, const KqueuePoller &poller);
     ~ClientSocket();
     void receiveRequest();
     void sendResponse();
+    void readFile(intptr_t offset);
+    void closeFile();
     void close();
     State getState() const;
 
 private:
     static const size_t BUF_SIZE;
     const ServerConfig &config_;
+    const KqueuePoller &poller_;
     HTTPRequest request_;
     HTTPResponse response_;
     HTTPParser parser_;
     State state_;
+    int file_fd_;
 
+    void prepareResponse();
+    void openFile();
     void clearRequest();
 };
 

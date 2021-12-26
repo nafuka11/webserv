@@ -12,6 +12,8 @@ public:
     HTTPResponse();
     ~HTTPResponse();
     std::string toString();
+    void appendMessageBody(const char *body);
+    void clear();
     void setStatusCode(HTTPStatusCode status_code);
     void setKeepAlive(bool keep_alive);
 

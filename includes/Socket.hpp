@@ -18,6 +18,7 @@ public:
 
     Type getType() const;
     int getFd() const;
+    void setNonBlockingFd(int fd) const;
 
 protected:
     Type type_;
