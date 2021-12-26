@@ -196,7 +196,7 @@ std::string HTTPResponse::generateFilename(const struct dirent *entry) const
     std::string filename = generateHref(entry);
     if (filename.size() > AUTOINDEX_FILENAME_WIDTH)
     {
-        filename = filename.substr(0, AUTOINDEX_FILENAME_WIDTH - 4).append("..>");
+        filename = filename.substr(0, AUTOINDEX_FILENAME_WIDTH - 3).append("..>");
     }
     return filename;
 }
