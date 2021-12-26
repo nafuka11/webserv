@@ -53,13 +53,17 @@ void ClientSocket::receiveRequest()
 void ClientSocket::prepareResponse()
 {
     poller_.unregisterReadEvent(this, fd_);
-    if (request_.getMethod() == GET)
+    switch (request_.getMethod())
     {
-        openFile();
+    case GET:
+        handleGET();
+        break;
+    default:
+        break;
     }
 }
 
-void ClientSocket::openFile()
+void ClientSocket::handleGET()
 {
     Uri uri = Uri(config_, request_.getUri());
     if (uri.getNeedAutoIndex())

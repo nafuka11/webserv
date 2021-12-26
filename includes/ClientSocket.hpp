@@ -41,7 +41,7 @@ private:
     int file_fd_;
 
     void prepareResponse();
-    void openFile();
+    void handleGET();
     void clearRequest();
 };
 
