@@ -160,6 +160,10 @@ void ConfigParser::parseServerContext(MainConfig &main_config)
         miter = SERVER_PARSE_FUNC.find(directive_type_);
         (this->*miter->second)(server_config);
     }
+    if (isUnexpectedEndContext())
+    {
+        throw ConfigError(UNEXPECTED_END, "server", filepath_, (line_pos_ + 1));
+    }
     config_.addServer(server_config);
     setContextType(CONTEXT_MAIN);
 }
@@ -197,7 +201,14 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
         miter = LOCATION_PARSE_FUNC.find(directive_type_);
         (this->*miter->second)(location_config);
     }
-    server_config.clearLocation(location_path);
+    if (isUnexpectedEndContext())
+    {
+        throw ConfigError(UNEXPECTED_END, "location", filepath_, (line_pos_ + 1));
+    }
+    if (isDuplicateLocation(server_config, location_path))
+    {
+        throw ConfigError(DUPLICATE_LOCATION, location_path, filepath_, (line_pos_ + 1));
+    }
     server_config.addLocation(location_path, location_config);
     setContextType(CONTEXT_SERVER);
 }
@@ -281,6 +292,28 @@ bool ConfigParser::isAllowedDirective()
 bool ConfigParser::isEndContext()
 {
     if (parse_line_.size() == 1 && parse_line_[0] == "}")
+    {
+        return true;
+    }
+    return false;
+}
+
+bool ConfigParser::isUnexpectedEndContext()
+{
+    std::cout << "parse_lines_.size(): " << parse_lines_.size() << " line_pos_: " << line_pos_ << std::endl;
+    if (line_pos_ == parse_lines_.size())
+    {
+        return true;
+    }
+    return false;
+}
+
+bool ConfigParser::isDuplicateLocation(const ServerConfig &server_config, const std::string &path)
+{
+    std::map<std::string, LocationConfig> location = server_config.location();
+    std::map<std::string, LocationConfig>::iterator iter = location.find(path);
+
+    if (iter != location.end())
     {
         return true;
     }

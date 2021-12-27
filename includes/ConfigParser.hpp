@@ -98,6 +98,8 @@ private:
 
     bool isAllowedDirective();
     bool isEndContext();
+    bool isUnexpectedEndContext();
+    bool isDuplicateLocation(const ServerConfig &server_config, const std::string &path);
 
     void validateStartServerContext();
     void validateStartLocationContext();
