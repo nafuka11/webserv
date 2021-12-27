@@ -146,7 +146,7 @@ void ConfigParser::parseServerContext(MainConfig &main_config)
         {
             continue;
         }
-        if (isEndContext())
+        if (parse_line_[0] == "}")
         {
             break ;
         }
@@ -160,10 +160,12 @@ void ConfigParser::parseServerContext(MainConfig &main_config)
         miter = SERVER_PARSE_FUNC.find(directive_type_);
         (this->*miter->second)(server_config);
     }
-    if (isUnexpectedEndContext())
-    {
-        throw ConfigError(UNEXPECTED_END, "server", filepath_, (line_pos_ + 1));
-    }
+    // if (isUnexpectedEndContext())
+    // {
+    //     throw ConfigError(UNEXPECTED_END, "server", filepath_, (line_pos_ + 1));
+    // }
+    validateEndContext();
+
     config_.addServer(server_config);
     setContextType(CONTEXT_MAIN);
 }
@@ -187,7 +189,7 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
         {
             continue;
         }
-        if (isEndContext())
+        if (parse_line_[0] == "}")
         {
             break ;
         }
@@ -201,10 +203,12 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
         miter = LOCATION_PARSE_FUNC.find(directive_type_);
         (this->*miter->second)(location_config);
     }
-    if (isUnexpectedEndContext())
-    {
-        throw ConfigError(UNEXPECTED_END, "location", filepath_, (line_pos_ + 1));
-    }
+    // if (isUnexpectedEndContext())
+    // {
+    //     throw ConfigError(UNEXPECTED_END, "location", filepath_, (line_pos_ + 1));
+    // }
+    validateEndContext();
+
     if (isDuplicateLocation(server_config, location_path))
     {
         throw ConfigError(DUPLICATE_LOCATION, location_path, filepath_, (line_pos_ + 1));
@@ -265,13 +269,26 @@ void ConfigParser::validateStartLocationContext()
     size_t open_brace_index = std::distance(parse_line_.begin(), iter);
     if (parse_line_.size() == 3 && open_brace_index == 2)
     {
-        return ;
+        return;
     }
     if (open_brace_index == 1 || (open_brace_index + 1) == parse_line_.size())
     {
         throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
     }
     throw ConfigError(UNEXPECTED, parse_line_[open_brace_index + 1], filepath_, (line_pos_ + 1));
+}
+
+void ConfigParser::validateEndContext()
+{
+    if (parse_line_.size() == 1 && parse_line_[0] == "}")
+    {
+        return;
+    }
+    if (line_pos_ == parse_lines_.size())
+    {
+        throw ConfigError(UNEXPECTED_END, "", filepath_, (line_pos_ + 1));
+    }
+    throw ConfigError(UNEXPECTED, parse_line_[1], filepath_, (line_pos_ + 1));
 }
 
 bool ConfigParser::isAllowedDirective()
@@ -289,24 +306,24 @@ bool ConfigParser::isAllowedDirective()
     return false;
 }
 
-bool ConfigParser::isEndContext()
-{
-    if (parse_line_.size() == 1 && parse_line_[0] == "}")
-    {
-        return true;
-    }
-    return false;
-}
+// bool ConfigParser::isEndContext()
+// {
+//     if (parse_line_.size() == 1 && parse_line_[0] == "}")
+//     {
+//         return true;
+//     }
+//     return false;
+// }
 
-bool ConfigParser::isUnexpectedEndContext()
-{
-    std::cout << "parse_lines_.size(): " << parse_lines_.size() << " line_pos_: " << line_pos_ << std::endl;
-    if (line_pos_ == parse_lines_.size())
-    {
-        return true;
-    }
-    return false;
-}
+// bool ConfigParser::isUnexpectedEndContext()
+// {
+//     std::cout << "parse_lines_.size(): " << parse_lines_.size() << " line_pos_: " << line_pos_ << std::endl;
+//     if (line_pos_ == parse_lines_.size())
+//     {
+//         return true;
+//     }
+//     return false;
+// }
 
 bool ConfigParser::isDuplicateLocation(const ServerConfig &server_config, const std::string &path)
 {

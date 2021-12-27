@@ -97,12 +97,13 @@ private:
     void setReturnRedirectParam(T &config_obj, const std::map<int, std::string> &param);
 
     bool isAllowedDirective();
-    bool isEndContext();
-    bool isUnexpectedEndContext();
+    // bool isEndContext();
+    // bool isUnexpectedEndContext();
     bool isDuplicateLocation(const ServerConfig &server_config, const std::string &path);
 
     void validateStartServerContext();
     void validateStartLocationContext();
+    void validateEndContext();
     const std::vector<std::string> validateAllowMethodParams();
     const std::map<int, std::string> validateErrorPageParams();
     const std::vector<std::string> validateIndexParams();
