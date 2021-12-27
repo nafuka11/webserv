@@ -15,9 +15,10 @@ public:
 private:
     static const std::string SERVER_NAME;
 
-    void setErrorMessage(const ConfigErrorType error_type, const std::string &error_word,
-                         const std::string &filepath, int line_pos);
+    void setErrorMessage(const ConfigErrorType error_type, const std::string &error_word);
+
     std::string error_message_;
+    std::string file_info_;
 };
 
 #endif /* CONFIGERROR_HPP */
