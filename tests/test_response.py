@@ -34,7 +34,7 @@ def test_404_no_such_file(http_connection: HTTPConnection):
     assert_response(HTTPStatus.NOT_FOUND, response)
 
 
-def test_autoindex(http_connection: HTTPConnection):
+def test_autoindex_on(http_connection: HTTPConnection):
     """autoindex onのディレクトリで各ファイル情報のHTMLが返されること"""
     http_connection.request("GET", "/autoindex/")
     response = http_connection.getresponse()
@@ -51,3 +51,10 @@ def test_autoindex(http_connection: HTTPConnection):
     for pattern in expected_files:
         assert re.search(pattern, actual_body) is not None
     assert response.status == 200
+
+
+def test_autoindex_off(http_connection: HTTPConnection):
+    """autoindex offのディレクトリで404を返すこと"""
+    http_connection.request("GET", "/subdir/")
+    response = http_connection.getresponse()
+    assert_response(HTTPStatus.NOT_FOUND, response)
