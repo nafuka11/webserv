@@ -3,6 +3,8 @@ import pytest
 import subprocess
 import time
 from http.client import HTTPConnection
+from urllib.request import urlopen
+from urllib.error import URLError
 
 HOST = "localhost"
 PORT = 4242
@@ -37,5 +39,14 @@ def http_connection_factory() -> Callable[[int], HTTPConnection]:
 def server(request: pytest.FixtureRequest) -> None:
     process = subprocess.Popen([WEBSERV_PATH, CONF_FILE])
     request.addfinalizer(process.terminate)
-    time.sleep(SLEEP_TIME)
+    _wait_for_connection()
     yield
+
+
+def _wait_for_connection() -> None:
+    while True:
+        try:
+            urlopen(f"http://{HOST}:{PORT}", timeout=1)
+            return
+        except URLError:
+            time.sleep(SLEEP_TIME)
