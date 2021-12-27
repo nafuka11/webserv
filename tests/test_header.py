@@ -1,7 +1,8 @@
+from datetime import datetime
 from http import HTTPStatus
 from http.client import HTTPConnection
-from datetime import datetime
 from typing import Callable
+
 from tests.helper import assert_response
 
 
