@@ -1,7 +1,9 @@
 POETRY := $(shell which poetry)
 PYTHON := python3
+PROJECT_DIR := ../
 
 test: ## Test webserv
+	$(MAKE) -C $(PROJECT_DIR)
 ifndef POETRY
 	source .venv/bin/activate && $(PYTHON) -m pytest && deactivate
 else
