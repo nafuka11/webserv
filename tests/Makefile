@@ -16,8 +16,9 @@ else
 	poetry install
 endif
 
-format: ## Format codes with black
+format: ## Format codes with black and isort
 	poetry run black .
+	poetry run isort .
 
 require: ## Dump requirements.txt
 	poetry export --without-hashes -o requirements.txt
