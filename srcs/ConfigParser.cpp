@@ -271,13 +271,13 @@ void ConfigParser::validateStartLocationContext()
 
 void ConfigParser::validateEndContext()
 {
-    if (parse_line_.size() == 1 && parse_line_[0] == "}")
-    {
-        return;
-    }
     if (line_pos_ == parse_lines_.size())
     {
         throw ConfigError(UNEXPECTED_END, "", filepath_, (line_pos_ + 1));
+    }
+    if (parse_line_.size() == 1 && parse_line_[0] == "}")
+    {
+        return;
     }
     throw ConfigError(UNEXPECTED, parse_line_[1], filepath_, (line_pos_ + 1));
 }

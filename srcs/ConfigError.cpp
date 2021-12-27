@@ -4,7 +4,7 @@ const std::string ConfigError::SERVER_NAME = "webserv: ";
 
 ConfigError::ConfigError(const ConfigErrorType error_type, const std::string &error_word,
                          const std::string &filepath, int line_pos)
-    : error_message_(SERVER_NAME), file_info_(" in " + filepath + std::to_string(line_pos))
+    : error_message_(SERVER_NAME), file_info_(" in " + filepath + ":" + std::to_string(line_pos))
 {
     setErrorMessage(error_type, error_word);
 }
