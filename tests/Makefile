@@ -1,7 +1,9 @@
 POETRY := $(shell which poetry)
 PYTHON := python3
+PROJECT_DIR := ../
 
 test: ## Test webserv
+	$(MAKE) -C $(PROJECT_DIR)
 ifndef POETRY
 	source .venv/bin/activate && $(PYTHON) -m pytest && deactivate
 else
@@ -16,8 +18,9 @@ else
 	poetry install
 endif
 
-format: ## Format codes with black
+format: ## Format codes with black and isort
 	poetry run black .
+	poetry run isort .
 
 require: ## Dump requirements.txt
 	poetry export --without-hashes -o requirements.txt
