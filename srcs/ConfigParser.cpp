@@ -241,12 +241,11 @@ void ConfigParser::validateStartServerContext()
     }
 
     size_t open_brace_index = std::distance(parse_line_.begin(), iter);
-    size_t unexpected_index = SERVER_OPEN_BRACE_INDEX;
     if (open_brace_index == SERVER_OPEN_BRACE_INDEX)
     {
-        ++unexpected_index;
+        throw ConfigError(UNEXPECTED, parse_line_[open_brace_index + 1], filepath_, (line_pos_ + 1));
     }
-    throw ConfigError(UNEXPECTED, parse_line_[unexpected_index], filepath_, (line_pos_ + 1));
+    throw ConfigError(UNEXPECTED, parse_line_[SERVER_OPEN_BRACE_INDEX], filepath_, (line_pos_ + 1));
 }
 
 void ConfigParser::validateStartLocationContext()
