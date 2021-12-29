@@ -53,30 +53,64 @@ void ClientSocket::receiveRequest()
 void ClientSocket::prepareResponse()
 {
     poller_.unregisterReadEvent(this, fd_);
-    if (request_.getMethod() == GET)
+    switch (request_.getMethod())
     {
-        openFile();
+    case GET:
+        handleGET();
+        break;
+    default:
+        break;
     }
 }
 
-void ClientSocket::openFile()
+void ClientSocket::handleGET()
 {
     Uri uri = Uri(config_, request_.getUri());
+    std::string path = uri.getPath();
+
     if (uri.getNeedAutoIndex())
     {
-        // TODO: autoindexのHTMLを生成して返す
-        throw HTTPParseException(CODE_404);
+        DIR *dir_p = openDirectory(path.c_str());
+        std::string body = response_.generateAutoindexHTML(uri, dir_p);
+        response_.appendMessageBody(body.c_str());
+        closeDirectory(dir_p);
+        state_ = WRITE_RESPONSE;
+        poller_.registerWriteEvent(this, fd_);
+        return;
     }
 
-    std::string path = uri.getPath();
-    file_fd_ = open(path.c_str(), O_RDONLY);
+    openFile(path.c_str());
+    setNonBlockingFd(file_fd_);
+    poller_.registerReadEvent(this, file_fd_);
+    state_ = READ_FILE;
+}
+
+void ClientSocket::openFile(const char *path)
+{
+    file_fd_ = open(path, O_RDONLY);
     if (file_fd_ < 0)
     {
         throw HTTPParseException(CODE_404);
     }
-    setNonBlockingFd(file_fd_);
-    poller_.registerReadEvent(this, file_fd_);
-    state_ = READ_FILE;
+}
+
+DIR *ClientSocket::openDirectory(const char *path)
+{
+    DIR *dir_p = opendir(path);
+    if (dir_p == NULL)
+    {
+        throw HTTPParseException(CODE_404);
+    }
+    return dir_p;
+}
+
+void ClientSocket::closeDirectory(DIR *dir_p)
+{
+    int result = closedir(dir_p);
+    if (result < 0)
+    {
+        throw SystemError("closedir", errno);
+    }
 }
 
 void ClientSocket::readFile(intptr_t offset)

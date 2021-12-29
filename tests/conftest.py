@@ -1,10 +1,11 @@
-from typing import Callable
-import pytest
 import subprocess
 import time
 from http.client import HTTPConnection
-from urllib.request import urlopen
+from typing import Callable
 from urllib.error import URLError
+from urllib.request import urlopen
+
+import pytest
 
 HOST = "localhost"
 PORT = 4242
