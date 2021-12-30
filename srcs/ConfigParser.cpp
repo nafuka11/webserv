@@ -122,7 +122,8 @@ void ConfigParser::parseMainContext()
         setDirectiveType(parse_line_[DIRECTIVE_NAME_INDEX]);
         if (!isAllowedDirective())
         {
-            throw ConfigError(NOT_ALLOWED_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+            throw ConfigError(NOT_ALLOWED_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX],
+                              filepath_, (line_pos_ + 1));
         }
         std::map<DirectiveType, main_parse_func>::const_iterator miter;
         miter = MAIN_PARSE_FUNC.find(directive_type_);
@@ -154,7 +155,8 @@ void ConfigParser::parseServerContext(MainConfig &main_config)
         setDirectiveType(parse_line_[DIRECTIVE_NAME_INDEX]);
         if (!isAllowedDirective())
         {
-            throw ConfigError(NOT_ALLOWED_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+            throw ConfigError(NOT_ALLOWED_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX],
+                              filepath_, (line_pos_ + 1));
         }
 
         std::map<DirectiveType, server_parse_func>::const_iterator miter;
