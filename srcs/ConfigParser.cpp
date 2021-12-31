@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include "Config.hpp"
+#include "ConfigError.hpp"
 #include "LocationConfig.hpp"
 #include "MainConfig.hpp"
 #include "SystemError.hpp"
@@ -17,6 +18,8 @@ const std::map<ConfigParser::DirectiveType, ConfigParser::location_parse_func>
 
 const int ConfigParser::DIRECTIVE_NAME_INDEX = 0;
 const int ConfigParser::DIRECTIVE_VALUE_INDEX = 1;
+const int ConfigParser::SERVER_OPEN_BRACE_INDEX = 1;
+const int ConfigParser::LOCATION_OPEN_BRACE_INDEX = 2;
 
 ConfigParser::ConfigParser(Config &config) : line_pos_(0), config_(config)
 {
@@ -65,18 +68,20 @@ std::vector<std::string> ConfigParser::splitLine(const std::string &line)
             ++start;
         }
         end = start;
-        while (isprint(line[end]) && !(isspace(line[end])) && (line[end] != ';'))
+        while (isprint(line[end]) && !(isspace(line[end]))
+               && (line[end] != ';') && (line[end] != '{') &&  (line[end] != '}'))
         {
             ++end;
         }
         if ((end - start) != 0)
             words.push_back(line.substr(start, (end - start)));
-        start = end;
-        if (line[start] == ';')
+        if ((line[end] == ';') || (line[end] == '{') || (line[end] == '}'))
         {
-            words.push_back(";");
-            start++;
+            start = end;
+            ++end;
+            words.push_back(line.substr(start, (end - start)));
         }
+        start = end;
     }
     return words;
 }
@@ -115,6 +120,11 @@ void ConfigParser::parseMainContext()
             continue;
         }
         setDirectiveType(parse_line_[DIRECTIVE_NAME_INDEX]);
+        if (!isAllowedDirective())
+        {
+            throw ConfigError(NOT_ALLOWED_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX],
+                              filepath_, (line_pos_ + 1));
+        }
         std::map<DirectiveType, main_parse_func>::const_iterator miter;
         miter = MAIN_PARSE_FUNC.find(directive_type_);
         (this->*miter->second)(main_config);
@@ -123,8 +133,9 @@ void ConfigParser::parseMainContext()
 
 void ConfigParser::parseServerContext(MainConfig &main_config)
 {
-    ServerConfig server_config = ServerConfig();
+    validateStartServerContext();
 
+    ServerConfig server_config = ServerConfig();
     initServerConfigFromMain(server_config, main_config);
     setContextType(CONTEXT_SERVER);
     ++line_pos_;
@@ -137,25 +148,32 @@ void ConfigParser::parseServerContext(MainConfig &main_config)
         {
             continue;
         }
-        if (isEndContext())
+        if (parse_line_[0] == "}")
         {
             break ;
         }
         setDirectiveType(parse_line_[DIRECTIVE_NAME_INDEX]);
+        if (!isAllowedDirective())
+        {
+            throw ConfigError(NOT_ALLOWED_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX],
+                              filepath_, (line_pos_ + 1));
+        }
 
         std::map<DirectiveType, server_parse_func>::const_iterator miter;
         miter = SERVER_PARSE_FUNC.find(directive_type_);
         (this->*miter->second)(server_config);
     }
+    validateEndContext();
     config_.addServer(server_config);
     setContextType(CONTEXT_MAIN);
 }
 
 void ConfigParser::parseLocationContext(ServerConfig &server_config)
 {
+    validateStartLocationContext();
+
     LocationConfig location_config = LocationConfig();
     std::string location_path = parse_line_[DIRECTIVE_VALUE_INDEX];
-
     initLocationConfigFromServer(location_config, server_config);
     setContextType(CONTEXT_LOCATION);
     ++line_pos_;
@@ -168,17 +186,25 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
         {
             continue;
         }
-        if (isEndContext())
+        if (parse_line_[0] == "}")
         {
             break ;
         }
         setDirectiveType(parse_line_[DIRECTIVE_NAME_INDEX]);
+        if (!isAllowedDirective())
+        {
+            throw ConfigError(NOT_ALLOWED_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+        }
 
         std::map<DirectiveType, location_parse_func>::const_iterator miter;
         miter = LOCATION_PARSE_FUNC.find(directive_type_);
         (this->*miter->second)(location_config);
     }
-    server_config.clearLocation(location_path);
+    validateEndContext();
+    if (isDuplicateLocation(server_config, location_path))
+    {
+        throw ConfigError(DUPLICATE_LOCATION, location_path, filepath_, (line_pos_ + 1));
+    }
     server_config.addLocation(location_path, location_config);
     setContextType(CONTEXT_SERVER);
 }
@@ -203,9 +229,81 @@ void ConfigParser::parseServerName(ServerConfig &server_config)
     server_config.setServerName(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
 
-bool ConfigParser::isEndContext()
+void ConfigParser::validateStartServerContext()
 {
+    std::vector<std::string>::iterator iter = std::find(parse_line_.begin(), parse_line_.end(), "{");
+    if (iter == parse_line_.end())
+    {
+        throw ConfigError(NO_OPEN_DIRECTIVE, "server", filepath_, (line_pos_ + 1));
+    }
+
+    if (parse_line_.size() == 2)
+    {
+        return;
+    }
+
+    size_t open_brace_index = std::distance(parse_line_.begin(), iter);
+    if (open_brace_index == SERVER_OPEN_BRACE_INDEX)
+    {
+        throw ConfigError(UNEXPECTED, parse_line_[open_brace_index + 1], filepath_, (line_pos_ + 1));
+    }
+    throw ConfigError(UNEXPECTED, parse_line_[SERVER_OPEN_BRACE_INDEX], filepath_, (line_pos_ + 1));
+}
+
+void ConfigParser::validateStartLocationContext()
+{
+    std::vector<std::string>::iterator iter = std::find(parse_line_.begin(), parse_line_.end(), "{");
+    if (iter == parse_line_.end())
+    {
+        throw ConfigError(NO_OPEN_DIRECTIVE, "location", filepath_, (line_pos_ + 1));
+    }
+
+    size_t open_brace_index = std::distance(parse_line_.begin(), iter);
+    if (parse_line_.size() == 3 && open_brace_index == LOCATION_OPEN_BRACE_INDEX)
+    {
+        return;
+    }
+    if (open_brace_index == 1 || (open_brace_index + 1) == parse_line_.size())
+    {
+        throw ConfigError(INVALID_NUM_OF_ARGS, "location", filepath_, (line_pos_ + 1));
+    }
+    throw ConfigError(UNEXPECTED, parse_line_[open_brace_index + 1], filepath_, (line_pos_ + 1));
+}
+
+void ConfigParser::validateEndContext()
+{
+    if (line_pos_ == parse_lines_.size())
+    {
+        throw ConfigError(UNEXPECTED_END, "", filepath_, (line_pos_ + 1));
+    }
     if (parse_line_.size() == 1 && parse_line_[0] == "}")
+    {
+        return;
+    }
+    throw ConfigError(UNEXPECTED, parse_line_[1], filepath_, (line_pos_ + 1));
+}
+
+bool ConfigParser::isAllowedDirective()
+{
+    std::map<DirectiveType, std::vector<ContextType> >::const_iterator miter;
+    miter = ALLOWED_DIRECTIVE.find(directive_type_);
+
+    for (std::vector<ContextType>::const_iterator viter = miter->second.begin();
+         viter != miter->second.end();
+         viter++)
+    {
+        if (*viter == context_type_)
+            return true;
+    }
+    return false;
+}
+
+bool ConfigParser::isDuplicateLocation(const ServerConfig &server_config, const std::string &path)
+{
+    std::map<std::string, LocationConfig> location = server_config.location();
+    std::map<std::string, LocationConfig>::iterator iter = location.find(path);
+
+    if (iter != location.end())
     {
         return true;
     }
@@ -347,6 +445,8 @@ void ConfigParser::setDirectiveType(const std::string &directive_name)
         directive_type_ = SERVER_NAME;
     else if (directive_name == "upload_path")
         directive_type_ = UPLOAD_PATH;
+    else
+        throw ConfigError(UNKOWN_DIRECTIVE, directive_name, filepath_, (line_pos_ + 1));
 }
 
 void ConfigParser::setContextType(ContextType type)

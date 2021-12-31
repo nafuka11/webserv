@@ -1,4 +1,5 @@
 #include "ServerConfig.hpp"
+
 #include <utility>
 
 const int ServerConfig::DEFAULT_PORT = 80;
@@ -84,16 +85,6 @@ void ServerConfig::clearErrorPage(const int status_code)
 void ServerConfig::clearIndex()
 {
     index_.clear();
-}
-
-void ServerConfig::clearLocation(const std::string &path)
-{
-    std::map<std::string, LocationConfig>::iterator iter = location_.find(path);
-
-    if (iter != location_.end())
-    {
-        location_.erase(iter);
-    }
 }
 
 void ServerConfig::clearReturnRedirect(const int status_code)

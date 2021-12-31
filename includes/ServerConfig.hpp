@@ -28,7 +28,6 @@ public:
     void clearAllowMethod();
     void clearErrorPage(const int status_code);
     void clearIndex();
-    void clearLocation(const std::string &path);
     void clearReturnRedirect(const int status_code);
 
     const std::vector<std::string> allowMethod() const;

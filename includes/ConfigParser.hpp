@@ -52,6 +52,8 @@ private:
 
     static const int DIRECTIVE_NAME_INDEX;
     static const int DIRECTIVE_VALUE_INDEX;
+    static const int SERVER_OPEN_BRACE_INDEX;
+    static const int LOCATION_OPEN_BRACE_INDEX;
 
     static std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > createAllowedDirective();
     static std::map<ConfigParser::DirectiveType, main_parse_func> createMainParseFunc();
@@ -96,8 +98,12 @@ private:
     template <typename T>
     void setReturnRedirectParam(T &config_obj, const std::map<int, std::string> &param);
 
-    bool isEndContext();
+    bool isAllowedDirective();
+    bool isDuplicateLocation(const ServerConfig &server_config, const std::string &path);
 
+    void validateStartServerContext();
+    void validateStartLocationContext();
+    void validateEndContext();
     const std::vector<std::string> validateAllowMethodParams();
     const std::map<int, std::string> validateErrorPageParams();
     const std::vector<std::string> validateIndexParams();
