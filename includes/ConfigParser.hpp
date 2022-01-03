@@ -179,12 +179,14 @@ void ConfigParser::parseAllowMethod(T &config_obj)
 template <typename T>
 void ConfigParser::parseAutoindex(T &config_obj)
 {
+    validateEndSemicolon();
     config_obj.setAutoindex(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
 
 template <typename T>
 void ConfigParser::parseClientMaxBodySize(T &config_obj)
 {
+    validateEndSemicolon();
     config_obj.setClientMaxBodySize(std::atoi(parse_line_[DIRECTIVE_VALUE_INDEX].c_str()));
 }
 
@@ -214,6 +216,7 @@ void ConfigParser::parseReturnRedirect(T &config_obj)
 template <typename T>
 void ConfigParser::parseUploadPath(T &config_obj)
 {
+    validateEndSemicolon();
     config_obj.setUploadPath(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
 

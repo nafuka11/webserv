@@ -513,6 +513,7 @@ const std::map<int, std::string> ConfigParser::validateErrorPageParams()
     {
         params.insert(std::make_pair(std::atoi(status_code->c_str()), *uri));
     }
+    validateEndSemicolon();
     return params;
 }
 
@@ -527,6 +528,7 @@ const std::vector<std::string> ConfigParser::validateIndexParams()
     {
         params.push_back(*iter);
     }
+    validateEndSemicolon();
     return params;
 }
 
@@ -535,5 +537,6 @@ const std::map<int, std::string> ConfigParser::validateReturnParam()
     std::map<int, std::string> param;
 
     param.insert(std::make_pair(std::atoi(parse_line_[1].c_str()), parse_line_[2]));
+    validateEndSemicolon();
     return param;
 }
