@@ -1,7 +1,7 @@
 #!/bin/bash
 
 EXE_PATH="./webserv"
-CONF_DIR="./conf/error"
+CONF_DIR="./tests/error_conf/conf"
 COLOR_TEST="\033[36m"
 COLOR_RESET="\033[0m"
 
