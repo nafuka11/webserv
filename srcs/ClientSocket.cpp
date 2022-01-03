@@ -144,7 +144,11 @@ void ClientSocket::readFile(intptr_t offset)
 {
     char buffer[BUF_SIZE];
     ssize_t read_byte = read(file_fd_, buffer, BUF_SIZE - 1);
-    // TODO: handle read_byte < 0
+
+    if (read_byte < 0)
+    {
+        response_.setStatusCode(CODE_404);
+    }
     if (read_byte <= 0)
     {
         closeFile();
