@@ -47,6 +47,64 @@ void ClientSocket::receiveRequest()
     }
 }
 
+void ClientSocket::sendResponse()
+{
+    response_.setKeepAlive(request_.canKeepAlive());
+    std::string message = response_.toString();
+    ::send(fd_, message.c_str(), message.size(), 0);
+    if (request_.canKeepAlive())
+    {
+        changeState(READ_REQUEST);
+        response_.clear();
+    }
+    else
+    {
+        changeState(CLOSE);
+    }
+    clearRequest();
+}
+
+void ClientSocket::readFile(intptr_t offset)
+{
+    char buffer[BUF_SIZE];
+    ssize_t read_byte = read(file_fd_, buffer, BUF_SIZE - 1);
+
+    if (read_byte < 0)
+    {
+        response_.setStatusCode(CODE_404);
+    }
+    if (read_byte <= 0)
+    {
+        closeFile();
+        return;
+    }
+    buffer[read_byte] = '\0';
+    response_.appendMessageBody(buffer);
+    if (read_byte == offset)
+    {
+        closeFile();
+    }
+}
+
+void ClientSocket::closeFile()
+{
+    ::close(file_fd_);
+    changeState(WRITE_RESPONSE);
+}
+
+void ClientSocket::close()
+{
+    if (::close(fd_) < 0)
+    {
+        throw SystemError("close", errno);
+    }
+}
+
+ClientSocket::State ClientSocket::getState() const
+{
+    return state_;
+}
+
 void ClientSocket::changeState(State new_state)
 {
     switch (state_)
@@ -138,64 +196,6 @@ void ClientSocket::closeDirectory(DIR *dir_p)
     {
         throw SystemError("closedir", errno);
     }
-}
-
-void ClientSocket::readFile(intptr_t offset)
-{
-    char buffer[BUF_SIZE];
-    ssize_t read_byte = read(file_fd_, buffer, BUF_SIZE - 1);
-
-    if (read_byte < 0)
-    {
-        response_.setStatusCode(CODE_404);
-    }
-    if (read_byte <= 0)
-    {
-        closeFile();
-        return;
-    }
-    buffer[read_byte] = '\0';
-    response_.appendMessageBody(buffer);
-    if (read_byte == offset)
-    {
-        closeFile();
-    }
-}
-
-void ClientSocket::closeFile()
-{
-    ::close(file_fd_);
-    changeState(WRITE_RESPONSE);
-}
-
-void ClientSocket::sendResponse()
-{
-    response_.setKeepAlive(request_.canKeepAlive());
-    std::string message = response_.toString();
-    ::send(fd_, message.c_str(), message.size(), 0);
-    if (request_.canKeepAlive())
-    {
-        changeState(READ_REQUEST);
-        response_.clear();
-    }
-    else
-    {
-        changeState(CLOSE);
-    }
-    clearRequest();
-}
-
-void ClientSocket::close()
-{
-    if (::close(fd_) < 0)
-    {
-        throw SystemError("close", errno);
-    }
-}
-
-ClientSocket::State ClientSocket::getState() const
-{
-    return state_;
 }
 
 void ClientSocket::clearRequest()
