@@ -283,6 +283,20 @@ void ConfigParser::validateEndContext()
     throw ConfigError(UNEXPECTED, parse_line_[1], filepath_, (line_pos_ + 1));
 }
 
+void ConfigParser::validateEndSemicolon()
+{
+    std::vector<std::string>::iterator iter = std::find(parse_line_.begin(), parse_line_.end(), ";");
+    if (iter == parse_line_.end())
+    {
+        throw ConfigError(NO_END_SEMICOLON, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+    }
+    if (iter + 1 == parse_line_.end())
+    {
+        return ;
+    }
+    throw ConfigError(UNEXPECTED, *iter, filepath_, (line_pos_ + 1));
+}
+
 bool ConfigParser::isAllowedDirective()
 {
     std::map<DirectiveType, std::vector<ContextType> >::const_iterator miter;
@@ -483,6 +497,7 @@ const std::vector<std::string> ConfigParser::validateAllowMethodParams()
     {
         params.push_back(*iter);
     }
+    validateEndSemicolon();
     return params;
 }
 

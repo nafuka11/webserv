@@ -104,6 +104,7 @@ private:
     void validateStartServerContext();
     void validateStartLocationContext();
     void validateEndContext();
+    void validateEndSemicolon();
     const std::vector<std::string> validateAllowMethodParams();
     const std::map<int, std::string> validateErrorPageParams();
     const std::vector<std::string> validateIndexParams();
