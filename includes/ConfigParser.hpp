@@ -122,52 +122,6 @@ private:
 };
 
 template <typename T>
-void ConfigParser::setAllowMethodParams(T &config_obj, const std::vector<std::string> &params)
-{
-    for (std::vector<std::string>::const_iterator const_iter = params.begin();
-         const_iter != params.end();
-         ++const_iter)
-    {
-        config_obj.addAllowMethod(*const_iter);
-    }
-}
-
-template <typename T>
-void ConfigParser::setErrorPageParams(T &config_obj, const std::map<int, std::string> &params)
-{
-    for (std::map<int, std::string>::const_iterator const_iter = params.begin();
-         const_iter != params.end();
-         ++const_iter)
-    {
-        config_obj.clearErrorPage(const_iter->first); // TODO: addErrorPageの中に入れる？
-        config_obj.addErrorPage(const_iter->first, const_iter->second);
-    }
-}
-
-template <typename T>
-void ConfigParser::setIndexParams(T &config_obj, const std::vector<std::string> &params)
-{
-    for (std::vector<std::string>::const_iterator const_iter = params.begin();
-         const_iter != params.end();
-         ++const_iter)
-    {
-        config_obj.addIndex(*const_iter);
-    }
-}
-
-template <typename T>
-void ConfigParser::setReturnRedirectParam(T &config_obj, const std::map<int, std::string> &param)
-{
-    for (std::map<int, std::string>::const_iterator const_iter = param.begin();
-         const_iter != param.end();
-         ++const_iter)
-    {
-        config_obj.clearReturnRedirect(const_iter->first);
-        config_obj.addReturnRedirect(const_iter->first, const_iter->second);
-    }
-}
-
-template <typename T>
 void ConfigParser::parseAllowMethod(T &config_obj)
 {
     std::vector<std::string> params = validateAllowMethodParams();
@@ -218,6 +172,52 @@ void ConfigParser::parseUploadPath(T &config_obj)
 {
     validateEndSemicolon();
     config_obj.setUploadPath(parse_line_[DIRECTIVE_VALUE_INDEX]);
+}
+
+template <typename T>
+void ConfigParser::setAllowMethodParams(T &config_obj, const std::vector<std::string> &params)
+{
+    for (std::vector<std::string>::const_iterator const_iter = params.begin();
+         const_iter != params.end();
+         ++const_iter)
+    {
+        config_obj.addAllowMethod(*const_iter);
+    }
+}
+
+template <typename T>
+void ConfigParser::setErrorPageParams(T &config_obj, const std::map<int, std::string> &params)
+{
+    for (std::map<int, std::string>::const_iterator const_iter = params.begin();
+         const_iter != params.end();
+         ++const_iter)
+    {
+        config_obj.clearErrorPage(const_iter->first); // TODO: addErrorPageの中に入れる？
+        config_obj.addErrorPage(const_iter->first, const_iter->second);
+    }
+}
+
+template <typename T>
+void ConfigParser::setIndexParams(T &config_obj, const std::vector<std::string> &params)
+{
+    for (std::vector<std::string>::const_iterator const_iter = params.begin();
+         const_iter != params.end();
+         ++const_iter)
+    {
+        config_obj.addIndex(*const_iter);
+    }
+}
+
+template <typename T>
+void ConfigParser::setReturnRedirectParam(T &config_obj, const std::map<int, std::string> &param)
+{
+    for (std::map<int, std::string>::const_iterator const_iter = param.begin();
+         const_iter != param.end();
+         ++const_iter)
+    {
+        config_obj.clearReturnRedirect(const_iter->first);
+        config_obj.addReturnRedirect(const_iter->first, const_iter->second);
+    }
 }
 
 #endif /* CONFIGPARSER_HPP */
