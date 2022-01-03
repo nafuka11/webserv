@@ -40,6 +40,7 @@ private:
     State state_;
     int file_fd_;
 
+    void changeState(State new_state);
     void prepareResponse();
     void handleGET();
     void openFile(const char *path);
