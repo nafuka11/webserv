@@ -1,7 +1,7 @@
 #!/bin/bash
 
 EXE_PATH="./webserv"
-CONF_DIR="./tests/error_conf/conf"
+CONF_DIR="./conf/error"
 COLOR_TEST="\033[36m"
 COLOR_RESET="\033[0m"
 
@@ -18,7 +18,7 @@ elif [ "$1" = "semicolon" ] ; then ## Test error for semicolon(;)
     "${EXE_PATH}" "${file}" 2>&1 | tail -1
   done
 elif [ "$1" = "help" ] ; then ## Show this message
-  grep 'if \[' tests/error_conf/test.sh | awk -F'\"|## ' '{printf"    \033[36m%-10s\033[0m %s\n", $4, $6}'
+  grep if tests/error_conf/test.sh | awk -F'\"|## ' '{printf"    \033[36m%-10s\033[0m %s\n", $4, $6}'
 else
-  :
+  grep if tests/error_conf/test.sh | awk -F'\"|## ' '{printf"    \033[36m%-10s\033[0m %s\n", $4, $6}'
 fi
