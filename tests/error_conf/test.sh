@@ -1,7 +1,7 @@
 #!/bin/bash
 
 EXE_PATH="./webserv"
-CONF_DIR="./conf/error"
+CONF_DIR="./tests/error_conf/conf/"
 COLOR_TEST="\033[36m"
 COLOR_RESET="\033[0m"
 
@@ -30,7 +30,7 @@ elif [ "$1" = "context" ] ; then ## Test error for context(server, location)
 elif [ "$1" = "directive" ] ; then ## Test error for directive
   run_tests "directive_*.conf"
 elif [ "$1" = "semicolon" ] ; then ## Test error for semicolon(;)
-  run_tests "semicolon_*.conf"
+  run_tests "*semicolon_*.conf"
 elif [ "$1" = "help" ] ; then ## Show this message
   show_usage
 else
