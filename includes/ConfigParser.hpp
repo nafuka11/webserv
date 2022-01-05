@@ -104,6 +104,7 @@ private:
     void validateStartServerContext();
     void validateStartLocationContext();
     void validateEndContext();
+    void validateEndSemicolon();
     const std::vector<std::string> validateAllowMethodParams();
     const std::map<int, std::string> validateErrorPageParams();
     const std::vector<std::string> validateIndexParams();
@@ -119,6 +120,64 @@ private:
     ContextType context_type_;
     DirectiveType directive_type_;
 };
+
+template <typename T>
+void ConfigParser::parseAllowMethod(T &config_obj)
+{
+    std::vector<std::string> params = validateAllowMethodParams();
+
+    config_obj.clearAllowMethod();
+    setAllowMethodParams(config_obj, params);
+}
+
+template <typename T>
+void ConfigParser::parseAutoindex(T &config_obj)
+{
+    // TODO: 引数の個数チェック
+    // TODO: 引数の値(on / off)チェック
+    validateEndSemicolon();
+    config_obj.setAutoindex(parse_line_[DIRECTIVE_VALUE_INDEX]);
+}
+
+template <typename T>
+void ConfigParser::parseClientMaxBodySize(T &config_obj)
+{
+    // TODO: 引数の個数チェック
+    // TODO: 引数の値(数値か、適切な値か)チェック
+    validateEndSemicolon();
+    config_obj.setClientMaxBodySize(std::atoi(parse_line_[DIRECTIVE_VALUE_INDEX].c_str()));
+}
+
+template <typename T>
+void ConfigParser::parseErrorPage(T &config_obj)
+{
+    std::map<int, std::string> params = validateErrorPageParams();
+    setErrorPageParams(config_obj, params);
+}
+
+template <typename T>
+void ConfigParser::parseIndex(T &config_obj)
+{
+    std::vector<std::string> params = validateIndexParams();
+
+    config_obj.clearIndex();
+    setIndexParams(config_obj, params);
+}
+
+template <typename T>
+void ConfigParser::parseReturnRedirect(T &config_obj)
+{
+    std::map<int, std::string> param = validateReturnParam();
+    setReturnRedirectParam(config_obj, param);
+}
+
+template <typename T>
+void ConfigParser::parseUploadPath(T &config_obj)
+{
+    // TODO: 引数の個数チェック
+    validateEndSemicolon();
+    config_obj.setUploadPath(parse_line_[DIRECTIVE_VALUE_INDEX]);
+}
 
 template <typename T>
 void ConfigParser::setAllowMethodParams(T &config_obj, const std::vector<std::string> &params)
@@ -164,61 +223,6 @@ void ConfigParser::setReturnRedirectParam(T &config_obj, const std::map<int, std
         config_obj.clearReturnRedirect(const_iter->first);
         config_obj.addReturnRedirect(const_iter->first, const_iter->second);
     }
-}
-
-template <typename T>
-void ConfigParser::parseAllowMethod(T &config_obj)
-{
-    std::vector<std::string> params = validateAllowMethodParams();
-
-    config_obj.clearAllowMethod();
-    setAllowMethodParams(config_obj, params);
-}
-
-template <typename T>
-void ConfigParser::parseAutoindex(T &config_obj)
-{
-    // TODO: 引数の個数チェック
-    // TODO: 引数の値(on / off)チェック
-    config_obj.setAutoindex(parse_line_[DIRECTIVE_VALUE_INDEX]);
-}
-
-template <typename T>
-void ConfigParser::parseClientMaxBodySize(T &config_obj)
-{
-    // TODO: 引数の個数チェック
-    // TODO: 引数の値(数値か、適切な値か)チェック
-    config_obj.setClientMaxBodySize(std::atoi(parse_line_[DIRECTIVE_VALUE_INDEX].c_str()));
-}
-
-template <typename T>
-void ConfigParser::parseErrorPage(T &config_obj)
-{
-    std::map<int, std::string> params = validateErrorPageParams();
-    setErrorPageParams(config_obj, params);
-}
-
-template <typename T>
-void ConfigParser::parseIndex(T &config_obj)
-{
-    std::vector<std::string> params = validateIndexParams();
-
-    config_obj.clearIndex();
-    setIndexParams(config_obj, params);
-}
-
-template <typename T>
-void ConfigParser::parseReturnRedirect(T &config_obj)
-{
-    std::map<int, std::string> param = validateReturnParam();
-    setReturnRedirectParam(config_obj, param);
-}
-
-template <typename T>
-void ConfigParser::parseUploadPath(T &config_obj)
-{
-    // TODO: 引数の個数チェック
-    config_obj.setUploadPath(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
 
 #endif /* CONFIGPARSER_HPP */
