@@ -211,21 +211,26 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
 
 void ConfigParser::parseAlias(LocationConfig &location_config)
 {
+    // TODO: 引数の個数チェック
     location_config.setAlias(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
 
 void ConfigParser::parseCgiExtension(MainConfig &main_config)
 {
+    // TODO: 引数の個数チェック
     main_config.setCgiExtension(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
 
 void ConfigParser::parseListen(ServerConfig &server_config)
 {
+    // TODO: 引数の個数チェック
+    // TODO: 引数の値(数値か、適切な値か)チェック
     server_config.setListen(std::atoi(parse_line_[DIRECTIVE_VALUE_INDEX].c_str()));
 }
 
 void ConfigParser::parseServerName(ServerConfig &server_config)
 {
+    // TODO: 引数の個数チェック
     server_config.setServerName(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
 
