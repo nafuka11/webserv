@@ -1,8 +1,9 @@
 #!/bin/bash
 
 EXE_PATH="../webserv"
-CONF_DIR="./conf_test/conf/"
+CONF_DIR="./conf_test/conf"
 COLOR_TEST="\033[36m"
+COLOR_FILE_COUNT="\033[33m"
 COLOR_RESET="\033[0m"
 
 run_test () {
@@ -13,28 +14,28 @@ run_test () {
 }
 
 run_tests () {
-  for file in $(find "${CONF_DIR}" -name "$1" | sort); do
+  for file in "${array[@]}"; do
     run_test "${file}"
   done
 }
 
 show_usage () {
-  grep 'if \[' ./conf_test/test.sh | awk -F'\"|## ' '{printf"    \033[36m%-10s\033[0m %s\n", $4, $6}'
+  echo "Usage: $0 [ Search Keyword ]"
 }
 
 main () {
-if [ $# -eq 0 -o "$1" = "all" ] ; then ## Test all config error file
-  run_tests "*.conf"
-elif [ "$1" = "context" ] ; then ## Test error for context (server, location)
-  run_tests "context_*.conf"
-elif [ "$1" = "directive" ] ; then ## Test error for directive
-  run_tests "directive_*.conf"
-elif [ "$1" = "semicolon" ] ; then ## Test error for semicolon (;)
-  run_tests "*semicolon_*.conf"
-elif [ "$1" = "help" ] ; then ## Show this message
-  show_usage
+if [ $# -eq 0 ] ; then
+  array=($(find "${CONF_DIR}" -type f| sort))
+  run_tests array
 else
-  show_usage
+  array=( $(find "${CONF_DIR}" -name "*$1*.conf" | sort) )
+  if [ ${#array[*]} -ne 0 ] ; then
+    echo
+    printf "${COLOR_FILE_COUNT}${#array[*]} files find !${COLOR_RESET}\n"
+    run_tests array
+  else
+    show_usage
+  fi
 fi
 }
 
