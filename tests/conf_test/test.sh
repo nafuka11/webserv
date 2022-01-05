@@ -1,6 +1,6 @@
 #!/bin/bash
 
-EXE_PATH="./webserv"
+EXE_PATH="../webserv"
 CONF_DIR="./conf_test/conf/"
 COLOR_TEST="\033[36m"
 COLOR_RESET="\033[0m"
