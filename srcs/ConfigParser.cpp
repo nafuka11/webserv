@@ -211,21 +211,25 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
 
 void ConfigParser::parseAlias(LocationConfig &location_config)
 {
+    validateEndSemicolon();
     location_config.setAlias(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
 
 void ConfigParser::parseCgiExtension(MainConfig &main_config)
 {
+    validateEndSemicolon();
     main_config.setCgiExtension(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
 
 void ConfigParser::parseListen(ServerConfig &server_config)
 {
+    validateEndSemicolon();
     server_config.setListen(std::atoi(parse_line_[DIRECTIVE_VALUE_INDEX].c_str()));
 }
 
 void ConfigParser::parseServerName(ServerConfig &server_config)
 {
+    validateEndSemicolon();
     server_config.setServerName(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
 
@@ -281,6 +285,20 @@ void ConfigParser::validateEndContext()
         return;
     }
     throw ConfigError(UNEXPECTED, parse_line_[1], filepath_, (line_pos_ + 1));
+}
+
+void ConfigParser::validateEndSemicolon()
+{
+    std::vector<std::string>::iterator iter = std::find(parse_line_.begin(), parse_line_.end(), ";");
+    if (iter == parse_line_.end())
+    {
+        throw ConfigError(NO_END_SEMICOLON, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+    }
+    if (iter + 1 == parse_line_.end())
+    {
+        return ;
+    }
+    throw ConfigError(UNEXPECTED, *iter, filepath_, (line_pos_ + 1));
 }
 
 bool ConfigParser::isAllowedDirective()
@@ -483,6 +501,7 @@ const std::vector<std::string> ConfigParser::validateAllowMethodParams()
     {
         params.push_back(*iter);
     }
+    validateEndSemicolon();
     return params;
 }
 
@@ -498,6 +517,7 @@ const std::map<int, std::string> ConfigParser::validateErrorPageParams()
     {
         params.insert(std::make_pair(std::atoi(status_code->c_str()), *uri));
     }
+    validateEndSemicolon();
     return params;
 }
 
@@ -512,6 +532,7 @@ const std::vector<std::string> ConfigParser::validateIndexParams()
     {
         params.push_back(*iter);
     }
+    validateEndSemicolon();
     return params;
 }
 
@@ -520,5 +541,6 @@ const std::map<int, std::string> ConfigParser::validateReturnParam()
     std::map<int, std::string> param;
 
     param.insert(std::make_pair(std::atoi(parse_line_[1].c_str()), parse_line_[2]));
+    validateEndSemicolon();
     return param;
 }
