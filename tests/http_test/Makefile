@@ -1,6 +1,6 @@
 POETRY := $(shell which poetry)
 PYTHON := python3
-PROJECT_DIR := ../
+PROJECT_DIR := ../../
 
 test: ## Test webserv
 	$(MAKE) -C $(PROJECT_DIR)
