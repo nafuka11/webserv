@@ -123,7 +123,7 @@ bool HTTPParser::parseMessageBody()
 bool HTTPParser::needsParsingMessageBody()
 {
     const std::map<std::string, std::string> headers = request_.getHeaders();
-    return request_.getMethod() == POST &&
+    return request_.getMethod() == HTTPRequest::HTTP_POST &&
            (headers.count("content-length") || headers.count("transfer-encoding"));
 }
 
@@ -194,19 +194,19 @@ std::vector<std::string> HTTPParser::splitString(const std::string &str,
     return words;
 }
 
-HTTPMethod HTTPParser::validateMethod(const std::string &method)
+const std::string &HTTPParser::validateMethod(const std::string &method)
 {
-    if (method == "GET")
+    if (method == HTTPRequest::HTTP_GET)
     {
-        return GET;
+        return method;
     }
-    if (method == "POST")
+    if (method == HTTPRequest::HTTP_POST)
     {
-        return POST;
+        return method;
     }
-    if (method == "DELETE")
+    if (method == HTTPRequest::HTTP_DELETE)
     {
-        return DELETE;
+        return method;
     }
     throw HTTPParseException(CODE_501);
 }

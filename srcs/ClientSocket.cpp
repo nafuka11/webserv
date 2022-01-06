@@ -140,13 +140,9 @@ void ClientSocket::changeState(State new_state)
 void ClientSocket::prepareResponse()
 {
     response_.setStatusCode(CODE_200);
-    switch (request_.getMethod())
+    if (request_.getMethod() == HTTPRequest::HTTP_GET)
     {
-    case GET:
         handleGET();
-        break;
-    default:
-        break;
     }
 }
 

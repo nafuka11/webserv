@@ -31,7 +31,7 @@ bool HTTPRequest::canKeepAlive()
     return true;
 }
 
-void HTTPRequest::setMethod(HTTPMethod method)
+void HTTPRequest::setMethod(const std::string &method)
 {
     method_ = method;
 }
@@ -56,7 +56,7 @@ void HTTPRequest::setMessageBody(const std::string &message_body)
     message_body_ = message_body;
 }
 
-HTTPMethod HTTPRequest::getMethod() const
+const std::string &HTTPRequest::getMethod() const
 {
     return method_;
 }
