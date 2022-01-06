@@ -21,12 +21,14 @@ public:
     void setProtocolVersion(const std::string &protocol_version);
     void setHeader(const std::pair<std::string, std::string> &item);
     void setMessageBody(const std::string &message_body);
+    void setLocation(const std::string &location);
 
     const std::string &getMethod() const;
     const std::string &getUri() const;
     const std::string &getProtocolVersion() const;
     const std::map<std::string, std::string> getHeaders() const;
     const std::string &getMessageBody() const;
+    const std::string &getLocation() const;
 
 private:
     std::string method_;
@@ -34,6 +36,7 @@ private:
     std::string protocol_version_;
     std::map<std::string, std::string> headers_;
     std::string message_body_;
+    std::string location_;
 };
 
 #endif /* HTTPREQUEST_HPP */

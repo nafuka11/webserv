@@ -56,6 +56,11 @@ void HTTPRequest::setMessageBody(const std::string &message_body)
     message_body_ = message_body;
 }
 
+void HTTPRequest::setLocation(const std::string &location)
+{
+    location_ = location;
+}
+
 const std::string &HTTPRequest::getMethod() const
 {
     return method_;
@@ -79,4 +84,9 @@ const std::map<std::string, std::string> HTTPRequest::getHeaders() const
 const std::string &HTTPRequest::getMessageBody() const
 {
     return message_body_;
+}
+
+const std::string &HTTPRequest::getLocation() const
+{
+    return location_;
 }
