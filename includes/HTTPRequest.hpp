@@ -3,7 +3,6 @@
 
 #include <string>
 #include <map>
-#include "HTTPMethod.hpp"
 
 class HTTPRequest
 {
