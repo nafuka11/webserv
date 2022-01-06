@@ -8,6 +8,10 @@
 class HTTPRequest
 {
 public:
+    static const std::string HTTP_GET;
+    static const std::string HTTP_POST;
+    static const std::string HTTP_DELETE;
+
     HTTPRequest();
     ~HTTPRequest();
     void clear();

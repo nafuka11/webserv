@@ -1,5 +1,9 @@
 #include "HTTPRequest.hpp"
 
+const std::string HTTPRequest::HTTP_GET = "GET";
+const std::string HTTPRequest::HTTP_POST = "POST";
+const std::string HTTPRequest::HTTP_DELETE = "DELETE";
+
 HTTPRequest::HTTPRequest()
 {
 }
