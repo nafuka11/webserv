@@ -3,7 +3,7 @@ from http import HTTPStatus
 from http.client import HTTPConnection
 from typing import Callable
 
-from tests.helper import assert_response
+from helper import assert_response
 
 
 def test_header_server(http_connection: HTTPConnection):

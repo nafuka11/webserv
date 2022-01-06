@@ -2,7 +2,7 @@ import re
 from http import HTTPStatus
 from http.client import HTTPConnection
 
-from tests.helper import assert_response
+from helper import assert_response
 
 
 def test_valid(http_connection: HTTPConnection):
