@@ -91,6 +91,11 @@ bool HTTPParser::parseHeader()
         {
             throw HTTPParseException(CODE_400);
         }
+        findLocation();
+        if (!isAllowMethod(request_.getMethod()))
+        {
+            throw HTTPParseException(CODE_405);
+        }
         if (needsParsingMessageBody())
         {
             state_ = PARSE_MESSAGE_BODY;
@@ -125,6 +130,44 @@ bool HTTPParser::needsParsingMessageBody()
     const std::map<std::string, std::string> headers = request_.getHeaders();
     return request_.getMethod() == HTTPRequest::HTTP_POST &&
            (headers.count("content-length") || headers.count("transfer-encoding"));
+}
+
+void HTTPParser::findLocation()
+{
+    const std::string uri = request_.getUri();
+    const std::map<std::string, LocationConfig> &locations = config_.location();
+    std::map<std::string, LocationConfig>::const_reverse_iterator
+        riter = locations.rbegin();
+
+    for (; riter != locations.rend(); ++riter)
+    {
+        if (startsWith(uri, riter->first))
+        {
+            request_.setLocation(riter->first);
+            return;
+        }
+    }
+    throw HTTPParseException(CODE_404);
+}
+
+bool HTTPParser::isAllowMethod(const std::string &method)
+{
+    const std::map<std::string, LocationConfig> location = config_.location();
+    std::map<std::string, LocationConfig>::const_iterator
+        location_found = location.find(request_.getLocation());
+    if (location_found == location.end())
+    {
+        throw HTTPParseException(CODE_404);
+    }
+    const std::vector<std::string> &allow_methods = location_found->second.allowMethod();
+
+    const std::vector<std::string>::const_iterator
+        method_found = std::find(allow_methods.begin(), allow_methods.end(), method);
+    if (method_found == allow_methods.end())
+    {
+        return false;
+    }
+    return true;
 }
 
 bool HTTPParser::tryGetLine(std::string &line)
@@ -318,4 +361,10 @@ bool HTTPParser::isToken(const std::string &str)
 bool HTTPParser::isTokenChar(char c)
 {
     return isalnum(c) || strchr("!#$%&'*+-.^_`|~", c);
+}
+
+bool HTTPParser::startsWith(const std::string &str, const std::string &prefix) const
+{
+    return str.size() >= prefix.size() &&
+           std::equal(std::begin(prefix), std::end(prefix), std::begin(str));
 }

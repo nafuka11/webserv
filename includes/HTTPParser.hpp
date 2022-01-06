@@ -36,6 +36,8 @@ private:
     bool parseHeader();
     bool parseMessageBody();
     bool needsParsingMessageBody();
+    void findLocation();
+    bool isAllowMethod(const std::string &method);
 
     bool tryGetLine(std::string &line);
     void splitStartLine(const std::string &line,
@@ -60,6 +62,7 @@ private:
     bool isSpace(char c);
     bool isToken(const std::string &str);
     bool isTokenChar(char c);
+    bool startsWith(const std::string &str, const std::string &prefix) const;
 };
 
 #endif /* HTTPPARSER_HPP */
