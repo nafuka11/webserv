@@ -41,18 +41,18 @@ void HTTPParser::parse()
     {
         switch (state_)
         {
-            case PARSE_START_LINE:
-                need_parse = parseStartLine();
-                break;
-            case PARSE_HEADERS:
-                need_parse = parseHeader();
-                break;
-            case PARSE_MESSAGE_BODY:
-                need_parse = parseMessageBody();
-                break;
-            case PARSE_FINISH:
-                need_parse = false;
-                break;
+        case PARSE_START_LINE:
+            need_parse = parseStartLine();
+            break;
+        case PARSE_HEADERS:
+            need_parse = parseHeader();
+            break;
+        case PARSE_MESSAGE_BODY:
+            need_parse = parseMessageBody();
+            break;
+        case PARSE_FINISH:
+            need_parse = false;
+            break;
         }
     }
 }
