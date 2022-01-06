@@ -19,6 +19,13 @@ def test_invalid_method(http_connection: HTTPConnection):
     assert_response(HTTPStatus.NOT_IMPLEMENTED, response)
 
 
+def test_not_allowed_method(http_connection: HTTPConnection):
+    """allow_methodで許可されていないmethodなら405を返すこと"""
+    http_connection.request("GET", "/allow_method/")
+    response = http_connection.getresponse()
+    assert_response(HTTPStatus.METHOD_NOT_ALLOWED, response)
+
+
 def test_invalid_http_version(http_connection: HTTPConnection):
     """HTTP/1.0なら400を返すこと"""
     http_connection._http_vsn_str = "HTTP/1.0"
