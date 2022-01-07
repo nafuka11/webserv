@@ -92,6 +92,20 @@ void HTTPResponse::setProperties(const LocationConfig *location)
     {
         headers_.insert(std::make_pair("Connection", "close"));
     }
+    if (status_code_ == CODE_405)
+    {
+        std::string allow_value;
+        const std::vector<std::string> &allow_methods = location->allowMethod();
+        for (size_t i = 0; i < allow_methods.size(); i++)
+        {
+            allow_value.append(allow_methods.at(i));
+            if (i < allow_methods.size() - 1)
+            {
+                allow_value.append(", ");
+            }
+        }
+        headers_.insert(std::make_pair("Allow", allow_value));
+    }
 }
 
 std::string HTTPResponse::generateHTMLfromStatusCode() const
