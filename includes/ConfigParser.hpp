@@ -102,6 +102,7 @@ private:
     bool isAllowedDirective();
     bool isDuplicateLocation(const ServerConfig &server_config, const std::string &path);
     bool isCorrectNumOfArgs(const int correct_num);
+    bool isCorrectAutoindexValue();
 
     void validateStartServerContext();
     void validateStartLocationContext();
@@ -139,7 +140,10 @@ void ConfigParser::parseAutoindex(T &config_obj)
     {
         throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
     }
-    // TODO: 引数の値(on / off)チェック
+    if (!isCorrectAutoindexValue())
+    {
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+    }
     validateEndSemicolon();
     config_obj.setAutoindex(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }

@@ -351,6 +351,17 @@ bool ConfigParser::isCorrectNumOfArgs(const int correct_num)
     return false;
 }
 
+bool ConfigParser::isCorrectAutoindexValue()
+{
+    std::string value = parse_line_[DIRECTIVE_VALUE_INDEX];
+
+    if (value == "on" || value == "off")
+    {
+        return true;
+    }
+    return false;
+}
+
 bool ConfigParser::isDuplicateLocation(const ServerConfig &server_config, const std::string &path)
 {
     std::map<std::string, LocationConfig> location = server_config.location();
