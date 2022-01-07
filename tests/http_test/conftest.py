@@ -15,7 +15,7 @@ CONF_FILE = "./conf/default.conf"
 SLEEP_TIME = 0.1
 
 
-pytest.register_assert_rewrite("tests.helper")
+pytest.register_assert_rewrite("helper")
 
 
 @pytest.fixture
