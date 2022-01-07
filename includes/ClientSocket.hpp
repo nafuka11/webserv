@@ -47,6 +47,7 @@ private:
     DIR *openDirectory(const char *path);
     void closeDirectory(DIR *dir_p);
     void clearRequest();
+    const LocationConfig *searchLocationConfig(const std::string &location);
 };
 
 #endif /* CLIENTSOCKET_HPP */

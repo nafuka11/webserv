@@ -199,3 +199,15 @@ void ClientSocket::clearRequest()
     request_.clear();
     parser_.clear();
 }
+
+const LocationConfig *ClientSocket::searchLocationConfig(const std::string &location)
+{
+    const std::map<std::string, LocationConfig> &locations = config_.location();
+    const std::map<std::string, LocationConfig>::const_iterator
+        location_found = locations.find(location);
+    if (location_found != locations.end())
+    {
+        return &(location_found->second);
+    }
+    return NULL;
+}
