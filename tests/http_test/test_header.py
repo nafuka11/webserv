@@ -6,14 +6,14 @@ from typing import Callable
 from helper import assert_response
 
 
-def test_header_server(http_connection: HTTPConnection):
+def test_server_header(http_connection: HTTPConnection):
     """Serverヘッダがあること"""
     http_connection.request("GET", "/")
     response = http_connection.getresponse()
     assert response.getheader("Server") == "webserv/1.0.0"
 
 
-def test_header_date(http_connection: HTTPConnection):
+def test_date_header(http_connection: HTTPConnection):
     """DateヘッダがIMF-fixdate形式であること"""
     http_connection.request("GET", "/")
     response = http_connection.getresponse()
