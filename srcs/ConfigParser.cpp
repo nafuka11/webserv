@@ -2,7 +2,7 @@
 #include <fstream>
 #include <string>
 #include "Config.hpp"
-#include "ConfigError.hpp"
+// #include "ConfigError.hpp"
 #include "LocationConfig.hpp"
 #include "MainConfig.hpp"
 #include "SystemError.hpp"
@@ -212,6 +212,10 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
 void ConfigParser::parseAlias(LocationConfig &location_config)
 {
     // TODO: 引数の個数チェック
+    if (!isCorrectNumOfArgs(1))
+    {
+        throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+    }
     validateEndSemicolon();
     location_config.setAlias(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
@@ -219,6 +223,10 @@ void ConfigParser::parseAlias(LocationConfig &location_config)
 void ConfigParser::parseCgiExtension(MainConfig &main_config)
 {
     // TODO: 引数の個数チェック
+    if (!isCorrectNumOfArgs(1))
+    {
+        throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+    }
     validateEndSemicolon();
     main_config.setCgiExtension(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
@@ -226,6 +234,10 @@ void ConfigParser::parseCgiExtension(MainConfig &main_config)
 void ConfigParser::parseListen(ServerConfig &server_config)
 {
     // TODO: 引数の個数チェック
+    if (!isCorrectNumOfArgs(1))
+    {
+        throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+    }
     // TODO: 引数の値(数値か、適切な値か)チェック
     validateEndSemicolon();
     server_config.setListen(std::atoi(parse_line_[DIRECTIVE_VALUE_INDEX].c_str()));
@@ -234,6 +246,10 @@ void ConfigParser::parseListen(ServerConfig &server_config)
 void ConfigParser::parseServerName(ServerConfig &server_config)
 {
     // TODO: 引数の個数チェック
+    if (!isCorrectNumOfArgs(1))
+    {
+        throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+    }
     validateEndSemicolon();
     server_config.setServerName(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
@@ -317,6 +333,24 @@ bool ConfigParser::isAllowedDirective()
     {
         if (*viter == context_type_)
             return true;
+    }
+    return false;
+}
+
+bool ConfigParser::isCorrectNumOfArgs(const int correct_num)
+{
+    std::vector<std::string>::const_iterator viter = parse_line_.begin();
+    int count = 0;
+
+    for (++viter;
+         (*viter != ";") && (viter != parse_line_.end()); //TODO: ";"が出るまで、も追加するか
+         ++viter)
+    {
+        count++;
+    }
+    if (count == correct_num)
+    {
+        return true;
     }
     return false;
 }

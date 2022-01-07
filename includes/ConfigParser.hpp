@@ -4,6 +4,7 @@
 #include <exception>
 #include <string>
 #include <iostream> // TODO: 後で消す
+#include "ConfigError.hpp"
 #include "MainConfig.hpp"
 #include "ServerConfig.hpp"
 
@@ -100,6 +101,7 @@ private:
 
     bool isAllowedDirective();
     bool isDuplicateLocation(const ServerConfig &server_config, const std::string &path);
+    bool isCorrectNumOfArgs(const int correct_num);
 
     void validateStartServerContext();
     void validateStartLocationContext();
@@ -134,6 +136,10 @@ template <typename T>
 void ConfigParser::parseAutoindex(T &config_obj)
 {
     // TODO: 引数の個数チェック
+    if (!isCorrectNumOfArgs(1))
+    {
+        throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+    }
     // TODO: 引数の値(on / off)チェック
     validateEndSemicolon();
     config_obj.setAutoindex(parse_line_[DIRECTIVE_VALUE_INDEX]);
@@ -143,6 +149,10 @@ template <typename T>
 void ConfigParser::parseClientMaxBodySize(T &config_obj)
 {
     // TODO: 引数の個数チェック
+    if (!isCorrectNumOfArgs(1))
+    {
+        throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+    }
     // TODO: 引数の値(数値か、適切な値か)チェック
     validateEndSemicolon();
     config_obj.setClientMaxBodySize(std::atoi(parse_line_[DIRECTIVE_VALUE_INDEX].c_str()));
@@ -175,6 +185,10 @@ template <typename T>
 void ConfigParser::parseUploadPath(T &config_obj)
 {
     // TODO: 引数の個数チェック
+    if (!isCorrectNumOfArgs(1))
+    {
+        throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+    }
     validateEndSemicolon();
     config_obj.setUploadPath(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
