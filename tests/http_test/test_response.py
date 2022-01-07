@@ -21,7 +21,7 @@ def test_invalid_method(http_connection: HTTPConnection):
 
 def test_not_allowed_method(http_connection: HTTPConnection):
     """allow_methodで許可されていないmethodなら405を返すこと"""
-    http_connection.request("GET", "/allow_method/")
+    http_connection.request("GET", "/allow_method_one/")
     response = http_connection.getresponse()
     assert_response(HTTPStatus.METHOD_NOT_ALLOWED, response)
 
