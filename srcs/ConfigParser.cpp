@@ -211,7 +211,6 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
 
 void ConfigParser::parseAlias(LocationConfig &location_config)
 {
-    // TODO: 引数の個数チェック
     if (!isCorrectNumOfArgs(1))
     {
         throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
@@ -222,7 +221,6 @@ void ConfigParser::parseAlias(LocationConfig &location_config)
 
 void ConfigParser::parseCgiExtension(MainConfig &main_config)
 {
-    // TODO: 引数の個数チェック
     if (!isCorrectNumOfArgs(1))
     {
         throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
@@ -233,7 +231,6 @@ void ConfigParser::parseCgiExtension(MainConfig &main_config)
 
 void ConfigParser::parseListen(ServerConfig &server_config)
 {
-    // TODO: 引数の個数チェック
     if (!isCorrectNumOfArgs(1))
     {
         throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
@@ -245,7 +242,6 @@ void ConfigParser::parseListen(ServerConfig &server_config)
 
 void ConfigParser::parseServerName(ServerConfig &server_config)
 {
-    // TODO: 引数の個数チェック
     if (!isCorrectNumOfArgs(1))
     {
         throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
@@ -343,7 +339,7 @@ bool ConfigParser::isCorrectNumOfArgs(const int correct_num)
     int count = 0;
 
     for (++viter;
-         (*viter != ";") && (viter != parse_line_.end()); //TODO: ";"が出るまで、も追加するか
+         (*viter != ";") && (viter != parse_line_.end());
          ++viter)
     {
         count++;

@@ -135,7 +135,6 @@ void ConfigParser::parseAllowMethod(T &config_obj)
 template <typename T>
 void ConfigParser::parseAutoindex(T &config_obj)
 {
-    // TODO: 引数の個数チェック
     if (!isCorrectNumOfArgs(1))
     {
         throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
@@ -148,7 +147,6 @@ void ConfigParser::parseAutoindex(T &config_obj)
 template <typename T>
 void ConfigParser::parseClientMaxBodySize(T &config_obj)
 {
-    // TODO: 引数の個数チェック
     if (!isCorrectNumOfArgs(1))
     {
         throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
@@ -184,7 +182,6 @@ void ConfigParser::parseReturnRedirect(T &config_obj)
 template <typename T>
 void ConfigParser::parseUploadPath(T &config_obj)
 {
-    // TODO: 引数の個数チェック
     if (!isCorrectNumOfArgs(1))
     {
         throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
