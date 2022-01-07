@@ -18,9 +18,9 @@ HTTPResponse::~HTTPResponse()
 {
 }
 
-std::string HTTPResponse::toString()
+std::string HTTPResponse::toString(const LocationConfig *location)
 {
-    setProperties();
+    setProperties(location);
 
     std::stringstream ss;
 
@@ -70,7 +70,7 @@ std::map<HTTPStatusCode, std::string> HTTPResponse::setReasonPhrase()
     return reason_phrase;
 }
 
-void HTTPResponse::setProperties()
+void HTTPResponse::setProperties(const LocationConfig *location)
 {
     if (status_code_ != CODE_200)
     {
