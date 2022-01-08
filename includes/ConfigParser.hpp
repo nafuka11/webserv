@@ -156,6 +156,10 @@ void ConfigParser::parseClientMaxBodySize(T &config_obj)
         throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
     }
     // TODO: 引数の値(数値か、適切な値か)チェック
+    if (!isCorrectClientMaxBodySizeValue())
+    {
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+    }
     validateEndSemicolon();
     config_obj.setClientMaxBodySize(std::atoi(parse_line_[DIRECTIVE_VALUE_INDEX].c_str()));
 }
