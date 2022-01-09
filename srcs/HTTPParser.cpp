@@ -41,18 +41,18 @@ void HTTPParser::parse()
     {
         switch (state_)
         {
-            case PARSE_START_LINE:
-                need_parse = parseStartLine();
-                break;
-            case PARSE_HEADERS:
-                need_parse = parseHeader();
-                break;
-            case PARSE_MESSAGE_BODY:
-                need_parse = parseMessageBody();
-                break;
-            case PARSE_FINISH:
-                need_parse = false;
-                break;
+        case PARSE_START_LINE:
+            need_parse = parseStartLine();
+            break;
+        case PARSE_HEADERS:
+            need_parse = parseHeader();
+            break;
+        case PARSE_MESSAGE_BODY:
+            need_parse = parseMessageBody();
+            break;
+        case PARSE_FINISH:
+            need_parse = false;
+            break;
         }
     }
 }
@@ -91,6 +91,11 @@ bool HTTPParser::parseHeader()
         {
             throw HTTPParseException(CODE_400);
         }
+        findLocation();
+        if (!isAllowMethod(request_.getMethod()))
+        {
+            throw HTTPParseException(CODE_405);
+        }
         if (needsParsingMessageBody())
         {
             state_ = PARSE_MESSAGE_BODY;
@@ -123,8 +128,46 @@ bool HTTPParser::parseMessageBody()
 bool HTTPParser::needsParsingMessageBody()
 {
     const std::map<std::string, std::string> headers = request_.getHeaders();
-    return request_.getMethod() == POST &&
+    return request_.getMethod() == HTTPRequest::HTTP_POST &&
            (headers.count("content-length") || headers.count("transfer-encoding"));
+}
+
+void HTTPParser::findLocation()
+{
+    const std::string uri = request_.getUri();
+    const std::map<std::string, LocationConfig> &locations = config_.location();
+    std::map<std::string, LocationConfig>::const_reverse_iterator
+        riter = locations.rbegin();
+
+    for (; riter != locations.rend(); ++riter)
+    {
+        if (startsWith(uri, riter->first))
+        {
+            request_.setLocation(riter->first);
+            return;
+        }
+    }
+    throw HTTPParseException(CODE_404);
+}
+
+bool HTTPParser::isAllowMethod(const std::string &method)
+{
+    const std::map<std::string, LocationConfig> location = config_.location();
+    std::map<std::string, LocationConfig>::const_iterator
+        location_found = location.find(request_.getLocation());
+    if (location_found == location.end())
+    {
+        throw HTTPParseException(CODE_404);
+    }
+    const std::vector<std::string> &allow_methods = location_found->second.allowMethod();
+
+    const std::vector<std::string>::const_iterator
+        method_found = std::find(allow_methods.begin(), allow_methods.end(), method);
+    if (method_found == allow_methods.end())
+    {
+        return false;
+    }
+    return true;
 }
 
 bool HTTPParser::tryGetLine(std::string &line)
@@ -194,19 +237,19 @@ std::vector<std::string> HTTPParser::splitString(const std::string &str,
     return words;
 }
 
-HTTPMethod HTTPParser::validateMethod(const std::string &method)
+const std::string &HTTPParser::validateMethod(const std::string &method)
 {
-    if (method == "GET")
+    if (method == HTTPRequest::HTTP_GET)
     {
-        return GET;
+        return method;
     }
-    if (method == "POST")
+    if (method == HTTPRequest::HTTP_POST)
     {
-        return POST;
+        return method;
     }
-    if (method == "DELETE")
+    if (method == HTTPRequest::HTTP_DELETE)
     {
-        return DELETE;
+        return method;
     }
     throw HTTPParseException(CODE_501);
 }
@@ -318,4 +361,10 @@ bool HTTPParser::isToken(const std::string &str)
 bool HTTPParser::isTokenChar(char c)
 {
     return isalnum(c) || strchr("!#$%&'*+-.^_`|~", c);
+}
+
+bool HTTPParser::startsWith(const std::string &str, const std::string &prefix) const
+{
+    return str.size() >= prefix.size() &&
+           std::equal(std::begin(prefix), std::end(prefix), std::begin(str));
 }

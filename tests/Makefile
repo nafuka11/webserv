@@ -1,29 +1,16 @@
-POETRY := $(shell which poetry)
-PYTHON := python3
-PROJECT_DIR := ../
+HTTP_TEST_DIR := ./http_test
+CONF_TEST_DIR := ./conf_test
 
-test: ## Test webserv
-	$(MAKE) -C $(PROJECT_DIR)
-ifndef POETRY
-	source .venv/bin/activate && $(PYTHON) -m pytest && deactivate
-else
-	poetry run python -m pytest
-endif
+.PHONY: all
+all: http conf ## Run all tests
 
-install: ## Install Python packages
-ifndef POETRY
-	$(PYTHON) -m venv .venv
-	source .venv/bin/activate && pip install -r requirements.txt
-else
-	poetry install
-endif
+.PHONY: http
+http: ## Run http tests
+	$(MAKE) -C $(HTTP_TEST_DIR)
 
-format: ## Format codes with black and isort
-	poetry run black .
-	poetry run isort .
-
-require: ## Dump requirements.txt
-	poetry export --without-hashes -o requirements.txt
+.PHONY: conf
+conf: ## Run conf tests
+	bash $(CONF_TEST_DIR)/test.sh
 
 help: ## Show this message
 	@echo "Target lists:"

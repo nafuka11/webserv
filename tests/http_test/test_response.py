@@ -2,7 +2,7 @@ import re
 from http import HTTPStatus
 from http.client import HTTPConnection
 
-from tests.helper import assert_response
+from helper import assert_response
 
 
 def test_valid(http_connection: HTTPConnection):
@@ -17,6 +17,13 @@ def test_invalid_method(http_connection: HTTPConnection):
     http_connection.request("INVALID", "/")
     response = http_connection.getresponse()
     assert_response(HTTPStatus.NOT_IMPLEMENTED, response)
+
+
+def test_not_allowed_method(http_connection: HTTPConnection):
+    """allow_methodで許可されていないmethodなら405を返すこと"""
+    http_connection.request("GET", "/allow_method_one/")
+    response = http_connection.getresponse()
+    assert_response(HTTPStatus.METHOD_NOT_ALLOWED, response)
 
 
 def test_invalid_http_version(http_connection: HTTPConnection):

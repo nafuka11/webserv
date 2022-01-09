@@ -36,6 +36,8 @@ private:
     bool parseHeader();
     bool parseMessageBody();
     bool needsParsingMessageBody();
+    void findLocation();
+    bool isAllowMethod(const std::string &method);
 
     bool tryGetLine(std::string &line);
     void splitStartLine(const std::string &line,
@@ -46,7 +48,7 @@ private:
     std::vector<std::string> splitString(const std::string &str,
                                          const std::string &delim);
 
-    HTTPMethod validateMethod(const std::string &method);
+    const std::string &validateMethod(const std::string &method);
     const std::string &validateUri(const std::string &uri);
     const std::string &validateProtocolVersion(const std::string &protocol_version);
     const std::pair<std::string, std::string> validateHeader(std::string &name,
@@ -60,6 +62,7 @@ private:
     bool isSpace(char c);
     bool isToken(const std::string &str);
     bool isTokenChar(char c);
+    bool startsWith(const std::string &str, const std::string &prefix) const;
 };
 
 #endif /* HTTPPARSER_HPP */

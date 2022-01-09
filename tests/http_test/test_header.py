@@ -3,17 +3,18 @@ from http import HTTPStatus
 from http.client import HTTPConnection
 from typing import Callable
 
-from tests.helper import assert_response
+from helper import assert_response
 
 
-def test_header_server(http_connection: HTTPConnection):
+# Test response header
+def test_server_header(http_connection: HTTPConnection):
     """Serverヘッダがあること"""
     http_connection.request("GET", "/")
     response = http_connection.getresponse()
     assert response.getheader("Server") == "webserv/1.0.0"
 
 
-def test_header_date(http_connection: HTTPConnection):
+def test_date_header(http_connection: HTTPConnection):
     """DateヘッダがIMF-fixdate形式であること"""
     http_connection.request("GET", "/")
     response = http_connection.getresponse()
@@ -21,6 +22,21 @@ def test_header_date(http_connection: HTTPConnection):
     datetime.strptime(date_value, "%a, %d %b %Y %H:%M:%S GMT")
 
 
+def test_allow_header_one(http_connection: HTTPConnection):
+    """allow_methodで許可されていないmethodの時Allowヘッダがあること"""
+    http_connection.request("GET", "/allow_method_one/")
+    response = http_connection.getresponse()
+    assert response.getheader("Allow") == "POST"
+
+
+def test_allow_header_one(http_connection: HTTPConnection):
+    """allow_methodで許可されていないmethodの時Allowヘッダの値がカンマ区切りであること"""
+    http_connection.request("GET", "/allow_method_two/")
+    response = http_connection.getresponse()
+    assert response.getheader("Allow") == "POST, DELETE"
+
+
+# Test request header
 def test_empty_header_value(http_connection: HTTPConnection):
     """ヘッダの値が空の時、400を返すこと"""
     headers = {"Empty": ""}
