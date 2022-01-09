@@ -140,30 +140,55 @@ void ClientSocket::changeState(State new_state)
 void ClientSocket::prepareResponse()
 {
     response_.setStatusCode(CODE_200);
-    if (request_.getMethod() == HTTPRequest::HTTP_GET)
+
+    Uri uri = Uri(config_, request_.getUri());
+
+    switch (uri.getResourceType())
     {
-        handleGET();
+    case Uri::FILE:
+        handleFile(request_.getMethod(), uri);
+        break;
+    case Uri::AUTOINDEX:
+        handleAutoindex(request_.getMethod(), uri);
+        break;
+    case Uri::CGI:
+        handleCGI(request_.getMethod(), uri);
+        break;
+    default:
+        break;
     }
 }
 
-void ClientSocket::handleGET()
+void ClientSocket::handleFile(const std::string &method, const Uri &uri)
 {
-    Uri uri = Uri(config_, request_.getUri());
-    std::string path = uri.getPath();
-
-    if (uri.getResourceType() == Uri::AUTOINDEX)
+    if (method == HTTPRequest::HTTP_GET)
     {
+        std::string path = uri.getPath();
+
+        openFile(path.c_str());
+        setNonBlockingFd(file_fd_);
+        changeState(READ_FILE);
+    }
+}
+
+void ClientSocket::handleAutoindex(const std::string &method, const Uri &uri)
+{
+    if (method == HTTPRequest::HTTP_GET)
+    {
+        std::string path = uri.getPath();
+
         DIR *dir_p = openDirectory(path.c_str());
         std::string body = response_.generateAutoindexHTML(uri, dir_p);
         response_.appendMessageBody(body.c_str());
         closeDirectory(dir_p);
         changeState(WRITE_RESPONSE);
-        return;
     }
+}
 
-    openFile(path.c_str());
-    setNonBlockingFd(file_fd_);
-    changeState(READ_FILE);
+void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
+{
+    (void)method;
+    (void)uri;
 }
 
 void ClientSocket::openFile(const char *path)

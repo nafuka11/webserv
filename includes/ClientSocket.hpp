@@ -42,7 +42,9 @@ private:
 
     void changeState(State new_state);
     void prepareResponse();
-    void handleGET();
+    void handleFile(const std::string &method, const Uri &uri);
+    void handleAutoindex(const std::string &method, const Uri &uri);
+    void handleCGI(const std::string &method, const Uri &uri);
     void openFile(const char *path);
     DIR *openDirectory(const char *path);
     void closeDirectory(DIR *dir_p);
