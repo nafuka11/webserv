@@ -20,14 +20,14 @@ public:
 
     std::string getRawUri() const;
     std::string getPath() const;
-    bool getNeedAutoIndex() const;
+    Type getResourceType() const;
 
 private:
     const ServerConfig &config_;
     const std::string &raw_uri_;
     std::string query_;
     std::string path_;
-    bool need_auto_index_;
+    Type resource_type_;
 
     void splitRawUri();
     void findPath();

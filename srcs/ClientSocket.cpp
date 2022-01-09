@@ -151,7 +151,7 @@ void ClientSocket::handleGET()
     Uri uri = Uri(config_, request_.getUri());
     std::string path = uri.getPath();
 
-    if (uri.getNeedAutoIndex())
+    if (uri.getResourceType() == Uri::AUTOINDEX)
     {
         DIR *dir_p = openDirectory(path.c_str());
         std::string body = response_.generateAutoindexHTML(uri, dir_p);
