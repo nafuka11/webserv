@@ -97,7 +97,7 @@ void ServerConfig::clearReturnRedirect(const int status_code)
     }
 }
 
-const std::vector<std::string> ServerConfig::allowMethod() const
+const std::vector<std::string> &ServerConfig::allowMethod() const
 {
     return allow_method_;
 }
@@ -117,12 +117,12 @@ const int &ServerConfig::clientMaxBodySize() const
     return client_max_body_size_;
 }
 
-const std::map<int, std::string> ServerConfig::errorPage() const
+const std::map<int, std::string> &ServerConfig::errorPage() const
 {
     return error_page_;
 }
 
-const std::vector<std::string> ServerConfig::index() const
+const std::vector<std::string> &ServerConfig::index() const
 {
     return index_;
 }
@@ -132,12 +132,12 @@ const int &ServerConfig::listen() const
     return listen_;
 }
 
-const std::map<std::string, LocationConfig> ServerConfig::location() const
+const std::map<std::string, LocationConfig> &ServerConfig::location() const
 {
     return location_;
 }
 
-const std::map<int, std::string> ServerConfig::returnRedirect() const
+const std::map<int, std::string> &ServerConfig::returnRedirect() const
 {
     return return_redirect_;
 }

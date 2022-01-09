@@ -1,5 +1,9 @@
 #include "HTTPRequest.hpp"
 
+const std::string HTTPRequest::HTTP_GET = "GET";
+const std::string HTTPRequest::HTTP_POST = "POST";
+const std::string HTTPRequest::HTTP_DELETE = "DELETE";
+
 HTTPRequest::HTTPRequest()
 {
 }
@@ -27,7 +31,7 @@ bool HTTPRequest::canKeepAlive()
     return true;
 }
 
-void HTTPRequest::setMethod(HTTPMethod method)
+void HTTPRequest::setMethod(const std::string &method)
 {
     method_ = method;
 }
@@ -52,7 +56,12 @@ void HTTPRequest::setMessageBody(const std::string &message_body)
     message_body_ = message_body;
 }
 
-HTTPMethod HTTPRequest::getMethod() const
+void HTTPRequest::setLocation(const std::string &location)
+{
+    location_ = location;
+}
+
+const std::string &HTTPRequest::getMethod() const
 {
     return method_;
 }
@@ -75,4 +84,9 @@ const std::map<std::string, std::string> HTTPRequest::getHeaders() const
 const std::string &HTTPRequest::getMessageBody() const
 {
     return message_body_;
+}
+
+const std::string &HTTPRequest::getLocation() const
+{
+    return location_;
 }

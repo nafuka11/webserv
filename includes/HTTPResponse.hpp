@@ -13,7 +13,7 @@ class HTTPResponse
 public:
     HTTPResponse();
     ~HTTPResponse();
-    std::string toString();
+    std::string toString(const LocationConfig *location);
     void appendMessageBody(const char *body);
     void clear();
     void setStatusCode(HTTPStatusCode status_code);
@@ -35,7 +35,7 @@ private:
     bool keep_alive_;
 
     static std::map<HTTPStatusCode, std::string> setReasonPhrase();
-    void setProperties();
+    void setProperties(const LocationConfig *location);
     std::string generateHTMLfromStatusCode() const;
     std::string generateDateString() const;
     void appendFileHTML(std::stringstream &ss,

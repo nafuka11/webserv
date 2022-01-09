@@ -26,7 +26,7 @@ void ClientSocket::receiveRequest()
     ssize_t read_byte = recv(fd_, buffer, BUF_SIZE - 1, 0);
     if (read_byte <= 0)
     {
-        state_ = CLOSE;
+        changeState(CLOSE);
         clearRequest();
         return;
     }
@@ -37,29 +37,112 @@ void ClientSocket::receiveRequest()
         parser_.parse();
         if (parser_.finished())
         {
-            state_ = WRITE_RESPONSE;
-            response_.setStatusCode(CODE_200);
             prepareResponse();
         }
     }
     catch (const HTTPParseException &e)
     {
-        state_ = WRITE_RESPONSE;
+        changeState(WRITE_RESPONSE);
         response_.setStatusCode(e.getStatusCode());
-        poller_.registerWriteEvent(this, fd_);
     }
+}
+
+void ClientSocket::sendResponse()
+{
+    response_.setKeepAlive(request_.canKeepAlive());
+    std::string message = response_.toString(searchLocationConfig(request_.getLocation()));
+    ::send(fd_, message.c_str(), message.size(), 0);
+    if (request_.canKeepAlive())
+    {
+        changeState(READ_REQUEST);
+        response_.clear();
+    }
+    else
+    {
+        changeState(CLOSE);
+    }
+    clearRequest();
+}
+
+void ClientSocket::readFile(intptr_t offset)
+{
+    char buffer[BUF_SIZE];
+    ssize_t read_byte = read(file_fd_, buffer, BUF_SIZE - 1);
+
+    if (read_byte < 0)
+    {
+        response_.setStatusCode(CODE_404);
+    }
+    if (read_byte <= 0)
+    {
+        closeFile();
+        return;
+    }
+    buffer[read_byte] = '\0';
+    response_.appendMessageBody(buffer);
+    if (read_byte == offset)
+    {
+        closeFile();
+    }
+}
+
+void ClientSocket::closeFile()
+{
+    ::close(file_fd_);
+    changeState(WRITE_RESPONSE);
+}
+
+void ClientSocket::close()
+{
+    if (::close(fd_) < 0)
+    {
+        throw SystemError("close", errno);
+    }
+}
+
+ClientSocket::State ClientSocket::getState() const
+{
+    return state_;
+}
+
+void ClientSocket::changeState(State new_state)
+{
+    switch (state_)
+    {
+    case READ_REQUEST:
+        poller_.unregisterReadEvent(this, fd_);
+        break;
+    case READ_FILE:
+        break;
+    case WRITE_RESPONSE:
+        poller_.unregisterWriteEvent(this, fd_);
+        break;
+    default:
+        break;
+    }
+    switch (new_state)
+    {
+    case READ_REQUEST:
+        poller_.registerReadEvent(this, fd_);
+        break;
+    case READ_FILE:
+        poller_.registerReadEvent(this, file_fd_);
+        break;
+    case WRITE_RESPONSE:
+        poller_.registerWriteEvent(this, fd_);
+        break;
+    default:
+        break;
+    }
+    state_ = new_state;
 }
 
 void ClientSocket::prepareResponse()
 {
-    poller_.unregisterReadEvent(this, fd_);
-    switch (request_.getMethod())
+    response_.setStatusCode(CODE_200);
+    if (request_.getMethod() == HTTPRequest::HTTP_GET)
     {
-    case GET:
         handleGET();
-        break;
-    default:
-        break;
     }
 }
 
@@ -74,15 +157,13 @@ void ClientSocket::handleGET()
         std::string body = response_.generateAutoindexHTML(uri, dir_p);
         response_.appendMessageBody(body.c_str());
         closeDirectory(dir_p);
-        state_ = WRITE_RESPONSE;
-        poller_.registerWriteEvent(this, fd_);
+        changeState(WRITE_RESPONSE);
         return;
     }
 
     openFile(path.c_str());
     setNonBlockingFd(file_fd_);
-    poller_.registerReadEvent(this, file_fd_);
-    state_ = READ_FILE;
+    changeState(READ_FILE);
 }
 
 void ClientSocket::openFile(const char *path)
@@ -113,65 +194,20 @@ void ClientSocket::closeDirectory(DIR *dir_p)
     }
 }
 
-void ClientSocket::readFile(intptr_t offset)
-{
-    char buffer[BUF_SIZE];
-    ssize_t read_byte = read(file_fd_, buffer, BUF_SIZE - 1);
-    // TODO: handle read_byte < 0
-    if (read_byte <= 0)
-    {
-        closeFile();
-        return;
-    }
-    buffer[read_byte] = '\0';
-    response_.appendMessageBody(buffer);
-    if (read_byte == offset)
-    {
-        closeFile();
-    }
-}
-
-void ClientSocket::closeFile()
-{
-    ::close(file_fd_);
-    state_ = WRITE_RESPONSE;
-    poller_.registerWriteEvent(this, fd_);
-}
-
-void ClientSocket::sendResponse()
-{
-    response_.setKeepAlive(request_.canKeepAlive());
-    std::string message = response_.toString();
-    ::send(fd_, message.c_str(), message.size(), 0);
-    if (request_.canKeepAlive())
-    {
-        state_ = READ_REQUEST;
-        response_.clear();
-        poller_.unregisterWriteEvent(this, fd_);
-        poller_.registerReadEvent(this, fd_);
-    }
-    else
-    {
-        state_ = CLOSE;
-    }
-    clearRequest();
-}
-
-void ClientSocket::close()
-{
-    if (::close(fd_) < 0)
-    {
-        throw SystemError("close", errno);
-    }
-}
-
-ClientSocket::State ClientSocket::getState() const
-{
-    return state_;
-}
-
 void ClientSocket::clearRequest()
 {
     request_.clear();
     parser_.clear();
+}
+
+const LocationConfig *ClientSocket::searchLocationConfig(const std::string &location)
+{
+    const std::map<std::string, LocationConfig> &locations = config_.location();
+    const std::map<std::string, LocationConfig>::const_iterator
+        location_found = locations.find(location);
+    if (location_found != locations.end())
+    {
+        return &(location_found->second);
+    }
+    return NULL;
 }

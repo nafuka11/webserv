@@ -18,9 +18,9 @@ HTTPResponse::~HTTPResponse()
 {
 }
 
-std::string HTTPResponse::toString()
+std::string HTTPResponse::toString(const LocationConfig *location)
 {
-    setProperties();
+    setProperties(location);
 
     std::stringstream ss;
 
@@ -64,12 +64,13 @@ std::map<HTTPStatusCode, std::string> HTTPResponse::setReasonPhrase()
     reason_phrase[CODE_200] = "OK";
     reason_phrase[CODE_400] = "Bad Request";
     reason_phrase[CODE_404] = "Not Found";
+    reason_phrase[CODE_405] = "Method Not Allowed";
     reason_phrase[CODE_413] = "Payload Too Large";
     reason_phrase[CODE_501] = "Not Implemented";
     return reason_phrase;
 }
 
-void HTTPResponse::setProperties()
+void HTTPResponse::setProperties(const LocationConfig *location)
 {
     if (status_code_ != CODE_200)
     {
@@ -90,6 +91,20 @@ void HTTPResponse::setProperties()
     else
     {
         headers_.insert(std::make_pair("Connection", "close"));
+    }
+    if (status_code_ == CODE_405)
+    {
+        std::string allow_value;
+        const std::vector<std::string> &allow_methods = location->allowMethod();
+        for (size_t i = 0; i < allow_methods.size(); i++)
+        {
+            allow_value.append(allow_methods.at(i));
+            if (i < allow_methods.size() - 1)
+            {
+                allow_value.append(", ");
+            }
+        }
+        headers_.insert(std::make_pair("Allow", allow_value));
     }
 }
 

@@ -10,12 +10,12 @@ import pytest
 HOST = "localhost"
 PORT = 4242
 CLIENT_MAX_BODY_SIZE_PORT = 8080
-WEBSERV_PATH = "../webserv"
+WEBSERV_PATH = "../../webserv"
 CONF_FILE = "./conf/default.conf"
 SLEEP_TIME = 0.1
 
 
-pytest.register_assert_rewrite("tests.helper")
+pytest.register_assert_rewrite("helper")
 
 
 @pytest.fixture
