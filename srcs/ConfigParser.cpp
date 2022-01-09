@@ -362,6 +362,22 @@ bool ConfigParser::isCorrectAutoindexValue()
     return false;
 }
 
+bool ConfigParser::isCorrectClientMaxBodySizeValue()
+{
+    char *endp = NULL;
+    long value = strtol(parse_line_[DIRECTIVE_VALUE_INDEX].c_str(), &endp, 10);
+
+    if (*endp != '\0' || value < 0)
+    {
+        return false;
+    }
+    if ((value == LONG_MAX || value == LONG_MIN) && ERANGE == errno)
+    {
+        return false;
+    }
+    return true;
+}
+
 bool ConfigParser::isDuplicateLocation(const ServerConfig &server_config, const std::string &path)
 {
     std::map<std::string, LocationConfig> location = server_config.location();
