@@ -8,6 +8,13 @@
 class Uri
 {
 public:
+    enum Type {
+        FILE,
+        AUTOINDEX,
+        CGI,
+        INVALID
+    };
+
     Uri(const ServerConfig &config, const std::string &uri);
     ~Uri();
 
