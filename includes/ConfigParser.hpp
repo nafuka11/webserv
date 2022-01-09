@@ -55,6 +55,8 @@ private:
     static const int DIRECTIVE_VALUE_INDEX;
     static const int SERVER_OPEN_BRACE_INDEX;
     static const int LOCATION_OPEN_BRACE_INDEX;
+    static const int PORT_MAX_VALUE;
+    static const int PORT_MIN_VALUE;
 
     static std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > createAllowedDirective();
     static std::map<ConfigParser::DirectiveType, main_parse_func> createMainParseFunc();
@@ -104,6 +106,7 @@ private:
     bool isCorrectNumOfArgs(const int correct_num);
     bool isCorrectAutoindexValue();
     bool isCorrectClientMaxBodySizeValue();
+    bool isCorrectListenValue();
 
     void validateStartServerContext();
     void validateStartLocationContext();

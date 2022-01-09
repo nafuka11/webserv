@@ -20,6 +20,8 @@ const int ConfigParser::DIRECTIVE_NAME_INDEX = 0;
 const int ConfigParser::DIRECTIVE_VALUE_INDEX = 1;
 const int ConfigParser::SERVER_OPEN_BRACE_INDEX = 1;
 const int ConfigParser::LOCATION_OPEN_BRACE_INDEX = 2;
+const int ConfigParser::PORT_MAX_VALUE = 65535;
+const int ConfigParser::PORT_MIN_VALUE = 0;
 
 ConfigParser::ConfigParser(Config &config) : line_pos_(0), config_(config)
 {
@@ -235,7 +237,11 @@ void ConfigParser::parseListen(ServerConfig &server_config)
     {
         throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
     }
-    // TODO: 引数の値(数値か、適切な値か)チェック
+    if (!isCorrectListenValue())
+    {
+        // TODO: 引数の値(数値か、適切な値か)チェック
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+    }
     validateEndSemicolon();
     server_config.setListen(std::atoi(parse_line_[DIRECTIVE_VALUE_INDEX].c_str()));
 }
@@ -372,6 +378,26 @@ bool ConfigParser::isCorrectClientMaxBodySizeValue()
         return false;
     }
     if ((value == LONG_MAX || value == LONG_MIN) && ERANGE == errno)
+    {
+        return false;
+    }
+    return true;
+}
+
+bool ConfigParser::isCorrectListenValue()
+{
+    char *endp = NULL;
+    long value = strtol(parse_line_[DIRECTIVE_VALUE_INDEX].c_str(), &endp, 10);
+
+    if (*endp != '\0')
+    {
+        return false;
+    }
+    if ((value == LONG_MAX || value == LONG_MIN) && ERANGE == errno)
+    {
+        return false;
+    }
+    if (value > PORT_MAX_VALUE || value <= PORT_MIN_VALUE)
     {
         return false;
     }
