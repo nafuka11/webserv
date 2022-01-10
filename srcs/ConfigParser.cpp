@@ -202,7 +202,8 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
         setDirectiveType(parse_line_[DIRECTIVE_NAME_INDEX]);
         if (!isAllowedDirective())
         {
-            throw ConfigError(NOT_ALLOWED_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+            throw ConfigError(NOT_ALLOWED_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX],
+                              filepath_, (line_pos_ + 1));
         }
 
         std::map<DirectiveType, location_parse_func>::const_iterator miter;
@@ -241,7 +242,8 @@ void ConfigParser::parseListen(ServerConfig &server_config)
     validateNumOfArgs(1);
     if (!isCorrectListenValue())
     {
-        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
     }
     validateEndSemicolon();
     server_config.setListen(std::atoi(parse_line_[DIRECTIVE_VALUE_INDEX].c_str()));
@@ -271,9 +273,11 @@ void ConfigParser::validateStartServerContext()
     size_t open_brace_index = std::distance(parse_line_.begin(), iter);
     if (open_brace_index == SERVER_OPEN_BRACE_INDEX)
     {
-        throw ConfigError(UNEXPECTED, parse_line_[open_brace_index + 1], filepath_, (line_pos_ + 1));
+        throw ConfigError(UNEXPECTED, parse_line_[open_brace_index + 1],
+                          filepath_, (line_pos_ + 1));
     }
-    throw ConfigError(UNEXPECTED, parse_line_[SERVER_OPEN_BRACE_INDEX], filepath_, (line_pos_ + 1));
+    throw ConfigError(UNEXPECTED, parse_line_[SERVER_OPEN_BRACE_INDEX],
+                      filepath_, (line_pos_ + 1));
 }
 
 void ConfigParser::validateStartLocationContext()
@@ -293,7 +297,8 @@ void ConfigParser::validateStartLocationContext()
     {
         throw ConfigError(INVALID_NUM_OF_ARGS, "location", filepath_, (line_pos_ + 1));
     }
-    throw ConfigError(UNEXPECTED, parse_line_[open_brace_index + 1], filepath_, (line_pos_ + 1));
+    throw ConfigError(UNEXPECTED, parse_line_[open_brace_index + 1],
+                      filepath_, (line_pos_ + 1));
 }
 
 void ConfigParser::validateEndContext()
@@ -314,7 +319,8 @@ void ConfigParser::validateEndSemicolon()
     std::vector<std::string>::iterator iter = std::find(parse_line_.begin(), parse_line_.end(), ";");
     if (iter == parse_line_.end())
     {
-        throw ConfigError(NO_END_SEMICOLON, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+        throw ConfigError(NO_END_SEMICOLON, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
     }
     if (iter + 1 == parse_line_.end())
     {
@@ -351,7 +357,8 @@ void ConfigParser::validateNumOfArgs(const int correct_num)
     }
     if (count != correct_num)
     {
-        throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+        throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
     }
 }
 
@@ -418,7 +425,8 @@ void ConfigParser::validateDuplicateValueTypeStr(const std::string &value)
 {
     if (value != "")
     {
-        throw ConfigError(DUPLICATE_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+        throw ConfigError(DUPLICATE_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
     }
 }
 
@@ -426,7 +434,8 @@ void ConfigParser::validateDuplicateValueTypeInt(const int value)
 {
     if (value != -1)
     {
-        throw ConfigError(DUPLICATE_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+        throw ConfigError(DUPLICATE_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
     }
 }
 

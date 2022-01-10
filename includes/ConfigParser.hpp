@@ -147,7 +147,8 @@ void ConfigParser::parseAutoindex(T &config_obj)
     validateNumOfArgs(1);
     if (!isCorrectAutoindexValue())
     {
-        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
     }
     validateEndSemicolon();
     config_obj.setAutoindex(parse_line_[DIRECTIVE_VALUE_INDEX]);
@@ -160,7 +161,8 @@ void ConfigParser::parseClientMaxBodySize(T &config_obj)
     validateNumOfArgs(1);
     if (!isCorrectClientMaxBodySizeValue())
     {
-        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
     }
     validateEndSemicolon();
     config_obj.setClientMaxBodySize(std::atoi(parse_line_[DIRECTIVE_VALUE_INDEX].c_str()));
