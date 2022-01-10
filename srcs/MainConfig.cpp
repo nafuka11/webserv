@@ -8,13 +8,12 @@ std::string default_index[] = {"index.html"};
 const std::vector<std::string> MainConfig::DEFAULT_INDEX(default_index, std::end(default_index));
 
 MainConfig::MainConfig()
-: allow_method_(DEFAULT_ALLOW_METHOD),
-  autoindex_(DEFAULT_AUTOINDEX),
-  client_max_body_size_(DEFAULT_CLIENT_MAX_BODY_SIZE),
+: allow_method_(),
+  autoindex_(),
   cgi_extension_(),
+  client_max_body_size_(-1),
   error_page_(),
-  index_(DEFAULT_INDEX),
-  server_()
+  index_()
 {
 }
 

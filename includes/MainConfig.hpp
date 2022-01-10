@@ -10,6 +10,13 @@
 class MainConfig
 {
 public:
+    static const int NUM_MAIN_DIRECTIVE;
+    static const std::string DIRECTIVE_MEMBERS[];
+
+    static const std::vector<std::string> DEFAULT_ALLOW_METHOD;
+    static const std::string DEFAULT_AUTOINDEX;
+    static const int DEFAULT_CLIENT_MAX_BODY_SIZE;
+    static const std::vector<std::string> DEFAULT_INDEX;
     MainConfig();
     ~MainConfig();
     void setAutoindex(const std::string &autoindex);
@@ -32,17 +39,17 @@ public:
     const std::vector<std::string> index() const;
     const std::vector<ServerConfig> &server() const;
 private:
-    static const int NUM_MAIN_DIRECTIVE;
-    static const std::string DIRECTIVE_MEMBERS[];
-    static const std::vector<std::string> DEFAULT_ALLOW_METHOD;
-    static const std::string DEFAULT_AUTOINDEX;
-    static const int DEFAULT_CLIENT_MAX_BODY_SIZE;
-    static const std::vector<std::string> DEFAULT_INDEX;
+    // static const int NUM_MAIN_DIRECTIVE;
+    // static const std::string DIRECTIVE_MEMBERS[];
+    // static const std::vector<std::string> DEFAULT_ALLOW_METHOD;
+    // static const std::string DEFAULT_AUTOINDEX;
+    // static const int DEFAULT_CLIENT_MAX_BODY_SIZE;
+    // static const std::vector<std::string> DEFAULT_INDEX;
 
     std::vector<std::string> allow_method_;
     std::string autoindex_;
-    int client_max_body_size_;
     std::string cgi_extension_;
+    int client_max_body_size_;
     std::map<int, std::string> error_page_;
     std::vector<std::string> index_;
     std::vector<ServerConfig> server_;

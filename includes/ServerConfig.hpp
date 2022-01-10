@@ -10,6 +10,8 @@
 class ServerConfig
 {
 public:
+    static const int DEFAULT_PORT;
+
     ServerConfig();
     ~ServerConfig();
 
@@ -43,8 +45,6 @@ public:
     const std::string uploadPath() const;
 
 private:
-    static const int DEFAULT_PORT;
-
     std::vector<std::string> allow_method_;
     std::string autoindex_;
     std::string cgi_extension_;

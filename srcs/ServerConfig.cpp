@@ -5,6 +5,16 @@
 const int ServerConfig::DEFAULT_PORT = 80;
 
 ServerConfig::ServerConfig()
+: allow_method_(),
+  autoindex_(),
+  cgi_extension_(),
+  client_max_body_size_(-1),
+  error_page_(),
+  index_(),
+  listen_(-1),
+  return_redirect_(),
+  server_name_(),
+  upload_path_()
 {
 }
 

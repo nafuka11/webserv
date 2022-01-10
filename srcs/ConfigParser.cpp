@@ -127,6 +127,11 @@ void ConfigParser::parseMainContext()
             throw ConfigError(NOT_ALLOWED_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX],
                               filepath_, (line_pos_ + 1));
         }
+        if (directive_type_ == SERVER)
+        {
+            setDefaultToUnsetMainValue(main_config);
+        }
+
         std::map<DirectiveType, main_parse_func>::const_iterator miter;
         miter = MAIN_PARSE_FUNC.find(directive_type_);
         (this->*miter->second)(main_config);
@@ -138,7 +143,6 @@ void ConfigParser::parseServerContext(MainConfig &main_config)
     validateStartServerContext();
 
     ServerConfig server_config = ServerConfig();
-    initServerConfigFromMain(server_config, main_config);
     setContextType(CONTEXT_SERVER);
     ++line_pos_;
 
@@ -160,6 +164,10 @@ void ConfigParser::parseServerContext(MainConfig &main_config)
             throw ConfigError(NOT_ALLOWED_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX],
                               filepath_, (line_pos_ + 1));
         }
+        if (directive_type_ == LOCATION)
+        {
+            setDefaultToUnsetServerValue(server_config, main_config);
+        }
 
         std::map<DirectiveType, server_parse_func>::const_iterator miter;
         miter = SERVER_PARSE_FUNC.find(directive_type_);
@@ -176,7 +184,7 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
 
     LocationConfig location_config = LocationConfig();
     std::string location_path = parse_line_[DIRECTIVE_VALUE_INDEX];
-    initLocationConfigFromServer(location_config, server_config);
+
     setContextType(CONTEXT_LOCATION);
     ++line_pos_;
 
@@ -207,6 +215,7 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
     {
         throw ConfigError(DUPLICATE_LOCATION, location_path, filepath_, (line_pos_ + 1));
     }
+    setDefaultToUnsetLocationValue(location_config, server_config);
     server_config.addLocation(location_path, location_config);
     setContextType(CONTEXT_SERVER);
 }
@@ -560,23 +569,80 @@ void ConfigParser::setContextType(ContextType type)
     context_type_ = type;
 }
 
-void ConfigParser::initServerConfigFromMain(ServerConfig &server_config, const MainConfig &main_config)
+void ConfigParser::setDefaultToUnsetMainValue(MainConfig &main_config)
 {
-    setAllowMethodParams(server_config, main_config.allowMethod());
-    server_config.setAutoindex(main_config.autoindex());
-    server_config.setCgiExtension(main_config.cgiExtension());
-    server_config.setClientMaxBodySize(main_config.clientMaxBodySize());
-    setErrorPageParams(server_config, main_config.errorPage());
-    setIndexParams(server_config, main_config.index());
+    if (main_config.allowMethod().empty())
+    {
+        setAllowMethodParams(main_config, MainConfig::DEFAULT_ALLOW_METHOD);
+    }
+    if  (main_config.autoindex() == "")
+    {
+        main_config.setAutoindex(MainConfig::DEFAULT_AUTOINDEX);
+    }
+    if (main_config.cgiExtension() == "")
+    {
+        main_config.setCgiExtension("ide");//TODO: 後で変更
+    }
+    if (main_config.clientMaxBodySize() == -1)
+    {
+        main_config.setClientMaxBodySize(MainConfig::DEFAULT_CLIENT_MAX_BODY_SIZE);
+    }
+    if (main_config.index().empty())
+    {
+        setIndexParams(main_config, MainConfig::DEFAULT_INDEX);
+    }
 }
 
-void ConfigParser::initLocationConfigFromServer(LocationConfig &location_config, const ServerConfig &server_config)
+void ConfigParser::setDefaultToUnsetServerValue(ServerConfig &server_config, const MainConfig &main_config)
 {
-    setAllowMethodParams(location_config, server_config.allowMethod());
-    location_config.setAutoindex(server_config.autoindex());
-    setErrorPageParams(location_config, server_config.errorPage());
-    setIndexParams(location_config, server_config.index());
-    setReturnRedirectParam(location_config, server_config.returnRedirect());
+    if (server_config.allowMethod().empty())
+    {
+        setAllowMethodParams(server_config, main_config.allowMethod());
+    }
+    if  (server_config.autoindex() == "")
+    {
+        server_config.setAutoindex(main_config.autoindex());
+    }
+    if (server_config.cgiExtension() == "")
+    {
+        server_config.setCgiExtension(main_config.cgiExtension());
+    }
+    if (server_config.clientMaxBodySize() == -1)
+    {
+        server_config.setClientMaxBodySize(main_config.clientMaxBodySize());
+    }
+    if (server_config.index().empty())
+    {
+        setIndexParams(server_config, main_config.index());
+    }
+    if (server_config.listen() == -1)
+    {
+        server_config.setListen(ServerConfig::DEFAULT_PORT);
+    }
+}
+
+void ConfigParser::setDefaultToUnsetLocationValue(LocationConfig &location_config, const ServerConfig &server_config)
+{
+    if (location_config.allowMethod().empty())
+    {
+        setAllowMethodParams(location_config, server_config.allowMethod());
+    }
+    if (location_config.autoindex() == "")
+    {
+        location_config.setAutoindex(server_config.autoindex());
+    }
+    if (location_config.errorPage().empty())
+    {
+        setErrorPageParams(location_config, server_config.errorPage());
+    }
+    if (location_config.index().empty())
+    {
+        setIndexParams(location_config, server_config.index());
+    }
+    if (location_config.returnRedirect().empty())
+    {
+        setReturnRedirectParam(location_config, server_config.returnRedirect());
+    }
 }
 
 const std::vector<std::string> ConfigParser::validateAllowMethodParams()
