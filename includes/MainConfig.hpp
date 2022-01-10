@@ -9,9 +9,6 @@
 class MainConfig
 {
 public:
-    static const int NUM_MAIN_DIRECTIVE;
-    static const std::string DIRECTIVE_MEMBERS[];
-
     static const std::vector<std::string> DEFAULT_ALLOW_METHOD;
     static const std::string DEFAULT_AUTOINDEX;
     static const int DEFAULT_CLIENT_MAX_BODY_SIZE;

@@ -103,16 +103,16 @@ private:
     void setReturnRedirectParam(T &config_obj, const std::map<int, std::string> &param);
 
     bool isAllowedDirective();
-    bool isDuplicateLocation(const ServerConfig &server_config, const std::string &path);
-    void validateDuplicateValueTypeStr(const std::string &value);
-    void validateDuplicateValueTypeInt(const int value);
-    void validateNumOfArgs(const int correct_num);
     bool isCorrectAutoindexValue();
     bool isCorrectClientMaxBodySizeValue();
     bool isCorrectListenValue();
+    bool isDuplicateLocation(const ServerConfig &server_config, const std::string &path);
 
     void validateStartServerContext();
     void validateStartLocationContext();
+    void validateDuplicateValueTypeStr(const std::string &value);
+    void validateDuplicateValueTypeInt(const int value);
+    void validateNumOfArgs(const int correct_num);
     void validateEndContext();
     void validateEndSemicolon();
     const std::vector<std::string> validateAllowMethodParams();
