@@ -221,6 +221,7 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
 
 void ConfigParser::parseAlias(LocationConfig &location_config)
 {
+    validateDuplicateValueTypeStr(location_config.alias());
     if (!isCorrectNumOfArgs(1))
     {
         throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
@@ -231,6 +232,7 @@ void ConfigParser::parseAlias(LocationConfig &location_config)
 
 void ConfigParser::parseCgiExtension(MainConfig &main_config)
 {
+    validateDuplicateValueTypeStr(main_config.cgiExtension());
     if (!isCorrectNumOfArgs(1))
     {
         throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
@@ -241,6 +243,7 @@ void ConfigParser::parseCgiExtension(MainConfig &main_config)
 
 void ConfigParser::parseListen(ServerConfig &server_config)
 {
+    validateDuplicateValueTypeInt(server_config.listen());
     if (!isCorrectNumOfArgs(1))
     {
         throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
@@ -255,6 +258,7 @@ void ConfigParser::parseListen(ServerConfig &server_config)
 
 void ConfigParser::parseServerName(ServerConfig &server_config)
 {
+    validateDuplicateValueTypeStr(server_config.serverName());
     if (!isCorrectNumOfArgs(1))
     {
         throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
@@ -421,6 +425,22 @@ bool ConfigParser::isDuplicateLocation(const ServerConfig &server_config, const 
         return true;
     }
     return false;
+}
+
+void ConfigParser::validateDuplicateValueTypeStr(const std::string &value)
+{
+    if (value != "")
+    {
+        throw ConfigError(DUPLICATE_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+    }
+}
+
+void ConfigParser::validateDuplicateValueTypeInt(const int value)
+{
+    if (value != -1)
+    {
+        throw ConfigError(DUPLICATE_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1))
+    }
 }
 
 std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > ConfigParser::createAllowedDirective()
