@@ -4,7 +4,6 @@
 #include <map>
 #include <string>
 #include <vector>
-
 #include "ServerConfig.hpp"
 
 class MainConfig
@@ -39,13 +38,6 @@ public:
     const std::vector<std::string> index() const;
     const std::vector<ServerConfig> &server() const;
 private:
-    // static const int NUM_MAIN_DIRECTIVE;
-    // static const std::string DIRECTIVE_MEMBERS[];
-    // static const std::vector<std::string> DEFAULT_ALLOW_METHOD;
-    // static const std::string DEFAULT_AUTOINDEX;
-    // static const int DEFAULT_CLIENT_MAX_BODY_SIZE;
-    // static const std::vector<std::string> DEFAULT_INDEX;
-
     std::vector<std::string> allow_method_;
     std::string autoindex_;
     std::string cgi_extension_;

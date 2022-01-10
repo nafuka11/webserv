@@ -1,5 +1,4 @@
 #include "ServerConfig.hpp"
-
 #include <utility>
 
 const int ServerConfig::DEFAULT_PORT = 80;

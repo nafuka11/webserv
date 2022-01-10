@@ -2,7 +2,6 @@
 #include <fstream>
 #include <string>
 #include "Config.hpp"
-// #include "ConfigError.hpp"
 #include "LocationConfig.hpp"
 #include "MainConfig.hpp"
 #include "SystemError.hpp"
@@ -248,7 +247,6 @@ void ConfigParser::parseListen(ServerConfig &server_config)
     }
     if (!isCorrectListenValue())
     {
-        // TODO: 引数の値(数値か、適切な値か)チェック
         throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
     }
     validateEndSemicolon();

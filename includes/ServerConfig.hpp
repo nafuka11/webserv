@@ -4,7 +4,6 @@
 #include <map>
 #include <string>
 #include <vector>
-
 #include "LocationConfig.hpp"
 
 class ServerConfig
