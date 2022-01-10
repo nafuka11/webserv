@@ -222,10 +222,7 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
 void ConfigParser::parseAlias(LocationConfig &location_config)
 {
     validateDuplicateValueTypeStr(location_config.alias());
-    if (!isCorrectNumOfArgs(1))
-    {
-        throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
-    }
+    validateNumOfArgs(1);
     validateEndSemicolon();
     location_config.setAlias(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
@@ -233,10 +230,7 @@ void ConfigParser::parseAlias(LocationConfig &location_config)
 void ConfigParser::parseCgiExtension(MainConfig &main_config)
 {
     validateDuplicateValueTypeStr(main_config.cgiExtension());
-    if (!isCorrectNumOfArgs(1))
-    {
-        throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
-    }
+    validateNumOfArgs(1);
     validateEndSemicolon();
     main_config.setCgiExtension(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
@@ -244,10 +238,7 @@ void ConfigParser::parseCgiExtension(MainConfig &main_config)
 void ConfigParser::parseListen(ServerConfig &server_config)
 {
     validateDuplicateValueTypeInt(server_config.listen());
-    if (!isCorrectNumOfArgs(1))
-    {
-        throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
-    }
+    validateNumOfArgs(1);
     if (!isCorrectListenValue())
     {
         throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
@@ -259,10 +250,7 @@ void ConfigParser::parseListen(ServerConfig &server_config)
 void ConfigParser::parseServerName(ServerConfig &server_config)
 {
     validateDuplicateValueTypeStr(server_config.serverName());
-    if (!isCorrectNumOfArgs(1))
-    {
-        throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
-    }
+    validateNumOfArgs(1);
     validateEndSemicolon();
     server_config.setServerName(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
@@ -350,7 +338,7 @@ bool ConfigParser::isAllowedDirective()
     return false;
 }
 
-bool ConfigParser::isCorrectNumOfArgs(const int correct_num)
+void ConfigParser::validateNumOfArgs(const int correct_num)
 {
     std::vector<std::string>::const_iterator viter = parse_line_.begin();
     int count = 0;
@@ -361,11 +349,10 @@ bool ConfigParser::isCorrectNumOfArgs(const int correct_num)
     {
         count++;
     }
-    if (count == correct_num)
+    if (count != correct_num)
     {
-        return true;
+        throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
     }
-    return false;
 }
 
 bool ConfigParser::isCorrectAutoindexValue()
@@ -439,7 +426,7 @@ void ConfigParser::validateDuplicateValueTypeInt(const int value)
 {
     if (value != -1)
     {
-        throw ConfigError(DUPLICATE_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1))
+        throw ConfigError(DUPLICATE_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
     }
 }
 

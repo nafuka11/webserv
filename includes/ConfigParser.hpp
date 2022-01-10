@@ -106,7 +106,7 @@ private:
     bool isDuplicateLocation(const ServerConfig &server_config, const std::string &path);
     void validateDuplicateValueTypeStr(const std::string &value);
     void validateDuplicateValueTypeInt(const int value);
-    bool isCorrectNumOfArgs(const int correct_num);
+    void validateNumOfArgs(const int correct_num);
     bool isCorrectAutoindexValue();
     bool isCorrectClientMaxBodySizeValue();
     bool isCorrectListenValue();
@@ -144,10 +144,7 @@ template <typename T>
 void ConfigParser::parseAutoindex(T &config_obj)
 {
     validateDuplicateValueTypeStr(config_obj.autoindex());
-    if (!isCorrectNumOfArgs(1))
-    {
-        throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
-    }
+    validateNumOfArgs(1);
     if (!isCorrectAutoindexValue())
     {
         throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
@@ -160,10 +157,7 @@ template <typename T>
 void ConfigParser::parseClientMaxBodySize(T &config_obj)
 {
     validateDuplicateValueTypeInt(config_obj.clientMaxBodySize());
-    if (!isCorrectNumOfArgs(1))
-    {
-        throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
-    }
+    validateNumOfArgs(1);
     if (!isCorrectClientMaxBodySizeValue())
     {
         throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
@@ -199,10 +193,7 @@ template <typename T>
 void ConfigParser::parseUploadPath(T &config_obj)
 {
     validateDuplicateValueTypeStr(config_obj.uploadPath());
-    if (!isCorrectNumOfArgs(1))
-    {
-        throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
-    }
+    validateNumOfArgs(1);
     validateEndSemicolon();
     config_obj.setUploadPath(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
