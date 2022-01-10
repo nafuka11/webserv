@@ -17,6 +17,9 @@ void ConfigError::setErrorMessage(const ConfigErrorType error_type, const std::s
 {
     switch (error_type)
     {
+    case DUPLICATE_DIRECTIVE:
+        error_message_ += "duplicate \"" + error_word + "\" directive" + file_info_;
+        break;
     case DUPLICATE_LOCATION:
         error_message_ += "duplicate location \"" + error_word + "\"" + file_info_;
         break;

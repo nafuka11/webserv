@@ -3,6 +3,7 @@
 
 enum ConfigErrorType
 {
+    DUPLICATE_DIRECTIVE,
     DUPLICATE_LOCATION,
     INVALID_NUM_OF_ARGS,
     INVALID_VALUE,
