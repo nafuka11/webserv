@@ -12,9 +12,9 @@ public:
 
     static const std::vector<std::string> DEFAULT_ALLOW_METHOD;
     static const std::string DEFAULT_AUTOINDEX;
-    static const int DEFAULT_CLIENT_MAX_BODY_SIZE;
+    static const size_t DEFAULT_CLIENT_MAX_BODY_SIZE;
     static const std::vector<std::string> DEFAULT_INDEX;
-    static const int DEFAULT_PORT;
+    static const size_t DEFAULT_PORT;
 };
 
 #endif /* CONFIGCONSTANT_HPP */

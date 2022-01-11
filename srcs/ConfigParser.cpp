@@ -545,7 +545,7 @@ void ConfigParser::setDefaultToUnsetMainValue(MainConfig &main_config)
     }
     if (main_config.cgiExtension() == ConfigConstant::UNSET_TYPE_STR)
     {
-        main_config.setCgiExtension("bla"); //TODO: 後で変更
+        main_config.setCgiExtension("bla"); //TODO: 対応要確認
     }
     if (main_config.clientMaxBodySize() == ConfigConstant::UNSET_TYPE_INT)
     {
