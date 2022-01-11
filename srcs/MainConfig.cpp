@@ -1,17 +1,11 @@
 #include "MainConfig.hpp"
-
-std::string default_allow_method[] = {"GET", "POST", "DELETE"};
-const std::vector<std::string> MainConfig::DEFAULT_ALLOW_METHOD(default_allow_method, std::end(default_allow_method));
-const std::string MainConfig::DEFAULT_AUTOINDEX = "off";
-const int MainConfig::DEFAULT_CLIENT_MAX_BODY_SIZE = 5000;
-std::string default_index[] = {"index.html"};
-const std::vector<std::string> MainConfig::DEFAULT_INDEX(default_index, std::end(default_index));
+#include "ConfigConstant.hpp"
 
 MainConfig::MainConfig()
 : allow_method_(),
   autoindex_(),
   cgi_extension_(),
-  client_max_body_size_(-1),
+  client_max_body_size_(ConfigConstant::UNSET_TYPE_INT),
   error_page_(),
   index_()
 {

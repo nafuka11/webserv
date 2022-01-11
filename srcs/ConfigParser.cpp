@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include "Config.hpp"
+#include "ConfigConstant.hpp"
 #include "LocationConfig.hpp"
 #include "MainConfig.hpp"
 #include "SystemError.hpp"
@@ -587,23 +588,23 @@ void ConfigParser::setDefaultToUnsetMainValue(MainConfig &main_config)
 {
     if (main_config.allowMethod().empty())
     {
-        setAllowMethodParams(main_config, MainConfig::DEFAULT_ALLOW_METHOD);
+        setAllowMethodParams(main_config, ConfigConstant::DEFAULT_ALLOW_METHOD);
     }
-    if  (main_config.autoindex() == "")
+    if  (main_config.autoindex() == ConfigConstant::UNSET_TYPE_STR)
     {
-        main_config.setAutoindex(MainConfig::DEFAULT_AUTOINDEX);
+        main_config.setAutoindex(ConfigConstant::DEFAULT_AUTOINDEX);
     }
-    if (main_config.cgiExtension() == "")
+    if (main_config.cgiExtension() == ConfigConstant::UNSET_TYPE_STR)
     {
-        main_config.setCgiExtension("ide");//TODO: 後で変更
+        main_config.setCgiExtension("bla"); //TODO: 後で変更
     }
-    if (main_config.clientMaxBodySize() == -1)
+    if (main_config.clientMaxBodySize() == ConfigConstant::UNSET_TYPE_INT)
     {
-        main_config.setClientMaxBodySize(MainConfig::DEFAULT_CLIENT_MAX_BODY_SIZE);
+        main_config.setClientMaxBodySize(ConfigConstant::DEFAULT_CLIENT_MAX_BODY_SIZE);
     }
     if (main_config.index().empty())
     {
-        setIndexParams(main_config, MainConfig::DEFAULT_INDEX);
+        setIndexParams(main_config, ConfigConstant::DEFAULT_INDEX);
     }
 }
 
@@ -613,15 +614,15 @@ void ConfigParser::setDefaultToUnsetServerValue(ServerConfig &server_config, con
     {
         setAllowMethodParams(server_config, main_config.allowMethod());
     }
-    if  (server_config.autoindex() == "")
+    if  (server_config.autoindex() == ConfigConstant::UNSET_TYPE_STR)
     {
         server_config.setAutoindex(main_config.autoindex());
     }
-    if (server_config.cgiExtension() == "")
+    if (server_config.cgiExtension() == ConfigConstant::UNSET_TYPE_STR)
     {
         server_config.setCgiExtension(main_config.cgiExtension());
     }
-    if (server_config.clientMaxBodySize() == -1)
+    if (server_config.clientMaxBodySize() == ConfigConstant::UNSET_TYPE_INT)
     {
         server_config.setClientMaxBodySize(main_config.clientMaxBodySize());
     }
@@ -629,9 +630,9 @@ void ConfigParser::setDefaultToUnsetServerValue(ServerConfig &server_config, con
     {
         setIndexParams(server_config, main_config.index());
     }
-    if (server_config.listen() == -1)
+    if (server_config.listen() == ConfigConstant::UNSET_TYPE_INT)
     {
-        server_config.setListen(ServerConfig::DEFAULT_PORT);
+        server_config.setListen(ConfigConstant::DEFAULT_PORT);
     }
 }
 
@@ -641,7 +642,7 @@ void ConfigParser::setDefaultToUnsetLocationValue(LocationConfig &location_confi
     {
         setAllowMethodParams(location_config, server_config.allowMethod());
     }
-    if (location_config.autoindex() == "")
+    if (location_config.autoindex() == ConfigConstant::UNSET_TYPE_STR)
     {
         location_config.setAutoindex(server_config.autoindex());
     }

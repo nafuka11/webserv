@@ -9,10 +9,6 @@
 class MainConfig
 {
 public:
-    static const std::vector<std::string> DEFAULT_ALLOW_METHOD;
-    static const std::string DEFAULT_AUTOINDEX;
-    static const int DEFAULT_CLIENT_MAX_BODY_SIZE;
-    static const std::vector<std::string> DEFAULT_INDEX;
     MainConfig();
     ~MainConfig();
     void setAutoindex(const std::string &autoindex);
