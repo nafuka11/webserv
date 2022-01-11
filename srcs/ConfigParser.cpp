@@ -241,13 +241,9 @@ void ConfigParser::parseListen(ServerConfig &server_config)
 {
     validateDuplicateValueTypeInt(server_config.listen());
     validateNumOfArgs(1);
-    if (!isCorrectListenValue())
-    {
-        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
-                          filepath_, (line_pos_ + 1));
-    }
     validateEndSemicolon();
-    server_config.setListen(std::atoi(parse_line_[DIRECTIVE_VALUE_INDEX].c_str()));
+    long value = validateListenValue();
+    server_config.setListen(value);
 }
 
 void ConfigParser::parseServerName(ServerConfig &server_config)
@@ -361,53 +357,6 @@ void ConfigParser::validateNumOfArgs(const int correct_num)
         throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX],
                           filepath_, (line_pos_ + 1));
     }
-}
-
-bool ConfigParser::isCorrectAutoindexValue()
-{
-    std::string value = parse_line_[DIRECTIVE_VALUE_INDEX];
-
-    if (value == "on" || value == "off")
-    {
-        return true;
-    }
-    return false;
-}
-
-bool ConfigParser::isCorrectClientMaxBodySizeValue()
-{
-    char *endp = NULL;
-    long value = strtol(parse_line_[DIRECTIVE_VALUE_INDEX].c_str(), &endp, 10);
-
-    if (*endp != '\0' || value < 0)
-    {
-        return false;
-    }
-    if ((value == LONG_MAX || value == LONG_MIN) && ERANGE == errno)
-    {
-        return false;
-    }
-    return true;
-}
-
-bool ConfigParser::isCorrectListenValue()
-{
-    char *endp = NULL;
-    long value = strtol(parse_line_[DIRECTIVE_VALUE_INDEX].c_str(), &endp, 10);
-
-    if (*endp != '\0')
-    {
-        return false;
-    }
-    if ((value == LONG_MAX || value == LONG_MIN) && ERANGE == errno)
-    {
-        return false;
-    }
-    if (value > PORT_MAX_VALUE || value <= PORT_MIN_VALUE)
-    {
-        return false;
-    }
-    return true;
 }
 
 bool ConfigParser::isDuplicateLocation(const ServerConfig &server_config, const std::string &path)
@@ -658,6 +607,59 @@ void ConfigParser::setDefaultToUnsetLocationValue(LocationConfig &location_confi
     {
         setReturnRedirectParam(location_config, server_config.returnRedirect());
     }
+}
+
+const std::string ConfigParser::validateAutoindexValue()
+{
+    std::string value = parse_line_[DIRECTIVE_VALUE_INDEX];
+
+    if (value == "on" || value == "off")
+    {
+        return value;
+    }
+    throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
+}
+
+long ConfigParser::validateClientMaxBodySizeValue()
+{
+    char *endp = NULL;
+    long value = strtol(parse_line_[DIRECTIVE_VALUE_INDEX].c_str(), &endp, 10);
+
+    if (*endp != '\0' || value < 0)
+    {
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
+    }
+    if ((value == LONG_MAX || value == LONG_MIN) && ERANGE == errno)
+    {
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
+    }
+    return value;
+}
+
+long ConfigParser::validateListenValue()
+{
+    char *endp = NULL;
+    long value = strtol(parse_line_[DIRECTIVE_VALUE_INDEX].c_str(), &endp, 10);
+
+    if (*endp != '\0')
+    {
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
+    }
+    if ((value == LONG_MAX || value == LONG_MIN) && ERANGE == errno)
+    {
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
+    }
+    if (value > PORT_MAX_VALUE || value <= PORT_MIN_VALUE)
+    {
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
+    }
+    return value;
 }
 
 const std::vector<std::string> ConfigParser::validateAllowMethodParams()

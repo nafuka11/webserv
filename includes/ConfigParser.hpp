@@ -103,9 +103,6 @@ private:
     void setReturnRedirectParam(T &config_obj, const std::map<int, std::string> &param);
 
     bool isAllowedDirective();
-    bool isCorrectAutoindexValue();
-    bool isCorrectClientMaxBodySizeValue();
-    bool isCorrectListenValue();
     bool isDuplicateLocation(const ServerConfig &server_config, const std::string &path);
 
     void validateStartServerContext();
@@ -115,6 +112,9 @@ private:
     void validateNumOfArgs(const int correct_num);
     void validateEndContext();
     void validateEndSemicolon();
+    const std::string validateAutoindexValue();
+    long validateClientMaxBodySizeValue();
+    long validateListenValue();
     const std::vector<std::string> validateAllowMethodParams();
     const std::map<int, std::string> validateErrorPageParams();
     const std::vector<std::string> validateIndexParams();
@@ -145,13 +145,9 @@ void ConfigParser::parseAutoindex(T &config_obj)
 {
     validateDuplicateValueTypeStr(config_obj.autoindex());
     validateNumOfArgs(1);
-    if (!isCorrectAutoindexValue())
-    {
-        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
-                          filepath_, (line_pos_ + 1));
-    }
     validateEndSemicolon();
-    config_obj.setAutoindex(parse_line_[DIRECTIVE_VALUE_INDEX]);
+    std::string value = validateAutoindexValue();
+    config_obj.setAutoindex(value);
 }
 
 template <typename T>
@@ -159,13 +155,9 @@ void ConfigParser::parseClientMaxBodySize(T &config_obj)
 {
     validateDuplicateValueTypeInt(config_obj.clientMaxBodySize());
     validateNumOfArgs(1);
-    if (!isCorrectClientMaxBodySizeValue())
-    {
-        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
-                          filepath_, (line_pos_ + 1));
-    }
     validateEndSemicolon();
-    config_obj.setClientMaxBodySize(std::atoi(parse_line_[DIRECTIVE_VALUE_INDEX].c_str()));
+    long value = validateClientMaxBodySizeValue();
+    config_obj.setClientMaxBodySize(value);
 }
 
 template <typename T>
