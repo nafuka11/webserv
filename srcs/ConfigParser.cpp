@@ -373,7 +373,7 @@ bool ConfigParser::isDuplicateLocation(const ServerConfig &server_config, const 
 
 void ConfigParser::validateDuplicateValueTypeStr(const std::string &value)
 {
-    if (value != "")
+    if (value != ConfigConstant::UNSET_TYPE_STR)
     {
         throw ConfigError(DUPLICATE_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX],
                           filepath_, (line_pos_ + 1));
@@ -382,7 +382,7 @@ void ConfigParser::validateDuplicateValueTypeStr(const std::string &value)
 
 void ConfigParser::validateDuplicateValueTypeInt(const int value)
 {
-    if (value != -1)
+    if (value != ConfigConstant::UNSET_TYPE_INT)
     {
         throw ConfigError(DUPLICATE_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX],
                           filepath_, (line_pos_ + 1));
