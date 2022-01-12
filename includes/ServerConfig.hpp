@@ -9,8 +9,6 @@
 class ServerConfig
 {
 public:
-    static const int DEFAULT_PORT;
-
     ServerConfig();
     ~ServerConfig();
 
