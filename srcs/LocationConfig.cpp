@@ -4,6 +4,7 @@ LocationConfig::LocationConfig()
 : alias_(),
   allow_method_(),
   autoindex_(),
+  cgi_extensions_(),
   error_page_(),
   index_(),
   return_redirect_(),
@@ -33,6 +34,11 @@ void LocationConfig::setUploadPath(const std::string &path)
 void LocationConfig::addAllowMethod(const std::string &method)
 {
     allow_method_.push_back(method);
+}
+
+void LocationConfig::addCgiExtensions(const std::string &extension)
+{
+    cgi_extensions_.push_back(extension);
 }
 
 void LocationConfig::addErrorPage(const int status_code, const std::string &uri)
@@ -90,6 +96,11 @@ const std::vector<std::string> LocationConfig::allowMethod() const
 const std::string LocationConfig::autoindex() const
 {
     return autoindex_;
+}
+
+const std::vector<std::string> &LocationConfig::cgiExtensions() const
+{
+    return cgi_extensions_;
 }
 
 const std::map<int, std::string> LocationConfig::errorPage() const

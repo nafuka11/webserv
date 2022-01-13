@@ -5,7 +5,7 @@
 ServerConfig::ServerConfig()
 : allow_method_(),
   autoindex_(),
-  cgi_extension_(),
+  cgi_extensions_(),
   client_max_body_size_(ConfigConstant::UNSET_TYPE_INT),
   error_page_(),
   index_(),
@@ -23,11 +23,6 @@ ServerConfig::~ServerConfig()
 void ServerConfig::setAutoindex(const std::string &autoindex)
 {
     autoindex_ = autoindex;
-}
-
-void ServerConfig::setCgiExtension(const std::string &extension)
-{
-    cgi_extension_ = extension;
 }
 
 void ServerConfig::setClientMaxBodySize(const int size)
@@ -53,6 +48,11 @@ void ServerConfig::setUploadPath(const std::string &path)
 void ServerConfig::addAllowMethod(const std::string &method)
 {
     allow_method_.push_back(method);
+}
+
+void ServerConfig::addCgiExtensions(const std::string &extension)
+{
+    cgi_extensions_.push_back(extension);
 }
 
 void ServerConfig::addErrorPage(const int status_code, const std::string &uri)
@@ -115,9 +115,9 @@ const std::string ServerConfig::autoindex() const
     return autoindex_;
 }
 
-const std::string ServerConfig::cgiExtension() const
+const std::vector<std::string> &ServerConfig::cgiExtensions() const
 {
-    return cgi_extension_;
+    return cgi_extensions_;
 }
 
 const int &ServerConfig::clientMaxBodySize() const

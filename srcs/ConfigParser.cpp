@@ -229,14 +229,6 @@ void ConfigParser::parseAlias(LocationConfig &location_config)
     location_config.setAlias(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
 
-void ConfigParser::parseCgiExtension(MainConfig &main_config)
-{
-    validateDuplicateValueTypeStr(main_config.cgiExtension());
-    validateNumOfArgs(1);
-    validateEndSemicolon();
-    main_config.setCgiExtension(parse_line_[DIRECTIVE_VALUE_INDEX]);
-}
-
 void ConfigParser::parseListen(ServerConfig &server_config)
 {
     validateDuplicateValueTypeInt(server_config.listen());
@@ -402,7 +394,7 @@ std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > C
     allowed_directive[ALIAS] = generateAllowedContext(ALIAS);
     allowed_directive[ALLOW_METHOD] = generateAllowedContext(ALLOW_METHOD);
     allowed_directive[AUTOINDEX] = generateAllowedContext(AUTOINDEX);
-    allowed_directive[CGI_EXTENSION] = generateAllowedContext(CGI_EXTENSION);
+    allowed_directive[CGI_EXTENSIONS] = generateAllowedContext(CGI_EXTENSIONS);
     allowed_directive[CLIENT_MAX_BODY_SIZE] = generateAllowedContext(CLIENT_MAX_BODY_SIZE);
     allowed_directive[ERROR_PAGE] = generateAllowedContext(ERROR_PAGE);
     allowed_directive[INDEX] = generateAllowedContext(INDEX);
@@ -423,6 +415,7 @@ std::vector<ConfigParser::ContextType> ConfigParser::generateAllowedContext(Dire
     {
     case ALLOW_METHOD:
     case AUTOINDEX:
+    case CGI_EXTENSIONS:
     case ERROR_PAGE:
     case INDEX:
     case RETURN:
@@ -438,7 +431,6 @@ std::vector<ConfigParser::ContextType> ConfigParser::generateAllowedContext(Dire
     case ALIAS:
         allowed_context.push_back(CONTEXT_LOCATION);
         break;
-    case CGI_EXTENSION:
     case SERVER:
         allowed_context.push_back(CONTEXT_MAIN);
         break;
@@ -463,7 +455,7 @@ std::map<ConfigParser::DirectiveType, ConfigParser::main_parse_func> ConfigParse
 
     parse_func[ALLOW_METHOD] = &ConfigParser::parseAllowMethod;
     parse_func[AUTOINDEX] =  &ConfigParser::parseAutoindex;
-    parse_func[CGI_EXTENSION] = &ConfigParser::parseCgiExtension;
+    parse_func[CGI_EXTENSIONS] = &ConfigParser::parseCgiExtensions;
     parse_func[CLIENT_MAX_BODY_SIZE] = &ConfigParser::parseClientMaxBodySize;
     parse_func[ERROR_PAGE] = &ConfigParser::parseErrorPage;
     parse_func[INDEX] = &ConfigParser::parseIndex;
@@ -477,6 +469,7 @@ std::map<ConfigParser::DirectiveType, ConfigParser::server_parse_func> ConfigPar
 
     parse_func[ALLOW_METHOD] = &ConfigParser::parseAllowMethod;
     parse_func[AUTOINDEX] =  &ConfigParser::parseAutoindex;
+    parse_func[CGI_EXTENSIONS] = &ConfigParser::parseCgiExtensions;
     parse_func[CLIENT_MAX_BODY_SIZE] = &ConfigParser::parseClientMaxBodySize;
     parse_func[ERROR_PAGE] = &ConfigParser::parseErrorPage;
     parse_func[INDEX] = &ConfigParser::parseIndex;
@@ -495,6 +488,7 @@ std::map<ConfigParser::DirectiveType, ConfigParser::location_parse_func> ConfigP
     parse_func[ALIAS] = &ConfigParser::parseAlias;
     parse_func[ALLOW_METHOD] = &ConfigParser::parseAllowMethod;
     parse_func[AUTOINDEX] = &ConfigParser::parseAutoindex;
+    parse_func[CGI_EXTENSIONS] = &ConfigParser::parseCgiExtensions;
     parse_func[ERROR_PAGE] = &ConfigParser::parseErrorPage;
     parse_func[INDEX] = &ConfigParser::parseIndex;
     parse_func[RETURN] = &ConfigParser::parseReturnRedirect;
@@ -510,8 +504,8 @@ void ConfigParser::setDirectiveType(const std::string &directive_name)
         directive_type_ = ALLOW_METHOD;
     else if (directive_name == "autoindex")
         directive_type_ = AUTOINDEX;
-    else if (directive_name == "cgi_extension")
-        directive_type_ = CGI_EXTENSION;
+    else if (directive_name == "cgi_extensions")
+        directive_type_ = CGI_EXTENSIONS;
     else if (directive_name == "client_max_body_size")
         directive_type_ = CLIENT_MAX_BODY_SIZE;
     else if (directive_name == "error_page")
@@ -549,10 +543,6 @@ void ConfigParser::setDefaultToUnsetMainValue(MainConfig &main_config)
     {
         main_config.setAutoindex(ConfigConstant::DEFAULT_AUTOINDEX);
     }
-    if (main_config.cgiExtension() == ConfigConstant::UNSET_TYPE_STR)
-    {
-        main_config.setCgiExtension("bla"); //TODO: 対応要確認
-    }
     if (main_config.clientMaxBodySize() == ConfigConstant::UNSET_TYPE_INT)
     {
         main_config.setClientMaxBodySize(ConfigConstant::DEFAULT_CLIENT_MAX_BODY_SIZE);
@@ -573,9 +563,9 @@ void ConfigParser::setDefaultToUnsetServerValue(ServerConfig &server_config, con
     {
         server_config.setAutoindex(main_config.autoindex());
     }
-    if (server_config.cgiExtension() == ConfigConstant::UNSET_TYPE_STR)
+    if (server_config.cgiExtensions().empty())
     {
-        server_config.setCgiExtension(main_config.cgiExtension());
+        setCgiExtensionParams(server_config, main_config.cgiExtensions());
     }
     if (server_config.clientMaxBodySize() == ConfigConstant::UNSET_TYPE_INT)
     {
@@ -600,6 +590,10 @@ void ConfigParser::setDefaultToUnsetLocationValue(LocationConfig &location_confi
     if (location_config.autoindex() == ConfigConstant::UNSET_TYPE_STR)
     {
         location_config.setAutoindex(server_config.autoindex());
+    }
+    if (location_config.cgiExtensions().empty())
+    {
+        setCgiExtensionParams(location_config, server_config.cgiExtensions());
     }
     if (location_config.errorPage().empty())
     {
