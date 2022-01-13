@@ -4,6 +4,7 @@
 #include <exception>
 #include <string>
 #include <iostream> // TODO: 後で消す
+#include "ConfigError.hpp"
 #include "MainConfig.hpp"
 #include "ServerConfig.hpp"
 
@@ -54,6 +55,8 @@ private:
     static const int DIRECTIVE_VALUE_INDEX;
     static const int SERVER_OPEN_BRACE_INDEX;
     static const int LOCATION_OPEN_BRACE_INDEX;
+    static const int PORT_MAX_VALUE;
+    static const int PORT_MIN_VALUE;
 
     static std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > createAllowedDirective();
     static std::map<ConfigParser::DirectiveType, main_parse_func> createMainParseFunc();
@@ -86,8 +89,9 @@ private:
     void parseUploadPath(T &config_obj);
     void setDirectiveType(const std::string &directive_name);
     void setContextType(ContextType type);
-    void initServerConfigFromMain(ServerConfig &server_config, const MainConfig &main_config);
-    void initLocationConfigFromServer(LocationConfig &location_config, const ServerConfig &server_config);
+    void setDefaultToUnsetMainValue(MainConfig &main_config);
+    void setDefaultToUnsetServerValue(ServerConfig &server_config, const MainConfig &main_config);
+    void setDefaultToUnsetLocationValue(LocationConfig &location_config, const ServerConfig &server_config);
     template <typename T>
     void setAllowMethodParams(T &config_obj, const std::vector<std::string> &params);
     template <typename T>
@@ -98,13 +102,19 @@ private:
     template <typename T>
     void setReturnRedirectParam(T &config_obj, const std::map<int, std::string> &param);
 
+    long convertNumber(const std::string &str);
+
     bool isAllowedDirective();
     bool isDuplicateLocation(const ServerConfig &server_config, const std::string &path);
 
     void validateStartServerContext();
     void validateStartLocationContext();
+    void validateDuplicateValueTypeStr(const std::string &value);
+    void validateDuplicateValueTypeInt(const int value);
+    void validateNumOfArgs(const int correct_num);
     void validateEndContext();
     void validateEndSemicolon();
+    const std::string validateAutoindexValue();
     const std::vector<std::string> validateAllowMethodParams();
     const std::map<int, std::string> validateErrorPageParams();
     const std::vector<std::string> validateIndexParams();
@@ -133,15 +143,27 @@ void ConfigParser::parseAllowMethod(T &config_obj)
 template <typename T>
 void ConfigParser::parseAutoindex(T &config_obj)
 {
+    validateDuplicateValueTypeStr(config_obj.autoindex());
+    validateNumOfArgs(1);
     validateEndSemicolon();
-    config_obj.setAutoindex(parse_line_[DIRECTIVE_VALUE_INDEX]);
+    std::string value = validateAutoindexValue();
+    config_obj.setAutoindex(value);
 }
 
 template <typename T>
 void ConfigParser::parseClientMaxBodySize(T &config_obj)
 {
+    validateDuplicateValueTypeInt(config_obj.clientMaxBodySize());
+    validateNumOfArgs(1);
     validateEndSemicolon();
-    config_obj.setClientMaxBodySize(std::atoi(parse_line_[DIRECTIVE_VALUE_INDEX].c_str()));
+
+    long value = convertNumber(parse_line_[DIRECTIVE_VALUE_INDEX]);
+    if (value < 0)
+    {
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
+    }
+    config_obj.setClientMaxBodySize(value);
 }
 
 template <typename T>
@@ -170,6 +192,8 @@ void ConfigParser::parseReturnRedirect(T &config_obj)
 template <typename T>
 void ConfigParser::parseUploadPath(T &config_obj)
 {
+    validateDuplicateValueTypeStr(config_obj.uploadPath());
+    validateNumOfArgs(1);
     validateEndSemicolon();
     config_obj.setUploadPath(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }

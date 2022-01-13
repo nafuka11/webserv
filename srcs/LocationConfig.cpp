@@ -1,6 +1,13 @@
 #include "LocationConfig.hpp"
 
 LocationConfig::LocationConfig()
+: alias_(),
+  allow_method_(),
+  autoindex_(),
+  error_page_(),
+  index_(),
+  return_redirect_(),
+  upload_path_()
 {
 }
 

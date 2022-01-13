@@ -2,7 +2,7 @@
 #include <fstream>
 #include <string>
 #include "Config.hpp"
-#include "ConfigError.hpp"
+#include "ConfigConstant.hpp"
 #include "LocationConfig.hpp"
 #include "MainConfig.hpp"
 #include "SystemError.hpp"
@@ -20,6 +20,8 @@ const int ConfigParser::DIRECTIVE_NAME_INDEX = 0;
 const int ConfigParser::DIRECTIVE_VALUE_INDEX = 1;
 const int ConfigParser::SERVER_OPEN_BRACE_INDEX = 1;
 const int ConfigParser::LOCATION_OPEN_BRACE_INDEX = 2;
+const int ConfigParser::PORT_MAX_VALUE = 65535;
+const int ConfigParser::PORT_MIN_VALUE = 1;
 
 ConfigParser::ConfigParser(Config &config) : line_pos_(0), config_(config)
 {
@@ -125,6 +127,11 @@ void ConfigParser::parseMainContext()
             throw ConfigError(NOT_ALLOWED_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX],
                               filepath_, (line_pos_ + 1));
         }
+        if (directive_type_ == SERVER)
+        {
+            setDefaultToUnsetMainValue(main_config);
+        }
+
         std::map<DirectiveType, main_parse_func>::const_iterator miter;
         miter = MAIN_PARSE_FUNC.find(directive_type_);
         (this->*miter->second)(main_config);
@@ -136,7 +143,6 @@ void ConfigParser::parseServerContext(MainConfig &main_config)
     validateStartServerContext();
 
     ServerConfig server_config = ServerConfig();
-    initServerConfigFromMain(server_config, main_config);
     setContextType(CONTEXT_SERVER);
     ++line_pos_;
 
@@ -158,6 +164,10 @@ void ConfigParser::parseServerContext(MainConfig &main_config)
             throw ConfigError(NOT_ALLOWED_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX],
                               filepath_, (line_pos_ + 1));
         }
+        if (directive_type_ == LOCATION)
+        {
+            setDefaultToUnsetServerValue(server_config, main_config);
+        }
 
         std::map<DirectiveType, server_parse_func>::const_iterator miter;
         miter = SERVER_PARSE_FUNC.find(directive_type_);
@@ -174,7 +184,7 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
 
     LocationConfig location_config = LocationConfig();
     std::string location_path = parse_line_[DIRECTIVE_VALUE_INDEX];
-    initLocationConfigFromServer(location_config, server_config);
+
     setContextType(CONTEXT_LOCATION);
     ++line_pos_;
 
@@ -193,7 +203,8 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
         setDirectiveType(parse_line_[DIRECTIVE_NAME_INDEX]);
         if (!isAllowedDirective())
         {
-            throw ConfigError(NOT_ALLOWED_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+            throw ConfigError(NOT_ALLOWED_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX],
+                              filepath_, (line_pos_ + 1));
         }
 
         std::map<DirectiveType, location_parse_func>::const_iterator miter;
@@ -205,30 +216,46 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
     {
         throw ConfigError(DUPLICATE_LOCATION, location_path, filepath_, (line_pos_ + 1));
     }
+    setDefaultToUnsetLocationValue(location_config, server_config);
     server_config.addLocation(location_path, location_config);
     setContextType(CONTEXT_SERVER);
 }
 
 void ConfigParser::parseAlias(LocationConfig &location_config)
 {
+    validateDuplicateValueTypeStr(location_config.alias());
+    validateNumOfArgs(1);
     validateEndSemicolon();
     location_config.setAlias(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
 
 void ConfigParser::parseCgiExtension(MainConfig &main_config)
 {
+    validateDuplicateValueTypeStr(main_config.cgiExtension());
+    validateNumOfArgs(1);
     validateEndSemicolon();
     main_config.setCgiExtension(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
 
 void ConfigParser::parseListen(ServerConfig &server_config)
 {
+    validateDuplicateValueTypeInt(server_config.listen());
+    validateNumOfArgs(1);
     validateEndSemicolon();
-    server_config.setListen(std::atoi(parse_line_[DIRECTIVE_VALUE_INDEX].c_str()));
+
+    long value = convertNumber(parse_line_[DIRECTIVE_VALUE_INDEX]);
+    if (value < PORT_MIN_VALUE || value > PORT_MAX_VALUE)
+    {
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
+    }
+    server_config.setListen(value);
 }
 
 void ConfigParser::parseServerName(ServerConfig &server_config)
 {
+    validateDuplicateValueTypeStr(server_config.serverName());
+    validateNumOfArgs(1);
     validateEndSemicolon();
     server_config.setServerName(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
@@ -249,9 +276,11 @@ void ConfigParser::validateStartServerContext()
     size_t open_brace_index = std::distance(parse_line_.begin(), iter);
     if (open_brace_index == SERVER_OPEN_BRACE_INDEX)
     {
-        throw ConfigError(UNEXPECTED, parse_line_[open_brace_index + 1], filepath_, (line_pos_ + 1));
+        throw ConfigError(UNEXPECTED, parse_line_[open_brace_index + 1],
+                          filepath_, (line_pos_ + 1));
     }
-    throw ConfigError(UNEXPECTED, parse_line_[SERVER_OPEN_BRACE_INDEX], filepath_, (line_pos_ + 1));
+    throw ConfigError(UNEXPECTED, parse_line_[SERVER_OPEN_BRACE_INDEX],
+                      filepath_, (line_pos_ + 1));
 }
 
 void ConfigParser::validateStartLocationContext()
@@ -271,7 +300,8 @@ void ConfigParser::validateStartLocationContext()
     {
         throw ConfigError(INVALID_NUM_OF_ARGS, "location", filepath_, (line_pos_ + 1));
     }
-    throw ConfigError(UNEXPECTED, parse_line_[open_brace_index + 1], filepath_, (line_pos_ + 1));
+    throw ConfigError(UNEXPECTED, parse_line_[open_brace_index + 1],
+                      filepath_, (line_pos_ + 1));
 }
 
 void ConfigParser::validateEndContext()
@@ -292,7 +322,8 @@ void ConfigParser::validateEndSemicolon()
     std::vector<std::string>::iterator iter = std::find(parse_line_.begin(), parse_line_.end(), ";");
     if (iter == parse_line_.end())
     {
-        throw ConfigError(NO_END_SEMICOLON, parse_line_[DIRECTIVE_NAME_INDEX], filepath_, (line_pos_ + 1));
+        throw ConfigError(NO_END_SEMICOLON, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
     }
     if (iter + 1 == parse_line_.end())
     {
@@ -316,6 +347,24 @@ bool ConfigParser::isAllowedDirective()
     return false;
 }
 
+void ConfigParser::validateNumOfArgs(const int correct_num)
+{
+    std::vector<std::string>::const_iterator viter = parse_line_.begin();
+    int count = 0;
+
+    for (++viter;
+         (*viter != ";") && (viter != parse_line_.end());
+         ++viter)
+    {
+        count++;
+    }
+    if (count != correct_num)
+    {
+        throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
+    }
+}
+
 bool ConfigParser::isDuplicateLocation(const ServerConfig &server_config, const std::string &path)
 {
     std::map<std::string, LocationConfig> location = server_config.location();
@@ -326,6 +375,24 @@ bool ConfigParser::isDuplicateLocation(const ServerConfig &server_config, const 
         return true;
     }
     return false;
+}
+
+void ConfigParser::validateDuplicateValueTypeStr(const std::string &value)
+{
+    if (value != ConfigConstant::UNSET_TYPE_STR)
+    {
+        throw ConfigError(DUPLICATE_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
+    }
+}
+
+void ConfigParser::validateDuplicateValueTypeInt(const int value)
+{
+    if (value != ConfigConstant::UNSET_TYPE_INT)
+    {
+        throw ConfigError(DUPLICATE_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
+    }
 }
 
 std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > ConfigParser::createAllowedDirective()
@@ -472,23 +539,110 @@ void ConfigParser::setContextType(ContextType type)
     context_type_ = type;
 }
 
-void ConfigParser::initServerConfigFromMain(ServerConfig &server_config, const MainConfig &main_config)
+void ConfigParser::setDefaultToUnsetMainValue(MainConfig &main_config)
 {
-    setAllowMethodParams(server_config, main_config.allowMethod());
-    server_config.setAutoindex(main_config.autoindex());
-    server_config.setCgiExtension(main_config.cgiExtension());
-    server_config.setClientMaxBodySize(main_config.clientMaxBodySize());
-    setErrorPageParams(server_config, main_config.errorPage());
-    setIndexParams(server_config, main_config.index());
+    if (main_config.allowMethod().empty())
+    {
+        setAllowMethodParams(main_config, ConfigConstant::DEFAULT_ALLOW_METHOD);
+    }
+    if  (main_config.autoindex() == ConfigConstant::UNSET_TYPE_STR)
+    {
+        main_config.setAutoindex(ConfigConstant::DEFAULT_AUTOINDEX);
+    }
+    if (main_config.cgiExtension() == ConfigConstant::UNSET_TYPE_STR)
+    {
+        main_config.setCgiExtension("bla"); //TODO: 対応要確認
+    }
+    if (main_config.clientMaxBodySize() == ConfigConstant::UNSET_TYPE_INT)
+    {
+        main_config.setClientMaxBodySize(ConfigConstant::DEFAULT_CLIENT_MAX_BODY_SIZE);
+    }
+    if (main_config.index().empty())
+    {
+        setIndexParams(main_config, ConfigConstant::DEFAULT_INDEX);
+    }
 }
 
-void ConfigParser::initLocationConfigFromServer(LocationConfig &location_config, const ServerConfig &server_config)
+void ConfigParser::setDefaultToUnsetServerValue(ServerConfig &server_config, const MainConfig &main_config)
 {
-    setAllowMethodParams(location_config, server_config.allowMethod());
-    location_config.setAutoindex(server_config.autoindex());
-    setErrorPageParams(location_config, server_config.errorPage());
-    setIndexParams(location_config, server_config.index());
-    setReturnRedirectParam(location_config, server_config.returnRedirect());
+    if (server_config.allowMethod().empty())
+    {
+        setAllowMethodParams(server_config, main_config.allowMethod());
+    }
+    if  (server_config.autoindex() == ConfigConstant::UNSET_TYPE_STR)
+    {
+        server_config.setAutoindex(main_config.autoindex());
+    }
+    if (server_config.cgiExtension() == ConfigConstant::UNSET_TYPE_STR)
+    {
+        server_config.setCgiExtension(main_config.cgiExtension());
+    }
+    if (server_config.clientMaxBodySize() == ConfigConstant::UNSET_TYPE_INT)
+    {
+        server_config.setClientMaxBodySize(main_config.clientMaxBodySize());
+    }
+    if (server_config.index().empty())
+    {
+        setIndexParams(server_config, main_config.index());
+    }
+    if (server_config.listen() == ConfigConstant::UNSET_TYPE_INT)
+    {
+        server_config.setListen(ConfigConstant::DEFAULT_PORT);
+    }
+}
+
+void ConfigParser::setDefaultToUnsetLocationValue(LocationConfig &location_config, const ServerConfig &server_config)
+{
+    if (location_config.allowMethod().empty())
+    {
+        setAllowMethodParams(location_config, server_config.allowMethod());
+    }
+    if (location_config.autoindex() == ConfigConstant::UNSET_TYPE_STR)
+    {
+        location_config.setAutoindex(server_config.autoindex());
+    }
+    if (location_config.errorPage().empty())
+    {
+        setErrorPageParams(location_config, server_config.errorPage());
+    }
+    if (location_config.index().empty())
+    {
+        setIndexParams(location_config, server_config.index());
+    }
+    if (location_config.returnRedirect().empty())
+    {
+        setReturnRedirectParam(location_config, server_config.returnRedirect());
+    }
+}
+
+const std::string ConfigParser::validateAutoindexValue()
+{
+    std::string value = parse_line_[DIRECTIVE_VALUE_INDEX];
+
+    if (value == "on" || value == "off")
+    {
+        return value;
+    }
+    throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
+}
+
+long ConfigParser::convertNumber(const std::string &str)
+{
+    char *endp = NULL;
+    long value = strtol(str.c_str(), &endp, 10);
+
+    if (*endp != '\0')
+    {
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
+    }
+    if ((value == LONG_MAX || value == LONG_MIN) && ERANGE == errno)
+    {
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
+    }
+    return value;
 }
 
 const std::vector<std::string> ConfigParser::validateAllowMethodParams()
