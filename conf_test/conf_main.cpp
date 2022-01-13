@@ -43,9 +43,24 @@ void put_allow_methods(const std::vector<std::string> &allow_method, const std::
     }
 }
 
-void put_cgi_extensions(const std::string &cgi_extensions, const std::string &space)
+void put_cgi_extensions(const std::vector<std::string> &cgi_extensions, const std::string &space)
 {
-    std::cout << space << "cgi_extensions: " << cgi_extensions <<  std::endl;
+    std::string second_space;
+    if (g_status == LOCATION)
+        second_space = "                                    ";
+    else
+        second_space = "                      ";
+
+    std::cout << space << "cgi_extensions: ";
+
+    for (std::vector<std::string>::const_iterator iter = cgi_extensions.begin();
+        iter != cgi_extensions.end();
+        iter++)
+    {
+        if (iter != cgi_extensions.begin())
+            std::cout << second_space;
+        std::cout << *iter << std::endl;
+    }
 }
 
 void put_client_max_body_size(const int client_max_body_size)
@@ -175,7 +190,7 @@ void put_server_config(Config &config)
         std::cout << "\n-----[server_" << count << "]------------------------------"  << std::endl;
         put_allow_methods(const_iter->allowMethod(), "        ");
         put_autoindex(const_iter->autoindex(), "           ");
-        put_cgi_extensions(const_iter->cgiExtension(), "       ");
+        put_cgi_extensions(const_iter->cgiExtensions(), "      ");
         put_client_max_body_size(const_iter->clientMaxBodySize());
         put_error_page(const_iter->errorPage(), "          ");
         put_index(const_iter->index(), "               ");

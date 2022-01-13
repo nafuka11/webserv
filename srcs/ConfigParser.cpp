@@ -229,14 +229,6 @@ void ConfigParser::parseAlias(LocationConfig &location_config)
     location_config.setAlias(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
 
-void ConfigParser::parseCgiExtension(MainConfig &main_config)
-{
-    validateDuplicateValueTypeStr(main_config.cgiExtension());
-    validateNumOfArgs(1);
-    validateEndSemicolon();
-    main_config.setCgiExtension(parse_line_[DIRECTIVE_VALUE_INDEX]);
-}
-
 void ConfigParser::parseListen(ServerConfig &server_config)
 {
     validateDuplicateValueTypeInt(server_config.listen());
@@ -463,7 +455,7 @@ std::map<ConfigParser::DirectiveType, ConfigParser::main_parse_func> ConfigParse
 
     parse_func[ALLOW_METHOD] = &ConfigParser::parseAllowMethod;
     parse_func[AUTOINDEX] =  &ConfigParser::parseAutoindex;
-    parse_func[CGI_EXTENSIONS] = &ConfigParser::parseCgiExtension;
+    parse_func[CGI_EXTENSIONS] = &ConfigParser::parseCgiExtensions;
     parse_func[CLIENT_MAX_BODY_SIZE] = &ConfigParser::parseClientMaxBodySize;
     parse_func[ERROR_PAGE] = &ConfigParser::parseErrorPage;
     parse_func[INDEX] = &ConfigParser::parseIndex;
@@ -549,10 +541,6 @@ void ConfigParser::setDefaultToUnsetMainValue(MainConfig &main_config)
     {
         main_config.setAutoindex(ConfigConstant::DEFAULT_AUTOINDEX);
     }
-    if (main_config.cgiExtension() == ConfigConstant::UNSET_TYPE_STR)
-    {
-        main_config.setCgiExtension("bla"); //TODO: 対応要確認
-    }
     if (main_config.clientMaxBodySize() == ConfigConstant::UNSET_TYPE_INT)
     {
         main_config.setClientMaxBodySize(ConfigConstant::DEFAULT_CLIENT_MAX_BODY_SIZE);
@@ -573,9 +561,9 @@ void ConfigParser::setDefaultToUnsetServerValue(ServerConfig &server_config, con
     {
         server_config.setAutoindex(main_config.autoindex());
     }
-    if (server_config.cgiExtension() == ConfigConstant::UNSET_TYPE_STR)
+    if (server_config.cgiExtensions().empty())
     {
-        server_config.setCgiExtension(main_config.cgiExtension());
+        setCgiExtensionParams(server_config, main_config.cgiExtensions());
     }
     if (server_config.clientMaxBodySize() == ConfigConstant::UNSET_TYPE_INT)
     {

@@ -25,11 +25,6 @@ void ServerConfig::setAutoindex(const std::string &autoindex)
     autoindex_ = autoindex;
 }
 
-void ServerConfig::setCgiExtension(const std::string &extension)
-{
-    cgi_extensions_ = extension;
-}
-
 void ServerConfig::setClientMaxBodySize(const int size)
 {
     client_max_body_size_ = size;
@@ -53,6 +48,11 @@ void ServerConfig::setUploadPath(const std::string &path)
 void ServerConfig::addAllowMethod(const std::string &method)
 {
     allow_method_.push_back(method);
+}
+
+void ServerConfig::addCgiExtensions(const std::string &extension)
+{
+    cgi_extensions_.push_back(extension);
 }
 
 void ServerConfig::addErrorPage(const int status_code, const std::string &uri)
@@ -115,7 +115,7 @@ const std::string ServerConfig::autoindex() const
     return autoindex_;
 }
 
-const std::string ServerConfig::cgiExtension() const
+const std::vector<std::string> &ServerConfig::cgiExtensions() const
 {
     return cgi_extensions_;
 }

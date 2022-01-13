@@ -70,13 +70,14 @@ private:
     void parseServerContext(MainConfig &main_config);
     void parseLocationContext(ServerConfig &server_config);
     void parseAlias(LocationConfig &location_config);
-    void parseCgiExtension(MainConfig &main_config);
     void parseListen(ServerConfig &server_config);
     void parseServerName(ServerConfig &server_config);
     template <typename T>
     void parseAllowMethod(T &config_obj);
     template <typename T>
     void parseAutoindex(T &config_obj);
+    template <typename T>
+    void parseCgiExtensions(T &config_obj);
     template <typename T>
     void parseClientMaxBodySize(T &config_obj);
     template <typename T>
@@ -94,6 +95,8 @@ private:
     void setDefaultToUnsetLocationValue(LocationConfig &location_config, const ServerConfig &server_config);
     template <typename T>
     void setAllowMethodParams(T &config_obj, const std::vector<std::string> &params);
+    template <typename T>
+    void setCgiExtensionParams(T &config_obj, const std::vector<std::string> &params);
     template <typename T>
     void setErrorPageParams(T &config_obj, const std::map<int, std::string> &params);
     template <typename T>
@@ -148,6 +151,23 @@ void ConfigParser::parseAutoindex(T &config_obj)
     validateEndSemicolon();
     std::string value = validateAutoindexValue();
     config_obj.setAutoindex(value);
+}
+
+template <typename T>
+void ConfigParser::parseCgiExtensions(T &config_obj)
+{
+    //TODO: validateNumOfArgs()で引数の個数をチェック
+    validateEndSemicolon();
+
+    std::vector<std::string> params;
+    std::vector<std::string>::iterator iter = parse_line_.begin();
+
+    ++iter;
+    for (; (*iter != ";") && (iter != parse_line_.end()); ++iter)
+    {
+        params.push_back(*iter);
+    }
+    setCgiExtensionParams(config_obj, params);
 }
 
 template <typename T>
@@ -206,6 +226,17 @@ void ConfigParser::setAllowMethodParams(T &config_obj, const std::vector<std::st
          ++const_iter)
     {
         config_obj.addAllowMethod(*const_iter);
+    }
+}
+
+template <typename T>
+void ConfigParser::setCgiExtensionParams(T &config_obj, const std::vector<std::string> &params)
+{
+    for (std::vector<std::string>::const_iterator const_iter = params.begin();
+         const_iter != params.end();
+         ++const_iter)
+    {
+        config_obj.addCgiExtensions(*const_iter);
     }
 }
 
