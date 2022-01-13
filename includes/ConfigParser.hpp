@@ -29,7 +29,7 @@ public:
         ALIAS,
         ALLOW_METHOD,
         AUTOINDEX,
-        CGI_EXTENSION,
+        CGI_EXTENSIONS,
         CLIENT_MAX_BODY_SIZE,
         ERROR_PAGE,
         INDEX,

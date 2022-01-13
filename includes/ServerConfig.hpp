@@ -44,7 +44,7 @@ public:
 private:
     std::vector<std::string> allow_method_;
     std::string autoindex_;
-    std::string cgi_extension_;
+    std::string cgi_extensions_;
     int client_max_body_size_;
     std::map<int, std::string> error_page_;
     std::vector<std::string> index_;

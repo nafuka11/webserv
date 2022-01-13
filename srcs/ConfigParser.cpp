@@ -402,7 +402,7 @@ std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > C
     allowed_directive[ALIAS] = generateAllowedContext(ALIAS);
     allowed_directive[ALLOW_METHOD] = generateAllowedContext(ALLOW_METHOD);
     allowed_directive[AUTOINDEX] = generateAllowedContext(AUTOINDEX);
-    allowed_directive[CGI_EXTENSION] = generateAllowedContext(CGI_EXTENSION);
+    allowed_directive[CGI_EXTENSIONS] = generateAllowedContext(CGI_EXTENSIONS);
     allowed_directive[CLIENT_MAX_BODY_SIZE] = generateAllowedContext(CLIENT_MAX_BODY_SIZE);
     allowed_directive[ERROR_PAGE] = generateAllowedContext(ERROR_PAGE);
     allowed_directive[INDEX] = generateAllowedContext(INDEX);
@@ -438,7 +438,7 @@ std::vector<ConfigParser::ContextType> ConfigParser::generateAllowedContext(Dire
     case ALIAS:
         allowed_context.push_back(CONTEXT_LOCATION);
         break;
-    case CGI_EXTENSION:
+    case CGI_EXTENSIONS:
     case SERVER:
         allowed_context.push_back(CONTEXT_MAIN);
         break;
@@ -463,7 +463,7 @@ std::map<ConfigParser::DirectiveType, ConfigParser::main_parse_func> ConfigParse
 
     parse_func[ALLOW_METHOD] = &ConfigParser::parseAllowMethod;
     parse_func[AUTOINDEX] =  &ConfigParser::parseAutoindex;
-    parse_func[CGI_EXTENSION] = &ConfigParser::parseCgiExtension;
+    parse_func[CGI_EXTENSIONS] = &ConfigParser::parseCgiExtension;
     parse_func[CLIENT_MAX_BODY_SIZE] = &ConfigParser::parseClientMaxBodySize;
     parse_func[ERROR_PAGE] = &ConfigParser::parseErrorPage;
     parse_func[INDEX] = &ConfigParser::parseIndex;
@@ -510,8 +510,8 @@ void ConfigParser::setDirectiveType(const std::string &directive_name)
         directive_type_ = ALLOW_METHOD;
     else if (directive_name == "autoindex")
         directive_type_ = AUTOINDEX;
-    else if (directive_name == "cgi_extension")
-        directive_type_ = CGI_EXTENSION;
+    else if (directive_name == "cgi_extensions")
+        directive_type_ = CGI_EXTENSIONS;
     else if (directive_name == "client_max_body_size")
         directive_type_ = CLIENT_MAX_BODY_SIZE;
     else if (directive_name == "error_page")

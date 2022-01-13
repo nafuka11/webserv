@@ -5,7 +5,7 @@
 ServerConfig::ServerConfig()
 : allow_method_(),
   autoindex_(),
-  cgi_extension_(),
+  cgi_extensions_(),
   client_max_body_size_(ConfigConstant::UNSET_TYPE_INT),
   error_page_(),
   index_(),
@@ -27,7 +27,7 @@ void ServerConfig::setAutoindex(const std::string &autoindex)
 
 void ServerConfig::setCgiExtension(const std::string &extension)
 {
-    cgi_extension_ = extension;
+    cgi_extensions_ = extension;
 }
 
 void ServerConfig::setClientMaxBodySize(const int size)
@@ -117,7 +117,7 @@ const std::string ServerConfig::autoindex() const
 
 const std::string ServerConfig::cgiExtension() const
 {
-    return cgi_extension_;
+    return cgi_extensions_;
 }
 
 const int &ServerConfig::clientMaxBodySize() const

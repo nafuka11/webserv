@@ -43,9 +43,9 @@ void put_allow_methods(const std::vector<std::string> &allow_method, const std::
     }
 }
 
-void put_cgi_extension(const std::string &cgi_extension, const std::string &space)
+void put_cgi_extensions(const std::string &cgi_extensions, const std::string &space)
 {
-    std::cout << space << "cgi_extension: " << cgi_extension <<  std::endl;
+    std::cout << space << "cgi_extensions: " << cgi_extensions <<  std::endl;
 }
 
 void put_client_max_body_size(const int client_max_body_size)
@@ -175,7 +175,7 @@ void put_server_config(Config &config)
         std::cout << "\n-----[server_" << count << "]------------------------------"  << std::endl;
         put_allow_methods(const_iter->allowMethod(), "        ");
         put_autoindex(const_iter->autoindex(), "           ");
-        put_cgi_extension(const_iter->cgiExtension(), "       ");
+        put_cgi_extensions(const_iter->cgiExtension(), "       ");
         put_client_max_body_size(const_iter->clientMaxBodySize());
         put_error_page(const_iter->errorPage(), "          ");
         put_index(const_iter->index(), "               ");
