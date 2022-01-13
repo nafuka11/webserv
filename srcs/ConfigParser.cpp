@@ -21,7 +21,7 @@ const int ConfigParser::DIRECTIVE_VALUE_INDEX = 1;
 const int ConfigParser::SERVER_OPEN_BRACE_INDEX = 1;
 const int ConfigParser::LOCATION_OPEN_BRACE_INDEX = 2;
 const int ConfigParser::PORT_MAX_VALUE = 65535;
-const int ConfigParser::PORT_MIN_VALUE = 0;
+const int ConfigParser::PORT_MIN_VALUE = 1;
 
 ConfigParser::ConfigParser(Config &config) : line_pos_(0), config_(config)
 {
@@ -244,7 +244,7 @@ void ConfigParser::parseListen(ServerConfig &server_config)
     validateEndSemicolon();
 
     long value = convertNumber(parse_line_[DIRECTIVE_VALUE_INDEX]);
-    if (value > PORT_MAX_VALUE || value <= PORT_MIN_VALUE)
+    if (value < PORT_MIN_VALUE || value > PORT_MAX_VALUE)
     {
         throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
                           filepath_, (line_pos_ + 1));
