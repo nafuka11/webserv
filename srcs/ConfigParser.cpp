@@ -242,7 +242,13 @@ void ConfigParser::parseListen(ServerConfig &server_config)
     validateDuplicateValueTypeInt(server_config.listen());
     validateNumOfArgs(1);
     validateEndSemicolon();
-    long value = validateListenValue();
+
+    long value = convertNumber(parse_line_[DIRECTIVE_VALUE_INDEX]);
+    if (value > PORT_MAX_VALUE || value <= PORT_MIN_VALUE)
+    {
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
+    }
     server_config.setListen(value);
 }
 
@@ -621,28 +627,10 @@ const std::string ConfigParser::validateAutoindexValue()
                           filepath_, (line_pos_ + 1));
 }
 
-long ConfigParser::validateClientMaxBodySizeValue()
+long ConfigParser::convertNumber(const std::string &str)
 {
     char *endp = NULL;
-    long value = strtol(parse_line_[DIRECTIVE_VALUE_INDEX].c_str(), &endp, 10);
-
-    if (*endp != '\0' || value < 0)
-    {
-        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
-                          filepath_, (line_pos_ + 1));
-    }
-    if ((value == LONG_MAX || value == LONG_MIN) && ERANGE == errno)
-    {
-        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
-                          filepath_, (line_pos_ + 1));
-    }
-    return value;
-}
-
-long ConfigParser::validateListenValue()
-{
-    char *endp = NULL;
-    long value = strtol(parse_line_[DIRECTIVE_VALUE_INDEX].c_str(), &endp, 10);
+    long value = strtol(str.c_str(), &endp, 10);
 
     if (*endp != '\0')
     {
@@ -650,11 +638,6 @@ long ConfigParser::validateListenValue()
                           filepath_, (line_pos_ + 1));
     }
     if ((value == LONG_MAX || value == LONG_MIN) && ERANGE == errno)
-    {
-        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
-                          filepath_, (line_pos_ + 1));
-    }
-    if (value > PORT_MAX_VALUE || value <= PORT_MIN_VALUE)
     {
         throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
                           filepath_, (line_pos_ + 1));

@@ -102,6 +102,8 @@ private:
     template <typename T>
     void setReturnRedirectParam(T &config_obj, const std::map<int, std::string> &param);
 
+    long convertNumber(const std::string &str);
+
     bool isAllowedDirective();
     bool isDuplicateLocation(const ServerConfig &server_config, const std::string &path);
 
@@ -113,8 +115,6 @@ private:
     void validateEndContext();
     void validateEndSemicolon();
     const std::string validateAutoindexValue();
-    long validateClientMaxBodySizeValue();
-    long validateListenValue();
     const std::vector<std::string> validateAllowMethodParams();
     const std::map<int, std::string> validateErrorPageParams();
     const std::vector<std::string> validateIndexParams();
@@ -156,7 +156,13 @@ void ConfigParser::parseClientMaxBodySize(T &config_obj)
     validateDuplicateValueTypeInt(config_obj.clientMaxBodySize());
     validateNumOfArgs(1);
     validateEndSemicolon();
-    long value = validateClientMaxBodySizeValue();
+
+    long value = convertNumber(parse_line_[DIRECTIVE_VALUE_INDEX]);
+    if (value < 0)
+    {
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
+    }
     config_obj.setClientMaxBodySize(value);
 }
 
