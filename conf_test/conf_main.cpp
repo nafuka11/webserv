@@ -168,6 +168,7 @@ void put_location_config(const std::map<std::string, LocationConfig> &location, 
         put_alias(const_iter->second.alias(), "                      ");
         put_allow_methods(const_iter->second.allowMethod(), "                      ");
         put_autoindex(const_iter->second.autoindex(),  "                      ");
+        put_cgi_extensions(const_iter->second.cgiExtensions(), "                      ");
         put_error_page(const_iter->second.errorPage(), "                      ");
         put_index(const_iter->second.index(), "                      ");
         put_return(const_iter->second.returnRedirect(), "                      ");

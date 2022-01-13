@@ -1,6 +1,6 @@
 NAME		:= a.out
 INC_DIR		:= ../includes
-SRCS		:= conf_main.cpp ../srcs/ConfigParser.cpp ../srcs/Config.cpp ../srcs/ConfigConstant.cpp ../srcs/ConfigError.cpp ../srcs/MainConfig.cpp ../srcs/ServerConfig.cpp ../srcs/LocationConfig.cpp ../srcs/SystemError.cpp
+SRCS		:= ../srcs/AddressInfoError.cpp ../srcs/ClientSocket.cpp ../srcs/Config.cpp ../srcs/ConfigConstant.cpp ../srcs/ConfigError.cpp ../srcs/ConfigParser.cpp ../srcs/HTTPParseException.cpp ../srcs/HTTPParser.cpp ../srcs/HTTPRequest.cpp ../srcs/HTTPResponse.cpp ../srcs/KqueuePoller.cpp ../srcs/LocationConfig.cpp ../srcs/MainConfig.cpp ../srcs/ServerConfig.cpp ../srcs/ServerSocket.cpp ../srcs/Socket.cpp ../srcs/SystemError.cpp ../srcs/Uri.cpp ../srcs/Webserv.cpp ./conf_main.cpp
 OBJS		:= $(SRCS:.cpp=.o)
 
 CXX			:= clang++

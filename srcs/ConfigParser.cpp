@@ -415,6 +415,7 @@ std::vector<ConfigParser::ContextType> ConfigParser::generateAllowedContext(Dire
     {
     case ALLOW_METHOD:
     case AUTOINDEX:
+    case CGI_EXTENSIONS:
     case ERROR_PAGE:
     case INDEX:
     case RETURN:
@@ -430,7 +431,6 @@ std::vector<ConfigParser::ContextType> ConfigParser::generateAllowedContext(Dire
     case ALIAS:
         allowed_context.push_back(CONTEXT_LOCATION);
         break;
-    case CGI_EXTENSIONS:
     case SERVER:
         allowed_context.push_back(CONTEXT_MAIN);
         break;
@@ -469,6 +469,7 @@ std::map<ConfigParser::DirectiveType, ConfigParser::server_parse_func> ConfigPar
 
     parse_func[ALLOW_METHOD] = &ConfigParser::parseAllowMethod;
     parse_func[AUTOINDEX] =  &ConfigParser::parseAutoindex;
+    parse_func[CGI_EXTENSIONS] = &ConfigParser::parseCgiExtensions;
     parse_func[CLIENT_MAX_BODY_SIZE] = &ConfigParser::parseClientMaxBodySize;
     parse_func[ERROR_PAGE] = &ConfigParser::parseErrorPage;
     parse_func[INDEX] = &ConfigParser::parseIndex;
@@ -487,6 +488,7 @@ std::map<ConfigParser::DirectiveType, ConfigParser::location_parse_func> ConfigP
     parse_func[ALIAS] = &ConfigParser::parseAlias;
     parse_func[ALLOW_METHOD] = &ConfigParser::parseAllowMethod;
     parse_func[AUTOINDEX] = &ConfigParser::parseAutoindex;
+    parse_func[CGI_EXTENSIONS] = &ConfigParser::parseCgiExtensions;
     parse_func[ERROR_PAGE] = &ConfigParser::parseErrorPage;
     parse_func[INDEX] = &ConfigParser::parseIndex;
     parse_func[RETURN] = &ConfigParser::parseReturnRedirect;
@@ -588,6 +590,10 @@ void ConfigParser::setDefaultToUnsetLocationValue(LocationConfig &location_confi
     if (location_config.autoindex() == ConfigConstant::UNSET_TYPE_STR)
     {
         location_config.setAutoindex(server_config.autoindex());
+    }
+    if (location_config.cgiExtensions().empty())
+    {
+        setCgiExtensionParams(location_config, server_config.cgiExtensions());
     }
     if (location_config.errorPage().empty())
     {
