@@ -144,7 +144,7 @@ template <typename T>
 void ConfigParser::parseAllowMethod(T &config_obj)
 {
     validateNumOfArgs(MULTIPLE_ARGS);
-    //TODO: endSemicolonチェック
+    validateEndSemicolon();
     //TODO: 引数の取得, 引数を追加（重複チェック(findして見つかったらスキップ）
 
     std::vector<std::string> params = validateAllowMethodParams();
@@ -167,7 +167,7 @@ template <typename T>
 void ConfigParser::parseCgiExtensions(T &config_obj)
 {
     validateNumOfArgs(MULTIPLE_ARGS);
-    //TODO: endSemicolonチェック
+    validateEndSemicolon();
     //TODO: 引数の取得, 引数を追加（重複チェック(findして見つかったらスキップ）
     validateEndSemicolon();
 
@@ -209,7 +209,7 @@ template <typename T>
 void ConfigParser::parseIndex(T &config_obj)
 {
     validateNumOfArgs(MULTIPLE_ARGS);
-    //TODO: endSemicolonチェック
+    validateEndSemicolon();
     //TODO: 引数の取得, 引数を追加（重複チェック(findして見つかったらスキップ）
     std::vector<std::string> params = validateIndexParams();
 
