@@ -224,7 +224,7 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
 void ConfigParser::parseAlias(LocationConfig &location_config)
 {
     validateDuplicateValueTypeStr(location_config.alias());
-    validateNumOfArgs(1);
+    validateNumOfArgs(ONE_ARG);
     validateEndSemicolon();
     location_config.setAlias(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
@@ -232,7 +232,7 @@ void ConfigParser::parseAlias(LocationConfig &location_config)
 void ConfigParser::parseListen(ServerConfig &server_config)
 {
     validateDuplicateValueTypeInt(server_config.listen());
-    validateNumOfArgs(1);
+    validateNumOfArgs(ONE_ARG);
     validateEndSemicolon();
 
     long value = convertNumber(parse_line_[DIRECTIVE_VALUE_INDEX]);
@@ -247,7 +247,7 @@ void ConfigParser::parseListen(ServerConfig &server_config)
 void ConfigParser::parseServerName(ServerConfig &server_config)
 {
     validateDuplicateValueTypeStr(server_config.serverName());
-    validateNumOfArgs(1);
+    validateNumOfArgs(ONE_ARG);
     validateEndSemicolon();
     server_config.setServerName(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
@@ -350,10 +350,24 @@ void ConfigParser::validateNumOfArgs(const int correct_num)
     {
         count++;
     }
-    if (count != correct_num)
+    switch (correct_num)
     {
-        throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX],
-                          filepath_, (line_pos_ + 1));
+    case ONE_ARG:
+        if (count != correct_num)
+        {
+            throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX],
+                              filepath_, (line_pos_ + 1));
+        }
+        break;
+    case MULTIPLE_ARGS:
+        if (count == 0)
+        {
+            throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX],
+                              filepath_, (line_pos_ + 1));
+        }
+        break;
+    default:
+        break;
     }
 }
 

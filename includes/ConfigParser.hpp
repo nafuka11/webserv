@@ -41,6 +41,12 @@ public:
         UPLOAD_PATH
     };
 
+    enum DirectiveArgs
+    {
+        ONE_ARG,
+        MULTIPLE_ARGS
+    };
+
     ConfigParser(Config &config);
     ~ConfigParser();
     void readFile(const std::string &filepath);
@@ -137,6 +143,10 @@ private:
 template <typename T>
 void ConfigParser::parseAllowMethod(T &config_obj)
 {
+    validateNumOfArgs(MULTIPLE_ARGS);
+    //TODO: endSemicolonチェック
+    //TODO: 引数の取得, 引数を追加（重複チェック(findして見つかったらスキップ）
+
     std::vector<std::string> params = validateAllowMethodParams();
 
     config_obj.clearAllowMethod();
@@ -147,7 +157,7 @@ template <typename T>
 void ConfigParser::parseAutoindex(T &config_obj)
 {
     validateDuplicateValueTypeStr(config_obj.autoindex());
-    validateNumOfArgs(1);
+    validateNumOfArgs(ONE_ARG);
     validateEndSemicolon();
     std::string value = validateAutoindexValue();
     config_obj.setAutoindex(value);
@@ -156,7 +166,9 @@ void ConfigParser::parseAutoindex(T &config_obj)
 template <typename T>
 void ConfigParser::parseCgiExtensions(T &config_obj)
 {
-    //TODO: validateNumOfArgs()で引数の個数をチェック
+    validateNumOfArgs(MULTIPLE_ARGS);
+    //TODO: endSemicolonチェック
+    //TODO: 引数の取得, 引数を追加（重複チェック(findして見つかったらスキップ）
     validateEndSemicolon();
 
     std::vector<std::string> params;
@@ -174,7 +186,7 @@ template <typename T>
 void ConfigParser::parseClientMaxBodySize(T &config_obj)
 {
     validateDuplicateValueTypeInt(config_obj.clientMaxBodySize());
-    validateNumOfArgs(1);
+    validateNumOfArgs(ONE_ARG);
     validateEndSemicolon();
 
     long value = convertNumber(parse_line_[DIRECTIVE_VALUE_INDEX]);
@@ -196,6 +208,9 @@ void ConfigParser::parseErrorPage(T &config_obj)
 template <typename T>
 void ConfigParser::parseIndex(T &config_obj)
 {
+    validateNumOfArgs(MULTIPLE_ARGS);
+    //TODO: endSemicolonチェック
+    //TODO: 引数の取得, 引数を追加（重複チェック(findして見つかったらスキップ）
     std::vector<std::string> params = validateIndexParams();
 
     config_obj.clearIndex();
@@ -213,7 +228,7 @@ template <typename T>
 void ConfigParser::parseUploadPath(T &config_obj)
 {
     validateDuplicateValueTypeStr(config_obj.uploadPath());
-    validateNumOfArgs(1);
+    validateNumOfArgs(ONE_ARG);
     validateEndSemicolon();
     config_obj.setUploadPath(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
