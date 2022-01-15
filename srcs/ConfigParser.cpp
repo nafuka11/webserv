@@ -224,7 +224,7 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
 void ConfigParser::parseAlias(LocationConfig &location_config)
 {
     validateDuplicateValueTypeStr(location_config.alias());
-    validateNumOfArgs(ONE_ARG);
+    validateNumOfArgs(NUM_ONE);
     validateEndSemicolon();
     location_config.setAlias(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
@@ -232,7 +232,7 @@ void ConfigParser::parseAlias(LocationConfig &location_config)
 void ConfigParser::parseListen(ServerConfig &server_config)
 {
     validateDuplicateValueTypeInt(server_config.listen());
-    validateNumOfArgs(ONE_ARG);
+    validateNumOfArgs(NUM_ONE);
     validateEndSemicolon();
 
     long value = convertNumber(parse_line_[DIRECTIVE_VALUE_INDEX]);
@@ -247,7 +247,7 @@ void ConfigParser::parseListen(ServerConfig &server_config)
 void ConfigParser::parseServerName(ServerConfig &server_config)
 {
     validateDuplicateValueTypeStr(server_config.serverName());
-    validateNumOfArgs(ONE_ARG);
+    validateNumOfArgs(NUM_ONE);
     validateEndSemicolon();
     server_config.setServerName(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
@@ -339,27 +339,25 @@ bool ConfigParser::isAllowedDirective()
     return false;
 }
 
-void ConfigParser::validateNumOfArgs(const int correct_num)
+void ConfigParser::validateNumOfArgs(DirectiveNumArgs num)
 {
-    std::vector<std::string>::const_iterator viter = parse_line_.begin();
+    std::vector<std::string>::const_iterator values = parse_line_.begin();
     int count = 0;
 
-    for (++viter;
-         (*viter != ";") && (viter != parse_line_.end());
-         ++viter)
+    for (++values; (*values != ";") && (values != parse_line_.end()); ++values)
     {
         count++;
     }
-    switch (correct_num)
+    switch (num)
     {
-    case ONE_ARG:
-        if (count != correct_num)
+    case NUM_ONE:
+        if (count != NUM_ONE)
         {
             throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX],
                               filepath_, (line_pos_ + 1));
         }
         break;
-    case MULTIPLE_ARGS:
+    case NUM_MULTIPLE:
         if (count == 0)
         {
             throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX],

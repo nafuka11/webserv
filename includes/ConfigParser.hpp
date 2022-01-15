@@ -42,10 +42,10 @@ public:
         UPLOAD_PATH
     };
 
-    enum DirectiveArgs
+    enum DirectiveNumArgs
     {
-        ONE_ARG = 1,
-        MULTIPLE_ARGS
+        NUM_ONE = 1,
+        NUM_MULTIPLE
     };
 
     ConfigParser(Config &config);
@@ -116,10 +116,10 @@ private:
     void validateDuplicateValueTypeStr(const std::string &value);
     void validateDuplicateValueTypeInt(const int value);
     void validateContainsValues(std::vector<std::string> &values,
-                               const std::vector<std::string> &set_values);
+                                const std::vector<std::string> &set_values);
     void validateEndContext();
     void validateEndSemicolon();
-    void validateNumOfArgs(const int correct_num);
+    void validateNumOfArgs(DirectiveNumArgs num);
     void validateStartServerContext();
     void validateStartLocationContext();
     const std::string validateAutoindexValue();
@@ -129,7 +129,6 @@ private:
     long convertNumber(const std::string &str);
 
     bool containsValue(std::string &value, const std::vector<std::string> &set_values);
-
     bool isAllowedDirective();
     bool isDuplicateLocation(const ServerConfig &server_config, const std::string &path);
 
@@ -147,7 +146,7 @@ private:
 template <typename T>
 void ConfigParser::parseAllowMethod(T &config_obj)
 {
-    validateNumOfArgs(MULTIPLE_ARGS);
+    validateNumOfArgs(NUM_MULTIPLE);
     validateEndSemicolon();
 
     std::vector<std::string> values;
@@ -171,7 +170,7 @@ template <typename T>
 void ConfigParser::parseAutoindex(T &config_obj)
 {
     validateDuplicateValueTypeStr(config_obj.autoindex());
-    validateNumOfArgs(ONE_ARG);
+    validateNumOfArgs(NUM_ONE);
     validateEndSemicolon();
     std::string value = validateAutoindexValue();
     config_obj.setAutoindex(value);
@@ -180,7 +179,7 @@ void ConfigParser::parseAutoindex(T &config_obj)
 template <typename T>
 void ConfigParser::parseCgiExtensions(T &config_obj)
 {
-    validateNumOfArgs(MULTIPLE_ARGS);
+    validateNumOfArgs(NUM_MULTIPLE);
     validateEndSemicolon();
 
     std::vector<std::string> values;
@@ -192,7 +191,7 @@ template <typename T>
 void ConfigParser::parseClientMaxBodySize(T &config_obj)
 {
     validateDuplicateValueTypeInt(config_obj.clientMaxBodySize());
-    validateNumOfArgs(ONE_ARG);
+    validateNumOfArgs(NUM_ONE);
     validateEndSemicolon();
 
     long value = convertNumber(parse_line_[DIRECTIVE_VALUE_INDEX]);
@@ -214,7 +213,7 @@ void ConfigParser::parseErrorPage(T &config_obj)
 template <typename T>
 void ConfigParser::parseIndex(T &config_obj)
 {
-    validateNumOfArgs(MULTIPLE_ARGS);
+    validateNumOfArgs(NUM_MULTIPLE);
     validateEndSemicolon();
 
     std::vector<std::string> values;
@@ -233,7 +232,7 @@ template <typename T>
 void ConfigParser::parseUploadPath(T &config_obj)
 {
     validateDuplicateValueTypeStr(config_obj.uploadPath());
-    validateNumOfArgs(ONE_ARG);
+    validateNumOfArgs(NUM_ONE);
     validateEndSemicolon();
     config_obj.setUploadPath(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
