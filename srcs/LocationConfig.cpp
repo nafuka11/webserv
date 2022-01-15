@@ -65,10 +65,7 @@ void LocationConfig::clearErrorPage(const int status_code)
         error_page_.erase(iter);
     }
 }
-void LocationConfig::clearIndex()
-{
-    index_.clear();
-}
+
 void LocationConfig::clearReturnRedirect(const int status_code)
 {
     std::map<int, std::string>::iterator iter = return_redirect_.find(status_code);

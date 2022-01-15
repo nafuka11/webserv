@@ -85,11 +85,6 @@ void ServerConfig::clearErrorPage(const int status_code)
     }
 }
 
-void ServerConfig::clearIndex()
-{
-    index_.clear();
-}
-
 void ServerConfig::clearReturnRedirect(const int status_code)
 {
     std::map<int, std::string>::iterator iter = return_redirect_.find(status_code);

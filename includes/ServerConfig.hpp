@@ -25,7 +25,6 @@ public:
     void addReturnRedirect(const int status_code, const std::string &uri);
 
     void clearErrorPage(const int status_code);
-    void clearIndex();
     void clearReturnRedirect(const int status_code);
 
     const std::vector<std::string> &allowMethod() const;

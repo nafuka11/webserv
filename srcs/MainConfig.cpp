@@ -60,11 +60,6 @@ void MainConfig::clearErrorPage(int status_code)
     }
 }
 
-void MainConfig::clearIndex()
-{
-    index_.clear();
-}
-
 const std::vector<std::string> MainConfig::allowMethod() const
 {
     return allow_method_;

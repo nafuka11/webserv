@@ -95,8 +95,9 @@ private:
     void parseReturnRedirect(T &config_obj);
     template <typename T>
     void parseUploadPath(T &config_obj);
-    void setDirectiveType(const std::string &directive_name);
+
     void setContextType(ContextType type);
+    void setDirectiveType(const std::string &directive_name);
     void setDefaultToUnsetMainValue(MainConfig &main_config);
     void setDefaultToUnsetServerValue(ServerConfig &server_config, const MainConfig &main_config);
     void setDefaultToUnsetLocationValue(LocationConfig &location_config, const ServerConfig &server_config);
@@ -112,24 +113,26 @@ private:
     template <typename T>
     void setReturnRedirectParam(T &config_obj, const std::map<int, std::string> &param);
 
+    void validateDuplicateValueTypeStr(const std::string &value);
+    void validateDuplicateValueTypeInt(const int value);
+    template <typename T>
+    void validateDuplicateMultipleValues(std::vector<std::string> &values, T &config_obj);
+    void validateEndContext();
+    void validateEndSemicolon();
+    void validateNumOfArgs(const int correct_num);
+    void validateStartServerContext();
+    void validateStartLocationContext();
+    const std::string validateAutoindexValue();
+    const std::map<int, std::string> validateErrorPageParams();
+    const std::map<int, std::string> validateReturnParam();
+
     long convertNumber(const std::string &str);
 
     template <typename T>
     bool containsValue(const T &config_obj, std::string &value);
+
     bool isAllowedDirective();
     bool isDuplicateLocation(const ServerConfig &server_config, const std::string &path);
-
-    void validateStartServerContext();
-    void validateStartLocationContext();
-    void validateDuplicateValueTypeStr(const std::string &value);
-    void validateDuplicateValueTypeInt(const int value);
-    void validateNumOfArgs(const int correct_num);
-    void validateEndContext();
-    void validateEndSemicolon();
-    const std::string validateAutoindexValue();
-    const std::map<int, std::string> validateErrorPageParams();
-    // const std::vector<std::string> validateIndexParams();
-    const std::map<int, std::string> validateReturnParam();
 
     void putSplitLines(); // TODO: 後で消す
 
@@ -149,10 +152,10 @@ void ConfigParser::parseAllowMethod(T &config_obj)
     validateEndSemicolon();
 
     std::vector<std::string> values;
-    std::vector<std::string>::iterator value = parse_line_.begin();
-
-    ++value;
-    for (; (*value != ";") && (value != parse_line_.end()); ++value)
+    validateDuplicateMultipleValues(values, config_obj);
+    for (std::vector<std::string>::const_iterator value = values.begin();
+         value != values.end();
+         value++)
     {
         if (*value != HTTPRequest::HTTP_GET
             && *value != HTTPRequest::HTTP_POST
@@ -161,12 +164,6 @@ void ConfigParser::parseAllowMethod(T &config_obj)
             throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
                               filepath_, (line_pos_ + 1));
         }
-        if (containsValue(config_obj ,*value))
-        {
-            throw ConfigError(DUPLICATE_VALUE, parse_line_[DIRECTIVE_NAME_INDEX] + "/" + *value,
-                              filepath_, (line_pos_ + 1));
-        }
-        values.push_back(*value);
     }
     setAllowMethod(config_obj, values);
 }
@@ -187,19 +184,9 @@ void ConfigParser::parseCgiExtensions(T &config_obj)
     validateNumOfArgs(MULTIPLE_ARGS);
     validateEndSemicolon();
 
-    // std::vector<std::string> params;
-    std::vector<std::string>::iterator iter = parse_line_.begin();
-
-    ++iter;
-    for (; (*iter != ";") && (iter != parse_line_.end()); ++iter)
-    {
-        // TODO: 既に登録されているかどうかのチェック→各コンテキストに追加する？
-        // if (!isExistValue(DIRECTIVE_TYPE, value))
-        // {
-        //    throw エラー
-        // }
-        config_obj.addCgiExtensions(*iter);
-    }
+    std::vector<std::string> values;
+    validateDuplicateMultipleValues(values, config_obj);
+    setCgiExtensions(config_obj, values);
 }
 
 template <typename T>
@@ -230,22 +217,10 @@ void ConfigParser::parseIndex(T &config_obj)
 {
     validateNumOfArgs(MULTIPLE_ARGS);
     validateEndSemicolon();
-    //TODO: 引数の取得, 引数を追加（重複チェック(findして見つかったらスキップ）
-    // std::vector<std::string> params = validateIndexParams();
 
-    // std::vector<std::string> params;
-    std::vector<std::string>::iterator iter = parse_line_.begin();
-
-    ++iter;
-    for (; (*iter != ";") && (iter != parse_line_.end()); ++iter)
-    {
-        // TODO: 既に登録されているかどうかのチェック→各コンテキストに追加する？
-        // if (!isExistValue(DIRECTIVE_TYPE, value))
-        // {
-        //    throw エラー
-        // }
-        config_obj.addIndex(*iter);
-    }
+    std::vector<std::string> values;
+    validateDuplicateMultipleValues(values, config_obj);
+    setIndex(config_obj, values);
 }
 
 template <typename T>
@@ -318,6 +293,23 @@ void ConfigParser::setReturnRedirectParam(T &config_obj, const std::map<int, std
     {
         config_obj.clearReturnRedirect(const_iter->first);
         config_obj.addReturnRedirect(const_iter->first, const_iter->second);
+    }
+}
+
+template <typename T>
+void ConfigParser::validateDuplicateMultipleValues(std::vector<std::string> &values, T &config_obj)
+{
+    std::vector<std::string>::iterator value = parse_line_.begin();
+
+    ++value;
+    for (; (*value != ";") && (value != parse_line_.end()); ++value)
+    {
+        if (containsValue(config_obj ,*value))
+        {
+            throw ConfigError(DUPLICATE_VALUE, parse_line_[DIRECTIVE_NAME_INDEX] + ":" + *value,
+                              filepath_, (line_pos_ + 1));
+        }
+        values.push_back(*value);
     }
 }
 

@@ -669,21 +669,6 @@ const std::map<int, std::string> ConfigParser::validateErrorPageParams()
     return params;
 }
 
-
-// const std::vector<std::string> ConfigParser::validateIndexParams()
-// {
-//     std::vector<std::string> params;
-//     std::vector<std::string>::iterator iter = parse_line_.begin();
-
-//     ++iter;
-//     for (; (*iter != ";") && (iter != parse_line_.end()); ++iter)
-//     {
-//         params.push_back(*iter);
-//     }
-//     validateEndSemicolon();
-//     return params;
-// }
-
 const std::map<int, std::string> ConfigParser::validateReturnParam()
 {
     std::map<int, std::string> param;

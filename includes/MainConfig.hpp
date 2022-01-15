@@ -20,7 +20,6 @@ public:
     void addServer(const ServerConfig &server_config);
 
     void clearErrorPage(int status_code);
-    void clearIndex();
 
     const std::vector<std::string> allowMethod() const;
     const std::string autoindex() const;
