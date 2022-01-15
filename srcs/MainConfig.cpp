@@ -50,11 +50,6 @@ void MainConfig::addServer(const ServerConfig &server_config)
     server_.push_back(server_config);
 }
 
-void MainConfig::clearAllowMethod()
-{
-    allow_method_.clear();
-}
-
 void MainConfig::clearErrorPage(int status_code)
 {
     std::map<int, std::string>::iterator iter = error_page_.find(status_code);

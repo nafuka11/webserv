@@ -19,7 +19,6 @@ public:
     void addIndex(const std::string &file);
     void addServer(const ServerConfig &server_config);
 
-    void clearAllowMethod();
     void clearErrorPage(int status_code);
     void clearIndex();
 

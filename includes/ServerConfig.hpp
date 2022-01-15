@@ -24,7 +24,6 @@ public:
     void addLocation(const std::string &path, const LocationConfig &location_config);
     void addReturnRedirect(const int status_code, const std::string &uri);
 
-    void clearAllowMethod();
     void clearErrorPage(const int status_code);
     void clearIndex();
     void clearReturnRedirect(const int status_code);

@@ -75,11 +75,6 @@ void ServerConfig::addReturnRedirect(const int status_code, const std::string &u
     return_redirect_.insert(std::make_pair(status_code, uri));
 }
 
-void ServerConfig::clearAllowMethod()
-{
-    allow_method_.clear();
-}
-
 void ServerConfig::clearErrorPage(const int status_code)
 {
     std::map<int, std::string>::iterator iter = error_page_.find(status_code);
