@@ -401,6 +401,36 @@ void ConfigParser::validateDuplicateValueTypeInt(const int value)
     }
 }
 
+void ConfigParser::validateContainsValues(std::vector<std::string> &values,
+                                         const std::vector<std::string> &set_values)
+{
+    std::vector<std::string>::iterator value = parse_line_.begin();
+
+    ++value;
+    for (; (*value != ";") && (value != parse_line_.end()); ++value)
+    {
+        if (containsValue(*value, set_values))
+        {
+            throw ConfigError(DUPLICATE_VALUE, parse_line_[DIRECTIVE_NAME_INDEX] + ":" + *value,
+                              filepath_, (line_pos_ + 1));
+        }
+        values.push_back(*value);
+    }
+}
+
+bool ConfigParser::containsValue(std::string &value, const std::vector<std::string> &set_values)
+{
+    std::vector<std::string>::const_iterator found;
+
+    found = std::find(set_values.begin(), set_values.end(), value);
+    if (found != set_values.end())
+    {
+        return true;
+    }
+    return false;
+}
+
+
 std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > ConfigParser::createAllowedDirective()
 {
     std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > allowed_directive;

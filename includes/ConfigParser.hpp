@@ -115,8 +115,8 @@ private:
 
     void validateDuplicateValueTypeStr(const std::string &value);
     void validateDuplicateValueTypeInt(const int value);
-    template <typename T>
-    void validateDuplicateMultipleValues(std::vector<std::string> &values, T &config_obj);
+    void validateContainsValues(std::vector<std::string> &values,
+                               const std::vector<std::string> &set_values);
     void validateEndContext();
     void validateEndSemicolon();
     void validateNumOfArgs(const int correct_num);
@@ -128,8 +128,7 @@ private:
 
     long convertNumber(const std::string &str);
 
-    template <typename T>
-    bool containsValue(const T &config_obj, std::string &value);
+    bool containsValue(std::string &value, const std::vector<std::string> &set_values);
 
     bool isAllowedDirective();
     bool isDuplicateLocation(const ServerConfig &server_config, const std::string &path);
@@ -152,7 +151,7 @@ void ConfigParser::parseAllowMethod(T &config_obj)
     validateEndSemicolon();
 
     std::vector<std::string> values;
-    validateDuplicateMultipleValues(values, config_obj);
+    validateContainsValues(values, config_obj.allowMethod());
     for (std::vector<std::string>::const_iterator value = values.begin();
          value != values.end();
          value++)
@@ -185,7 +184,7 @@ void ConfigParser::parseCgiExtensions(T &config_obj)
     validateEndSemicolon();
 
     std::vector<std::string> values;
-    validateDuplicateMultipleValues(values, config_obj);
+    validateContainsValues(values, config_obj.cgiExtensions());
     setCgiExtensions(config_obj, values);
 }
 
@@ -219,7 +218,7 @@ void ConfigParser::parseIndex(T &config_obj)
     validateEndSemicolon();
 
     std::vector<std::string> values;
-    validateDuplicateMultipleValues(values, config_obj);
+    validateContainsValues(values, config_obj.index());
     setIndex(config_obj, values);
 }
 
@@ -294,51 +293,6 @@ void ConfigParser::setReturnRedirectParam(T &config_obj, const std::map<int, std
         config_obj.clearReturnRedirect(const_iter->first);
         config_obj.addReturnRedirect(const_iter->first, const_iter->second);
     }
-}
-
-template <typename T>
-void ConfigParser::validateDuplicateMultipleValues(std::vector<std::string> &values, T &config_obj)
-{
-    std::vector<std::string>::iterator value = parse_line_.begin();
-
-    ++value;
-    for (; (*value != ";") && (value != parse_line_.end()); ++value)
-    {
-        if (containsValue(config_obj ,*value))
-        {
-            throw ConfigError(DUPLICATE_VALUE, parse_line_[DIRECTIVE_NAME_INDEX] + ":" + *value,
-                              filepath_, (line_pos_ + 1));
-        }
-        values.push_back(*value);
-    }
-}
-
-template <typename T>
-bool ConfigParser::containsValue(const T &config_obj, std::string &value)
-{
-    std::vector<std::string>::iterator found;
-    std::vector<std::string> directive;
-
-    switch (directive_type_)
-    {
-    case ALLOW_METHOD:
-        directive = config_obj.allowMethod();
-        break;
-    case CGI_EXTENSIONS:
-        directive = config_obj.cgiExtensions();
-        break;
-    case INDEX:
-        directive = config_obj.index();
-        break;
-    default:
-        break;
-    }
-    found = std::find(directive.begin(), directive.end(), value);
-    if (found != directive.end())
-    {
-        return true;
-    }
-    return false;
 }
 
 #endif /* CONFIGPARSER_HPP */
