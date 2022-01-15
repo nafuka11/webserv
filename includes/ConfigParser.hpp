@@ -30,7 +30,7 @@ public:
         ALIAS,
         ALLOW_METHOD,
         AUTOINDEX,
-        CGI_EXTENSIONS,
+        CGI_EXTENSION,
         CLIENT_MAX_BODY_SIZE,
         ERROR_PAGE,
         INDEX,
@@ -84,7 +84,7 @@ private:
     template <typename T>
     void parseAutoindex(T &config_obj);
     template <typename T>
-    void parseCgiExtensions(T &config_obj);
+    void parseCgiExtension(T &config_obj);
     template <typename T>
     void parseClientMaxBodySize(T &config_obj);
     template <typename T>
@@ -104,7 +104,7 @@ private:
     template <typename T>
     void setAllowMethod(T &config_obj, const std::vector<std::string> &values);
     template <typename T>
-    void setCgiExtensions(T &config_obj, const std::vector<std::string> &values);
+    void setCgiExtension(T &config_obj, const std::vector<std::string> &values);
     template <typename T>
     void setErrorPageParams(T &config_obj, const std::map<int, std::string> &params);
     template <typename T>
@@ -177,14 +177,14 @@ void ConfigParser::parseAutoindex(T &config_obj)
 }
 
 template <typename T>
-void ConfigParser::parseCgiExtensions(T &config_obj)
+void ConfigParser::parseCgiExtension(T &config_obj)
 {
     validateNumOfArgs(NUM_MULTIPLE);
     validateEndSemicolon();
 
     std::vector<std::string> values;
-    validateContainsValues(values, config_obj.cgiExtensions());
-    setCgiExtensions(config_obj, values);
+    validateContainsValues(values, config_obj.cgiExtension());
+    setCgiExtension(config_obj, values);
 }
 
 template <typename T>
@@ -249,13 +249,13 @@ void ConfigParser::setAllowMethod(T &config_obj, const std::vector<std::string> 
 }
 
 template <typename T>
-void ConfigParser::setCgiExtensions(T &config_obj, const std::vector<std::string> &values)
+void ConfigParser::setCgiExtension(T &config_obj, const std::vector<std::string> &values)
 {
     for (std::vector<std::string>::const_iterator value = values.begin();
          value != values.end();
          ++value)
     {
-        config_obj.addCgiExtensions(*value);
+        config_obj.addCgiExtension(*value);
     }
 }
 

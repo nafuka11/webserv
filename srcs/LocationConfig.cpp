@@ -4,7 +4,7 @@ LocationConfig::LocationConfig()
 : alias_(),
   allow_method_(),
   autoindex_(),
-  cgi_extensions_(),
+  cgi_extension_(),
   error_page_(),
   index_(),
   return_redirect_(),
@@ -36,9 +36,9 @@ void LocationConfig::addAllowMethod(const std::string &method)
     allow_method_.push_back(method);
 }
 
-void LocationConfig::addCgiExtensions(const std::string &extension)
+void LocationConfig::addCgiExtension(const std::string &extension)
 {
-    cgi_extensions_.push_back(extension);
+    cgi_extension_.push_back(extension);
 }
 
 void LocationConfig::addErrorPage(const int status_code, const std::string &uri)
@@ -91,9 +91,9 @@ const std::string LocationConfig::autoindex() const
     return autoindex_;
 }
 
-const std::vector<std::string> &LocationConfig::cgiExtensions() const
+const std::vector<std::string> &LocationConfig::cgiExtension() const
 {
-    return cgi_extensions_;
+    return cgi_extension_;
 }
 
 const std::map<int, std::string> LocationConfig::errorPage() const

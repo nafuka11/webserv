@@ -18,7 +18,7 @@ public:
     void setServerName(const std::string &name);
     void setUploadPath(const std::string &path);
     void addAllowMethod(const std::string &method);
-    void addCgiExtensions(const std::string &extension);
+    void addCgiExtension(const std::string &extension);
     void addErrorPage(const int status_code, const std::string &uri);
     void addIndex(const std::string &file);
     void addLocation(const std::string &path, const LocationConfig &location_config);
@@ -29,7 +29,7 @@ public:
 
     const std::vector<std::string> &allowMethod() const;
     const std::string autoindex() const;
-    const std::vector<std::string> &cgiExtensions() const;
+    const std::vector<std::string> &cgiExtension() const;
     const int &clientMaxBodySize() const;
     const std::map<int, std::string> &errorPage() const;
     const std::vector<std::string> &index() const;
@@ -42,7 +42,7 @@ public:
 private:
     std::vector<std::string> allow_method_;
     std::string autoindex_;
-    std::vector<std::string> cgi_extensions_;
+    std::vector<std::string> cgi_extension_;
     int client_max_body_size_;
     std::map<int, std::string> error_page_;
     std::vector<std::string> index_;

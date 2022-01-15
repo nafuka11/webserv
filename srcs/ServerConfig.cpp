@@ -5,7 +5,7 @@
 ServerConfig::ServerConfig()
 : allow_method_(),
   autoindex_(),
-  cgi_extensions_(),
+  cgi_extension_(),
   client_max_body_size_(ConfigConstant::UNSET_TYPE_INT),
   error_page_(),
   index_(),
@@ -50,9 +50,9 @@ void ServerConfig::addAllowMethod(const std::string &method)
     allow_method_.push_back(method);
 }
 
-void ServerConfig::addCgiExtensions(const std::string &extension)
+void ServerConfig::addCgiExtension(const std::string &extension)
 {
-    cgi_extensions_.push_back(extension);
+    cgi_extension_.push_back(extension);
 }
 
 void ServerConfig::addErrorPage(const int status_code, const std::string &uri)
@@ -105,9 +105,9 @@ const std::string ServerConfig::autoindex() const
     return autoindex_;
 }
 
-const std::vector<std::string> &ServerConfig::cgiExtensions() const
+const std::vector<std::string> &ServerConfig::cgiExtension() const
 {
-    return cgi_extensions_;
+    return cgi_extension_;
 }
 
 const int &ServerConfig::clientMaxBodySize() const
