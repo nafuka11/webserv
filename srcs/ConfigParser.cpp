@@ -551,7 +551,7 @@ void ConfigParser::setDefaultToUnsetMainValue(MainConfig &main_config)
 {
     if (main_config.allowMethod().empty())
     {
-        setAllowMethodParams(main_config, ConfigConstant::DEFAULT_ALLOW_METHOD);
+        setAllowMethod(main_config, ConfigConstant::DEFAULT_ALLOW_METHOD);
     }
     if  (main_config.autoindex() == ConfigConstant::UNSET_TYPE_STR)
     {
@@ -563,7 +563,7 @@ void ConfigParser::setDefaultToUnsetMainValue(MainConfig &main_config)
     }
     if (main_config.index().empty())
     {
-        setIndexParams(main_config, ConfigConstant::DEFAULT_INDEX);
+        setIndex(main_config, ConfigConstant::DEFAULT_INDEX);
     }
 }
 
@@ -571,7 +571,7 @@ void ConfigParser::setDefaultToUnsetServerValue(ServerConfig &server_config, con
 {
     if (server_config.allowMethod().empty())
     {
-        setAllowMethodParams(server_config, main_config.allowMethod());
+        setAllowMethod(server_config, main_config.allowMethod());
     }
     if  (server_config.autoindex() == ConfigConstant::UNSET_TYPE_STR)
     {
@@ -579,7 +579,7 @@ void ConfigParser::setDefaultToUnsetServerValue(ServerConfig &server_config, con
     }
     if (server_config.cgiExtensions().empty())
     {
-        setCgiExtensionParams(server_config, main_config.cgiExtensions());
+        setCgiExtensions(server_config, main_config.cgiExtensions());
     }
     if (server_config.clientMaxBodySize() == ConfigConstant::UNSET_TYPE_INT)
     {
@@ -587,7 +587,7 @@ void ConfigParser::setDefaultToUnsetServerValue(ServerConfig &server_config, con
     }
     if (server_config.index().empty())
     {
-        setIndexParams(server_config, main_config.index());
+        setIndex(server_config, main_config.index());
     }
     if (server_config.listen() == ConfigConstant::UNSET_TYPE_INT)
     {
@@ -599,7 +599,7 @@ void ConfigParser::setDefaultToUnsetLocationValue(LocationConfig &location_confi
 {
     if (location_config.allowMethod().empty())
     {
-        setAllowMethodParams(location_config, server_config.allowMethod());
+        setAllowMethod(location_config, server_config.allowMethod());
     }
     if (location_config.autoindex() == ConfigConstant::UNSET_TYPE_STR)
     {
@@ -607,7 +607,7 @@ void ConfigParser::setDefaultToUnsetLocationValue(LocationConfig &location_confi
     }
     if (location_config.cgiExtensions().empty())
     {
-        setCgiExtensionParams(location_config, server_config.cgiExtensions());
+        setCgiExtensions(location_config, server_config.cgiExtensions());
     }
     if (location_config.errorPage().empty())
     {
@@ -615,7 +615,7 @@ void ConfigParser::setDefaultToUnsetLocationValue(LocationConfig &location_confi
     }
     if (location_config.index().empty())
     {
-        setIndexParams(location_config, server_config.index());
+        setIndex(location_config, server_config.index());
     }
     if (location_config.returnRedirect().empty())
     {

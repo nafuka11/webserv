@@ -101,13 +101,13 @@ private:
     void setDefaultToUnsetServerValue(ServerConfig &server_config, const MainConfig &main_config);
     void setDefaultToUnsetLocationValue(LocationConfig &location_config, const ServerConfig &server_config);
     template <typename T>
-    void setAllowMethodParams(T &config_obj, const std::vector<std::string> &params);
+    void setAllowMethod(T &config_obj, const std::vector<std::string> &values);
     template <typename T>
-    void setCgiExtensionParams(T &config_obj, const std::vector<std::string> &params);
+    void setCgiExtensions(T &config_obj, const std::vector<std::string> &values);
     template <typename T>
     void setErrorPageParams(T &config_obj, const std::map<int, std::string> &params);
     template <typename T>
-    void setIndexParams(T &config_obj, const std::vector<std::string> &params);
+    void setIndex(T &config_obj, const std::vector<std::string> &values);
     static std::vector<ContextType> generateAllowedContext(DirectiveType state);
     template <typename T>
     void setReturnRedirectParam(T &config_obj, const std::map<int, std::string> &param);
@@ -148,7 +148,7 @@ void ConfigParser::parseAllowMethod(T &config_obj)
     validateNumOfArgs(MULTIPLE_ARGS);
     validateEndSemicolon();
 
-    std::vector<std::string> params;
+    std::vector<std::string> values;
     std::vector<std::string>::iterator value = parse_line_.begin();
 
     ++value;
@@ -166,9 +166,9 @@ void ConfigParser::parseAllowMethod(T &config_obj)
             throw ConfigError(DUPLICATE_VALUE, parse_line_[DIRECTIVE_NAME_INDEX] + "/" + *value,
                               filepath_, (line_pos_ + 1));
         }
-        params.push_back(*value);
+        values.push_back(*value);
     }
-    setAllowMethodParams(config_obj, params);
+    setAllowMethod(config_obj, values);
 }
 
 template <typename T>
@@ -265,24 +265,24 @@ void ConfigParser::parseUploadPath(T &config_obj)
 }
 
 template <typename T>
-void ConfigParser::setAllowMethodParams(T &config_obj, const std::vector<std::string> &params)
+void ConfigParser::setAllowMethod(T &config_obj, const std::vector<std::string> &values)
 {
-    for (std::vector<std::string>::const_iterator const_iter = params.begin();
-         const_iter != params.end();
-         ++const_iter)
+    for (std::vector<std::string>::const_iterator value = values.begin();
+         value != values.end();
+         ++value)
     {
-        config_obj.addAllowMethod(*const_iter);
+        config_obj.addAllowMethod(*value);
     }
 }
 
 template <typename T>
-void ConfigParser::setCgiExtensionParams(T &config_obj, const std::vector<std::string> &params)
+void ConfigParser::setCgiExtensions(T &config_obj, const std::vector<std::string> &values)
 {
-    for (std::vector<std::string>::const_iterator const_iter = params.begin();
-         const_iter != params.end();
-         ++const_iter)
+    for (std::vector<std::string>::const_iterator value = values.begin();
+         value != values.end();
+         ++value)
     {
-        config_obj.addCgiExtensions(*const_iter);
+        config_obj.addCgiExtensions(*value);
     }
 }
 
@@ -299,13 +299,13 @@ void ConfigParser::setErrorPageParams(T &config_obj, const std::map<int, std::st
 }
 
 template <typename T>
-void ConfigParser::setIndexParams(T &config_obj, const std::vector<std::string> &params)
+void ConfigParser::setIndex(T &config_obj, const std::vector<std::string> &values)
 {
-    for (std::vector<std::string>::const_iterator const_iter = params.begin();
-         const_iter != params.end();
-         ++const_iter)
+    for (std::vector<std::string>::const_iterator value = values.begin();
+         value != values.end();
+         ++value)
     {
-        config_obj.addIndex(*const_iter);
+        config_obj.addIndex(*value);
     }
 }
 
