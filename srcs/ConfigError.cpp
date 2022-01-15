@@ -23,6 +23,9 @@ void ConfigError::setErrorMessage(const ConfigErrorType error_type, const std::s
     case DUPLICATE_LOCATION:
         error_message_ += "duplicate location \"" + error_word + "\"" + file_info_;
         break;
+    case DUPLICATE_VALUE:
+        error_message_ += "duplicate \"" + error_word + "\" value. This value is already set." + file_info_;
+        break;
     case INVALID_NUM_OF_ARGS:
         error_message_ += "invalid number of arguments in \"" + error_word + "\" directive" + file_info_;
         break;
