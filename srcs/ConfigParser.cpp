@@ -653,20 +653,6 @@ long ConfigParser::convertNumber(const std::string &str)
     return value;
 }
 
-// const std::vector<std::string> ConfigParser::validateAllowMethodParams()
-// {
-//     std::vector<std::string> params;
-//     std::vector<std::string>::iterator iter = parse_line_.begin();
-
-//     ++iter;
-//     for (; (*iter != ";") && (iter != parse_line_.end()); ++iter)
-//     {
-//         params.push_back(*iter);
-//     }
-//     validateEndSemicolon();
-//     return params;
-// }
-
 const std::map<int, std::string> ConfigParser::validateErrorPageParams()
 {
     std::map<int, std::string> params;
