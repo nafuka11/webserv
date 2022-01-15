@@ -44,7 +44,7 @@ public:
 
     enum DirectiveArgs
     {
-        ONE_ARG,
+        ONE_ARG = 1,
         MULTIPLE_ARGS
     };
 
