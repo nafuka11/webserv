@@ -6,6 +6,7 @@
 #include <iostream> // TODO: 後で消す
 #include "ConfigError.hpp"
 #include "MainConfig.hpp"
+#include "HTTPRequest.hpp"
 #include "ServerConfig.hpp"
 
 class Config;
@@ -29,7 +30,7 @@ public:
         ALIAS,
         ALLOW_METHOD,
         AUTOINDEX,
-        CGI_EXTENSIONS,
+        CGI_EXTENSION,
         CLIENT_MAX_BODY_SIZE,
         ERROR_PAGE,
         INDEX,
@@ -39,6 +40,12 @@ public:
         SERVER,
         SERVER_NAME,
         UPLOAD_PATH
+    };
+
+    enum DirectiveNumArgs
+    {
+        NUM_ONE = 1,
+        NUM_MULTIPLE
     };
 
     ConfigParser(Config &config);
@@ -77,7 +84,7 @@ private:
     template <typename T>
     void parseAutoindex(T &config_obj);
     template <typename T>
-    void parseCgiExtensions(T &config_obj);
+    void parseCgiExtension(T &config_obj);
     template <typename T>
     void parseClientMaxBodySize(T &config_obj);
     template <typename T>
@@ -88,40 +95,41 @@ private:
     void parseReturnRedirect(T &config_obj);
     template <typename T>
     void parseUploadPath(T &config_obj);
-    void setDirectiveType(const std::string &directive_name);
+
     void setContextType(ContextType type);
+    void setDirectiveType(const std::string &directive_name);
     void setDefaultToUnsetMainValue(MainConfig &main_config);
     void setDefaultToUnsetServerValue(ServerConfig &server_config, const MainConfig &main_config);
     void setDefaultToUnsetLocationValue(LocationConfig &location_config, const ServerConfig &server_config);
     template <typename T>
-    void setAllowMethodParams(T &config_obj, const std::vector<std::string> &params);
+    void setAllowMethod(T &config_obj, const std::vector<std::string> &values);
     template <typename T>
-    void setCgiExtensionParams(T &config_obj, const std::vector<std::string> &params);
+    void setCgiExtension(T &config_obj, const std::vector<std::string> &values);
     template <typename T>
     void setErrorPageParams(T &config_obj, const std::map<int, std::string> &params);
     template <typename T>
-    void setIndexParams(T &config_obj, const std::vector<std::string> &params);
+    void setIndex(T &config_obj, const std::vector<std::string> &values);
     static std::vector<ContextType> generateAllowedContext(DirectiveType state);
     template <typename T>
     void setReturnRedirectParam(T &config_obj, const std::map<int, std::string> &param);
 
-    long convertNumber(const std::string &str);
-
-    bool isAllowedDirective();
-    bool isDuplicateLocation(const ServerConfig &server_config, const std::string &path);
-
-    void validateStartServerContext();
-    void validateStartLocationContext();
     void validateDuplicateValueTypeStr(const std::string &value);
     void validateDuplicateValueTypeInt(const int value);
-    void validateNumOfArgs(const int correct_num);
+    void validateContainsValues(std::vector<std::string> &values,
+                                const std::vector<std::string> &set_values);
     void validateEndContext();
     void validateEndSemicolon();
-    const std::string validateAutoindexValue();
-    const std::vector<std::string> validateAllowMethodParams();
+    void validateNumOfArgs(DirectiveNumArgs num);
+    void validateStartServerContext();
+    void validateStartLocationContext();
     const std::map<int, std::string> validateErrorPageParams();
-    const std::vector<std::string> validateIndexParams();
     const std::map<int, std::string> validateReturnParam();
+
+    long convertNumber(const std::string &str);
+
+    bool containsValue(std::string &value, const std::vector<std::string> &set_values);
+    bool isAllowedDirective();
+    bool isDuplicateLocation(const ServerConfig &server_config, const std::string &path);
 
     void putSplitLines(); // TODO: 後で消す
 
@@ -137,44 +145,58 @@ private:
 template <typename T>
 void ConfigParser::parseAllowMethod(T &config_obj)
 {
-    std::vector<std::string> params = validateAllowMethodParams();
+    validateNumOfArgs(NUM_MULTIPLE);
+    validateEndSemicolon();
 
-    config_obj.clearAllowMethod();
-    setAllowMethodParams(config_obj, params);
+    std::vector<std::string> values;
+    validateContainsValues(values, config_obj.allowMethod());
+    for (std::vector<std::string>::const_iterator value = values.begin();
+         value != values.end();
+         value++)
+    {
+        if (*value != HTTPRequest::HTTP_GET
+            && *value != HTTPRequest::HTTP_POST
+            && *value != HTTPRequest::HTTP_DELETE)
+        {
+            throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                              filepath_, (line_pos_ + 1));
+        }
+    }
+    setAllowMethod(config_obj, values);
 }
 
 template <typename T>
 void ConfigParser::parseAutoindex(T &config_obj)
 {
     validateDuplicateValueTypeStr(config_obj.autoindex());
-    validateNumOfArgs(1);
+    validateNumOfArgs(NUM_ONE);
     validateEndSemicolon();
-    std::string value = validateAutoindexValue();
+
+    std::string value = parse_line_[DIRECTIVE_VALUE_INDEX];
+    if (value != "on" && value != "off")
+    {
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
+    }
     config_obj.setAutoindex(value);
 }
 
 template <typename T>
-void ConfigParser::parseCgiExtensions(T &config_obj)
+void ConfigParser::parseCgiExtension(T &config_obj)
 {
-    //TODO: validateNumOfArgs()で引数の個数をチェック
+    validateNumOfArgs(NUM_MULTIPLE);
     validateEndSemicolon();
 
-    std::vector<std::string> params;
-    std::vector<std::string>::iterator iter = parse_line_.begin();
-
-    ++iter;
-    for (; (*iter != ";") && (iter != parse_line_.end()); ++iter)
-    {
-        params.push_back(*iter);
-    }
-    setCgiExtensionParams(config_obj, params);
+    std::vector<std::string> values;
+    validateContainsValues(values, config_obj.cgiExtension());
+    setCgiExtension(config_obj, values);
 }
 
 template <typename T>
 void ConfigParser::parseClientMaxBodySize(T &config_obj)
 {
     validateDuplicateValueTypeInt(config_obj.clientMaxBodySize());
-    validateNumOfArgs(1);
+    validateNumOfArgs(NUM_ONE);
     validateEndSemicolon();
 
     long value = convertNumber(parse_line_[DIRECTIVE_VALUE_INDEX]);
@@ -196,10 +218,12 @@ void ConfigParser::parseErrorPage(T &config_obj)
 template <typename T>
 void ConfigParser::parseIndex(T &config_obj)
 {
-    std::vector<std::string> params = validateIndexParams();
+    validateNumOfArgs(NUM_MULTIPLE);
+    validateEndSemicolon();
 
-    config_obj.clearIndex();
-    setIndexParams(config_obj, params);
+    std::vector<std::string> values;
+    validateContainsValues(values, config_obj.index());
+    setIndex(config_obj, values);
 }
 
 template <typename T>
@@ -213,30 +237,30 @@ template <typename T>
 void ConfigParser::parseUploadPath(T &config_obj)
 {
     validateDuplicateValueTypeStr(config_obj.uploadPath());
-    validateNumOfArgs(1);
+    validateNumOfArgs(NUM_ONE);
     validateEndSemicolon();
     config_obj.setUploadPath(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
 
 template <typename T>
-void ConfigParser::setAllowMethodParams(T &config_obj, const std::vector<std::string> &params)
+void ConfigParser::setAllowMethod(T &config_obj, const std::vector<std::string> &values)
 {
-    for (std::vector<std::string>::const_iterator const_iter = params.begin();
-         const_iter != params.end();
-         ++const_iter)
+    for (std::vector<std::string>::const_iterator value = values.begin();
+         value != values.end();
+         ++value)
     {
-        config_obj.addAllowMethod(*const_iter);
+        config_obj.addAllowMethod(*value);
     }
 }
 
 template <typename T>
-void ConfigParser::setCgiExtensionParams(T &config_obj, const std::vector<std::string> &params)
+void ConfigParser::setCgiExtension(T &config_obj, const std::vector<std::string> &values)
 {
-    for (std::vector<std::string>::const_iterator const_iter = params.begin();
-         const_iter != params.end();
-         ++const_iter)
+    for (std::vector<std::string>::const_iterator value = values.begin();
+         value != values.end();
+         ++value)
     {
-        config_obj.addCgiExtensions(*const_iter);
+        config_obj.addCgiExtension(*value);
     }
 }
 
@@ -253,13 +277,13 @@ void ConfigParser::setErrorPageParams(T &config_obj, const std::map<int, std::st
 }
 
 template <typename T>
-void ConfigParser::setIndexParams(T &config_obj, const std::vector<std::string> &params)
+void ConfigParser::setIndex(T &config_obj, const std::vector<std::string> &values)
 {
-    for (std::vector<std::string>::const_iterator const_iter = params.begin();
-         const_iter != params.end();
-         ++const_iter)
+    for (std::vector<std::string>::const_iterator value = values.begin();
+         value != values.end();
+         ++value)
     {
-        config_obj.addIndex(*const_iter);
+        config_obj.addIndex(*value);
     }
 }
 

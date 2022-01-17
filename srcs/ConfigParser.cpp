@@ -224,7 +224,7 @@ void ConfigParser::parseLocationContext(ServerConfig &server_config)
 void ConfigParser::parseAlias(LocationConfig &location_config)
 {
     validateDuplicateValueTypeStr(location_config.alias());
-    validateNumOfArgs(1);
+    validateNumOfArgs(NUM_ONE);
     validateEndSemicolon();
     location_config.setAlias(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
@@ -232,7 +232,7 @@ void ConfigParser::parseAlias(LocationConfig &location_config)
 void ConfigParser::parseListen(ServerConfig &server_config)
 {
     validateDuplicateValueTypeInt(server_config.listen());
-    validateNumOfArgs(1);
+    validateNumOfArgs(NUM_ONE);
     validateEndSemicolon();
 
     long value = convertNumber(parse_line_[DIRECTIVE_VALUE_INDEX]);
@@ -247,7 +247,7 @@ void ConfigParser::parseListen(ServerConfig &server_config)
 void ConfigParser::parseServerName(ServerConfig &server_config)
 {
     validateDuplicateValueTypeStr(server_config.serverName());
-    validateNumOfArgs(1);
+    validateNumOfArgs(NUM_ONE);
     validateEndSemicolon();
     server_config.setServerName(parse_line_[DIRECTIVE_VALUE_INDEX]);
 }
@@ -339,21 +339,33 @@ bool ConfigParser::isAllowedDirective()
     return false;
 }
 
-void ConfigParser::validateNumOfArgs(const int correct_num)
+void ConfigParser::validateNumOfArgs(DirectiveNumArgs num)
 {
-    std::vector<std::string>::const_iterator viter = parse_line_.begin();
+    std::vector<std::string>::const_iterator value = parse_line_.begin();
     int count = 0;
 
-    for (++viter;
-         (*viter != ";") && (viter != parse_line_.end());
-         ++viter)
+    for (++value; (*value != ";") && (value != parse_line_.end()); ++value)
     {
         count++;
     }
-    if (count != correct_num)
+    switch (num)
     {
-        throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX],
-                          filepath_, (line_pos_ + 1));
+    case NUM_ONE:
+        if (count != NUM_ONE)
+        {
+            throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX],
+                              filepath_, (line_pos_ + 1));
+        }
+        break;
+    case NUM_MULTIPLE:
+        if (count == 0)
+        {
+            throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX],
+                              filepath_, (line_pos_ + 1));
+        }
+        break;
+    default:
+        break;
     }
 }
 
@@ -387,6 +399,36 @@ void ConfigParser::validateDuplicateValueTypeInt(const int value)
     }
 }
 
+void ConfigParser::validateContainsValues(std::vector<std::string> &values,
+                                         const std::vector<std::string> &set_values)
+{
+    std::vector<std::string>::iterator value = parse_line_.begin();
+
+    ++value;
+    for (; (*value != ";") && (value != parse_line_.end()); ++value)
+    {
+        if (containsValue(*value, set_values))
+        {
+            throw ConfigError(DUPLICATE_VALUE, parse_line_[DIRECTIVE_NAME_INDEX] + ":" + *value,
+                              filepath_, (line_pos_ + 1));
+        }
+        values.push_back(*value);
+    }
+}
+
+bool ConfigParser::containsValue(std::string &value, const std::vector<std::string> &set_values)
+{
+    std::vector<std::string>::const_iterator found;
+
+    found = std::find(set_values.begin(), set_values.end(), value);
+    if (found != set_values.end())
+    {
+        return true;
+    }
+    return false;
+}
+
+
 std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > ConfigParser::createAllowedDirective()
 {
     std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > allowed_directive;
@@ -394,7 +436,7 @@ std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > C
     allowed_directive[ALIAS] = generateAllowedContext(ALIAS);
     allowed_directive[ALLOW_METHOD] = generateAllowedContext(ALLOW_METHOD);
     allowed_directive[AUTOINDEX] = generateAllowedContext(AUTOINDEX);
-    allowed_directive[CGI_EXTENSIONS] = generateAllowedContext(CGI_EXTENSIONS);
+    allowed_directive[CGI_EXTENSION] = generateAllowedContext(CGI_EXTENSION);
     allowed_directive[CLIENT_MAX_BODY_SIZE] = generateAllowedContext(CLIENT_MAX_BODY_SIZE);
     allowed_directive[ERROR_PAGE] = generateAllowedContext(ERROR_PAGE);
     allowed_directive[INDEX] = generateAllowedContext(INDEX);
@@ -415,7 +457,7 @@ std::vector<ConfigParser::ContextType> ConfigParser::generateAllowedContext(Dire
     {
     case ALLOW_METHOD:
     case AUTOINDEX:
-    case CGI_EXTENSIONS:
+    case CGI_EXTENSION:
     case ERROR_PAGE:
     case INDEX:
     case RETURN:
@@ -455,7 +497,7 @@ std::map<ConfigParser::DirectiveType, ConfigParser::main_parse_func> ConfigParse
 
     parse_func[ALLOW_METHOD] = &ConfigParser::parseAllowMethod;
     parse_func[AUTOINDEX] =  &ConfigParser::parseAutoindex;
-    parse_func[CGI_EXTENSIONS] = &ConfigParser::parseCgiExtensions;
+    parse_func[CGI_EXTENSION] = &ConfigParser::parseCgiExtension;
     parse_func[CLIENT_MAX_BODY_SIZE] = &ConfigParser::parseClientMaxBodySize;
     parse_func[ERROR_PAGE] = &ConfigParser::parseErrorPage;
     parse_func[INDEX] = &ConfigParser::parseIndex;
@@ -469,7 +511,7 @@ std::map<ConfigParser::DirectiveType, ConfigParser::server_parse_func> ConfigPar
 
     parse_func[ALLOW_METHOD] = &ConfigParser::parseAllowMethod;
     parse_func[AUTOINDEX] =  &ConfigParser::parseAutoindex;
-    parse_func[CGI_EXTENSIONS] = &ConfigParser::parseCgiExtensions;
+    parse_func[CGI_EXTENSION] = &ConfigParser::parseCgiExtension;
     parse_func[CLIENT_MAX_BODY_SIZE] = &ConfigParser::parseClientMaxBodySize;
     parse_func[ERROR_PAGE] = &ConfigParser::parseErrorPage;
     parse_func[INDEX] = &ConfigParser::parseIndex;
@@ -488,7 +530,7 @@ std::map<ConfigParser::DirectiveType, ConfigParser::location_parse_func> ConfigP
     parse_func[ALIAS] = &ConfigParser::parseAlias;
     parse_func[ALLOW_METHOD] = &ConfigParser::parseAllowMethod;
     parse_func[AUTOINDEX] = &ConfigParser::parseAutoindex;
-    parse_func[CGI_EXTENSIONS] = &ConfigParser::parseCgiExtensions;
+    parse_func[CGI_EXTENSION] = &ConfigParser::parseCgiExtension;
     parse_func[ERROR_PAGE] = &ConfigParser::parseErrorPage;
     parse_func[INDEX] = &ConfigParser::parseIndex;
     parse_func[RETURN] = &ConfigParser::parseReturnRedirect;
@@ -504,8 +546,8 @@ void ConfigParser::setDirectiveType(const std::string &directive_name)
         directive_type_ = ALLOW_METHOD;
     else if (directive_name == "autoindex")
         directive_type_ = AUTOINDEX;
-    else if (directive_name == "cgi_extensions")
-        directive_type_ = CGI_EXTENSIONS;
+    else if (directive_name == "cgi_extension")
+        directive_type_ = CGI_EXTENSION;
     else if (directive_name == "client_max_body_size")
         directive_type_ = CLIENT_MAX_BODY_SIZE;
     else if (directive_name == "error_page")
@@ -537,7 +579,7 @@ void ConfigParser::setDefaultToUnsetMainValue(MainConfig &main_config)
 {
     if (main_config.allowMethod().empty())
     {
-        setAllowMethodParams(main_config, ConfigConstant::DEFAULT_ALLOW_METHOD);
+        setAllowMethod(main_config, ConfigConstant::DEFAULT_ALLOW_METHOD);
     }
     if  (main_config.autoindex() == ConfigConstant::UNSET_TYPE_STR)
     {
@@ -549,7 +591,7 @@ void ConfigParser::setDefaultToUnsetMainValue(MainConfig &main_config)
     }
     if (main_config.index().empty())
     {
-        setIndexParams(main_config, ConfigConstant::DEFAULT_INDEX);
+        setIndex(main_config, ConfigConstant::DEFAULT_INDEX);
     }
 }
 
@@ -557,15 +599,15 @@ void ConfigParser::setDefaultToUnsetServerValue(ServerConfig &server_config, con
 {
     if (server_config.allowMethod().empty())
     {
-        setAllowMethodParams(server_config, main_config.allowMethod());
+        setAllowMethod(server_config, main_config.allowMethod());
     }
     if  (server_config.autoindex() == ConfigConstant::UNSET_TYPE_STR)
     {
         server_config.setAutoindex(main_config.autoindex());
     }
-    if (server_config.cgiExtensions().empty())
+    if (server_config.cgiExtension().empty())
     {
-        setCgiExtensionParams(server_config, main_config.cgiExtensions());
+        setCgiExtension(server_config, main_config.cgiExtension());
     }
     if (server_config.clientMaxBodySize() == ConfigConstant::UNSET_TYPE_INT)
     {
@@ -573,7 +615,7 @@ void ConfigParser::setDefaultToUnsetServerValue(ServerConfig &server_config, con
     }
     if (server_config.index().empty())
     {
-        setIndexParams(server_config, main_config.index());
+        setIndex(server_config, main_config.index());
     }
     if (server_config.listen() == ConfigConstant::UNSET_TYPE_INT)
     {
@@ -585,15 +627,15 @@ void ConfigParser::setDefaultToUnsetLocationValue(LocationConfig &location_confi
 {
     if (location_config.allowMethod().empty())
     {
-        setAllowMethodParams(location_config, server_config.allowMethod());
+        setAllowMethod(location_config, server_config.allowMethod());
     }
     if (location_config.autoindex() == ConfigConstant::UNSET_TYPE_STR)
     {
         location_config.setAutoindex(server_config.autoindex());
     }
-    if (location_config.cgiExtensions().empty())
+    if (location_config.cgiExtension().empty())
     {
-        setCgiExtensionParams(location_config, server_config.cgiExtensions());
+        setCgiExtension(location_config, server_config.cgiExtension());
     }
     if (location_config.errorPage().empty())
     {
@@ -601,24 +643,12 @@ void ConfigParser::setDefaultToUnsetLocationValue(LocationConfig &location_confi
     }
     if (location_config.index().empty())
     {
-        setIndexParams(location_config, server_config.index());
+        setIndex(location_config, server_config.index());
     }
     if (location_config.returnRedirect().empty())
     {
         setReturnRedirectParam(location_config, server_config.returnRedirect());
     }
-}
-
-const std::string ConfigParser::validateAutoindexValue()
-{
-    std::string value = parse_line_[DIRECTIVE_VALUE_INDEX];
-
-    if (value == "on" || value == "off")
-    {
-        return value;
-    }
-    throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
-                          filepath_, (line_pos_ + 1));
 }
 
 long ConfigParser::convertNumber(const std::string &str)
@@ -639,20 +669,6 @@ long ConfigParser::convertNumber(const std::string &str)
     return value;
 }
 
-const std::vector<std::string> ConfigParser::validateAllowMethodParams()
-{
-    std::vector<std::string> params;
-    std::vector<std::string>::iterator iter = parse_line_.begin();
-
-    ++iter;
-    for (; (*iter != ";") && (iter != parse_line_.end()); ++iter)
-    {
-        params.push_back(*iter);
-    }
-    validateEndSemicolon();
-    return params;
-}
-
 const std::map<int, std::string> ConfigParser::validateErrorPageParams()
 {
     std::map<int, std::string> params;
@@ -664,21 +680,6 @@ const std::map<int, std::string> ConfigParser::validateErrorPageParams()
     for (; status_code != uri; ++status_code)
     {
         params.insert(std::make_pair(std::atoi(status_code->c_str()), *uri));
-    }
-    validateEndSemicolon();
-    return params;
-}
-
-
-const std::vector<std::string> ConfigParser::validateIndexParams()
-{
-    std::vector<std::string> params;
-    std::vector<std::string>::iterator iter = parse_line_.begin();
-
-    ++iter;
-    for (; (*iter != ";") && (iter != parse_line_.end()); ++iter)
-    {
-        params.push_back(*iter);
     }
     validateEndSemicolon();
     return params;
