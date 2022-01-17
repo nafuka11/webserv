@@ -341,10 +341,10 @@ bool ConfigParser::isAllowedDirective()
 
 void ConfigParser::validateNumOfArgs(DirectiveNumArgs num)
 {
-    std::vector<std::string>::const_iterator values = parse_line_.begin();
+    std::vector<std::string>::const_iterator value = parse_line_.begin();
     int count = 0;
 
-    for (++values; (*values != ";") && (values != parse_line_.end()); ++values)
+    for (++value; (*value != ";") && (value != parse_line_.end()); ++value)
     {
         count++;
     }
