@@ -122,7 +122,6 @@ private:
     void validateNumOfArgs(DirectiveNumArgs num);
     void validateStartServerContext();
     void validateStartLocationContext();
-    const std::string validateAutoindexValue();
     const std::map<int, std::string> validateErrorPageParams();
     const std::map<int, std::string> validateReturnParam();
 
@@ -172,7 +171,13 @@ void ConfigParser::parseAutoindex(T &config_obj)
     validateDuplicateValueTypeStr(config_obj.autoindex());
     validateNumOfArgs(NUM_ONE);
     validateEndSemicolon();
-    std::string value = validateAutoindexValue();
+
+    std::string value = parse_line_[DIRECTIVE_VALUE_INDEX];
+    if (value != "on" && value != "off")
+    {
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
+    }
     config_obj.setAutoindex(value);
 }
 

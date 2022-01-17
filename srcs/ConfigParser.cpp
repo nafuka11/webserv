@@ -651,18 +651,6 @@ void ConfigParser::setDefaultToUnsetLocationValue(LocationConfig &location_confi
     }
 }
 
-const std::string ConfigParser::validateAutoindexValue()
-{
-    std::string value = parse_line_[DIRECTIVE_VALUE_INDEX];
-
-    if (value == "on" || value == "off")
-    {
-        return value;
-    }
-    throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
-                          filepath_, (line_pos_ + 1));
-}
-
 long ConfigParser::convertNumber(const std::string &str)
 {
     char *endp = NULL;
