@@ -45,6 +45,7 @@ public:
     enum DirectiveNumArgs
     {
         NUM_ONE = 1,
+        NUM_TWO,
         NUM_MULTIPLE
     };
 
@@ -211,6 +212,10 @@ void ConfigParser::parseClientMaxBodySize(T &config_obj)
 template <typename T>
 void ConfigParser::parseErrorPage(T &config_obj)
 {
+    //TODO: 引数の数チェック
+    validateNumOfArgs(NUM_TWO);
+    //TODO: 第一引数が数値かチェック
+    //TODO: 重複チェック
     std::map<int, std::string> params = validateErrorPageParams();
     setErrorPageParams(config_obj, params);
 }
@@ -229,6 +234,10 @@ void ConfigParser::parseIndex(T &config_obj)
 template <typename T>
 void ConfigParser::parseReturnRedirect(T &config_obj)
 {
+    //TODO: 引数の数チェック
+    validateNumOfArgs(NUM_TWO);
+    //TODO: 第一引数が数値かチェック
+    //TODO: 重複チェック
     std::map<int, std::string> param = validateReturnParam();
     setReturnRedirectParam(config_obj, param);
 }

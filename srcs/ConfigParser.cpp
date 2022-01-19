@@ -351,7 +351,8 @@ void ConfigParser::validateNumOfArgs(DirectiveNumArgs num)
     switch (num)
     {
     case NUM_ONE:
-        if (count != NUM_ONE)
+    case NUM_TWO:
+        if (count != num)
         {
             throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX],
                               filepath_, (line_pos_ + 1));
