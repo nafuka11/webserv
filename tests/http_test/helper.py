@@ -9,6 +9,13 @@ HTML_PATH_404 = "./docs/error_page/404.html"
 def assert_response(
     code: HTTPStatus, response: HTTPResponse, html_path: Optional[str] = None
 ) -> None:
+    """HTTPResponseのassertをする(statusCode, reason, httpVersion, messageBody, Content-Length)
+
+    Args:
+        code (HTTPStatus): StatusCode
+        response (HTTPResponse): HTTPResponse
+        html_path (Optional[str]): 想定されるHTMLのファイルパス。未指定の場合はcodeに応じてHTMLを自動生成する
+    """
     actual_body = response.read()
     if html_path:
         with open(html_path, "r") as f:
@@ -23,6 +30,7 @@ def assert_response(
 
 
 def _get_phrase(code: HTTPStatus) -> str:
+    """StatusCodeに応じたPhraseを取得する"""
     phrase = code.phrase
     # 古いHTTPの規格では "Request Entity Too Large" なのでphraseを変更する
     # https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#4xx_client_errors
@@ -32,6 +40,7 @@ def _get_phrase(code: HTTPStatus) -> str:
 
 
 def _generate_expected_body(code: HTTPStatus) -> bytes:
+    """StatusCodeに応じたHTMLを返す"""
     phrase = _get_phrase(code)
     body = (
         "<html>\r\n"
