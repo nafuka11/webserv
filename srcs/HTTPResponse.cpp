@@ -57,6 +57,11 @@ void HTTPResponse::setKeepAlive(bool keep_alive)
     keep_alive_ = keep_alive;
 }
 
+void HTTPResponse::setMessageBody(const std::string &body)
+{
+    message_body_ = body;
+}
+
 std::map<HTTPStatusCode, std::string> HTTPResponse::setReasonPhrase()
 {
     std::map<HTTPStatusCode, std::string> reason_phrase;

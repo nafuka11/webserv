@@ -18,6 +18,7 @@ public:
     void clear();
     void setStatusCode(HTTPStatusCode status_code);
     void setKeepAlive(bool keep_alive);
+    void setMessageBody(const std::string &body);
     std::string generateAutoindexHTML(const Uri &uri, DIR *dir_p) const;
     std::string generateHTMLfromStatusCode(HTTPStatusCode statusCode) const;
 
