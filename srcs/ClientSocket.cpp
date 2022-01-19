@@ -204,24 +204,34 @@ void ClientSocket::handleError(HTTPStatusCode statusCode)
     const LocationConfig *location = searchLocationConfig(request_.getLocation());
     if (location)
     {
-        const std::map<int, std::string> error_pages = location->errorPage();
-        std::map<int, std::string>::const_iterator page_found = error_pages.find(statusCode);
-        if (page_found != error_pages.end())
+        try
         {
-            try
-            {
-                Uri uri = Uri(config_, page_found->second);
-                handleFile(HTTPRequest::HTTP_GET, uri);
-                return;
-            }
-            catch (const HTTPParseException &e)
-            {
-                // 例外をcatchした場合は後続のsetMessageBodyに進むため、catch内では何もしない
-            }
+            handleErrorFromFile(location, statusCode);
+            return;
+        }
+        catch (const HTTPParseException &e)
+        {
+            // 例外をcatchした場合は後続のsetMessageBodyに進むため、catch内では何もしない
         }
     }
     response_.setMessageBody(response_.generateHTMLfromStatusCode(statusCode));
     changeState(WRITE_RESPONSE);
+}
+
+void ClientSocket::handleErrorFromFile(const LocationConfig *location,
+                                       HTTPStatusCode statusCode)
+{
+    const std::map<int, std::string> error_pages = location->errorPage();
+    std::map<int, std::string>::const_iterator page_found = error_pages.find(statusCode);
+    if (page_found != error_pages.end())
+    {
+        Uri uri = Uri(config_, page_found->second);
+        handleFile(HTTPRequest::HTTP_GET, uri);
+    }
+    else
+    {
+        throw HTTPParseException(CODE_404);
+    }
 }
 
 void ClientSocket::openFile(const char *path)
