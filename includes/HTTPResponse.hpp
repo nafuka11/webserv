@@ -19,6 +19,7 @@ public:
     void setStatusCode(HTTPStatusCode status_code);
     void setKeepAlive(bool keep_alive);
     std::string generateAutoindexHTML(const Uri &uri, DIR *dir_p) const;
+    std::string generateHTMLfromStatusCode(HTTPStatusCode statusCode) const;
 
 private:
     static const std::string CRLF;
@@ -36,7 +37,6 @@ private:
 
     static std::map<HTTPStatusCode, std::string> setReasonPhrase();
     void setProperties(const LocationConfig *location);
-    std::string generateHTMLfromStatusCode() const;
     std::string generateDateString() const;
     void appendFileHTML(std::stringstream &ss,
                         const Uri &uri, const struct dirent *entry) const;
