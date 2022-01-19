@@ -1,10 +1,18 @@
 #include "ServerConfig.hpp"
-
 #include <utility>
-
-const int ServerConfig::DEFAULT_PORT = 80;
+#include "ConfigConstant.hpp"
 
 ServerConfig::ServerConfig()
+: allow_method_(),
+  autoindex_(),
+  cgi_extension_(),
+  client_max_body_size_(ConfigConstant::UNSET_TYPE_INT),
+  error_page_(),
+  index_(),
+  listen_(ConfigConstant::UNSET_TYPE_INT),
+  return_redirect_(),
+  server_name_(),
+  upload_path_()
 {
 }
 
@@ -15,11 +23,6 @@ ServerConfig::~ServerConfig()
 void ServerConfig::setAutoindex(const std::string &autoindex)
 {
     autoindex_ = autoindex;
-}
-
-void ServerConfig::setCgiExtension(const std::string &extension)
-{
-    cgi_extension_ = extension;
 }
 
 void ServerConfig::setClientMaxBodySize(const int size)
@@ -47,6 +50,11 @@ void ServerConfig::addAllowMethod(const std::string &method)
     allow_method_.push_back(method);
 }
 
+void ServerConfig::addCgiExtension(const std::string &extension)
+{
+    cgi_extension_.push_back(extension);
+}
+
 void ServerConfig::addErrorPage(const int status_code, const std::string &uri)
 {
     error_page_.insert(std::make_pair(status_code, uri));
@@ -67,11 +75,6 @@ void ServerConfig::addReturnRedirect(const int status_code, const std::string &u
     return_redirect_.insert(std::make_pair(status_code, uri));
 }
 
-void ServerConfig::clearAllowMethod()
-{
-    allow_method_.clear();
-}
-
 void ServerConfig::clearErrorPage(const int status_code)
 {
     std::map<int, std::string>::iterator iter = error_page_.find(status_code);
@@ -80,11 +83,6 @@ void ServerConfig::clearErrorPage(const int status_code)
     {
         error_page_.erase(iter);
     }
-}
-
-void ServerConfig::clearIndex()
-{
-    index_.clear();
 }
 
 void ServerConfig::clearReturnRedirect(const int status_code)
@@ -107,7 +105,7 @@ const std::string ServerConfig::autoindex() const
     return autoindex_;
 }
 
-const std::string ServerConfig::cgiExtension() const
+const std::vector<std::string> &ServerConfig::cgiExtension() const
 {
     return cgi_extension_;
 }

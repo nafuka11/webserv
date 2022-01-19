@@ -17,11 +17,20 @@ void ConfigError::setErrorMessage(const ConfigErrorType error_type, const std::s
 {
     switch (error_type)
     {
+    case DUPLICATE_DIRECTIVE:
+        error_message_ += "duplicate \"" + error_word + "\" directive" + file_info_;
+        break;
     case DUPLICATE_LOCATION:
         error_message_ += "duplicate location \"" + error_word + "\"" + file_info_;
         break;
+    case DUPLICATE_VALUE:
+        error_message_ += "duplicate \"" + error_word + "\" value. This value is already set." + file_info_;
+        break;
     case INVALID_NUM_OF_ARGS:
         error_message_ += "invalid number of arguments in \"" + error_word + "\" directive" + file_info_;
+        break;
+    case INVALID_VALUE:
+        error_message_ += "invalid value in \"" + error_word + "\" directive" + file_info_;
         break;
     case NO_END_SEMICOLON:
         error_message_ += "directive \"" + error_word + "\" has no end \";\"" + file_info_;

@@ -31,7 +31,11 @@ else
   array=( $(find "${CONF_DIR}" -name "*$1*.conf" | sort) )
   if [ ${#array[*]} -ne 0 ] ; then
     echo
-    printf "${COLOR_FILE_COUNT}${#array[*]} files find !${COLOR_RESET}\n"
+    if [ ${#array[*]} -eq 1 ] ; then
+      printf "${COLOR_FILE_COUNT}KEYWORD: \"$1\"\n▶︎ ${#array[*]} file find !${COLOR_RESET}\n"
+    else
+      printf "${COLOR_FILE_COUNT}KEYWORD: \"$1\"\n▶︎ ${#array[*]} files find !${COLOR_RESET}\n"
+    fi
     run_tests array
   else
     show_usage
