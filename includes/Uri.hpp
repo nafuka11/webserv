@@ -11,6 +11,7 @@ public:
     enum Type {
         FILE,
         AUTOINDEX,
+        REDIRECT,
         CGI,
         INVALID
     };
@@ -40,6 +41,7 @@ private:
     bool execStat(const std::string &path, struct stat *buf) const;
     bool isRegularFile(const struct stat &path_stat) const;
     bool isDirectory(const struct stat &path_stat) const;
+    bool isExecutable(const struct stat &path_stat) const;
 };
 
 #endif /* URI_HPP */

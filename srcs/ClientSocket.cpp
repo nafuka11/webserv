@@ -151,6 +151,8 @@ void ClientSocket::prepareResponse()
     case Uri::AUTOINDEX:
         handleAutoindex(request_.getMethod(), uri);
         break;
+    case Uri::REDIRECT:
+        break;
     case Uri::CGI:
         handleCGI(request_.getMethod(), uri);
         break;
@@ -183,6 +185,12 @@ void ClientSocket::handleAutoindex(const std::string &method, const Uri &uri)
         closeDirectory(dir_p);
         changeState(WRITE_RESPONSE);
     }
+}
+
+void ClientSocket::handleRedirect(const std::string &method, const Uri &uri)
+{
+    (void)method;
+    (void)uri;
 }
 
 void ClientSocket::handleCGI(const std::string &method, const Uri &uri)

@@ -44,6 +44,7 @@ private:
     void prepareResponse();
     void handleFile(const std::string &method, const Uri &uri);
     void handleAutoindex(const std::string &method, const Uri &uri);
+    void handleRedirect(const std::string &method, const Uri &uri);
     void handleCGI(const std::string &method, const Uri &uri);
     void openFile(const char *path);
     DIR *openDirectory(const char *path);
