@@ -3,7 +3,7 @@ from http import HTTPStatus
 from http.client import HTTPConnection
 from typing import Callable
 
-from helper import assert_response
+from helper import HTML_PATH_OK, assert_response
 
 
 # Test response header
@@ -87,7 +87,7 @@ def test_client_max_body_size_0(
     http_connection = http_connection_factory(8080)
     http_connection.request("GET", "/", headers=headers)
     response = http_connection.getresponse()
-    assert_response(HTTPStatus.OK, response)
+    assert_response(HTTPStatus.OK, response, HTML_PATH_OK)
 
 
 def test_over_client_max_body_size(http_connection: HTTPConnection):
@@ -103,4 +103,4 @@ def test_equal_client_max_body_size(http_connection: HTTPConnection):
     headers = {"Content-Length": "100"}
     http_connection.request("GET", "/", headers=headers)
     response = http_connection.getresponse()
-    assert_response(HTTPStatus.OK, response)
+    assert_response(HTTPStatus.OK, response, HTML_PATH_OK)

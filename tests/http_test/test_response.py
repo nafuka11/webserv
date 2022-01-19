@@ -2,14 +2,14 @@ import re
 from http import HTTPStatus
 from http.client import HTTPConnection
 
-from helper import assert_response
+from helper import HTML_PATH_OK, assert_response
 
 
 def test_valid(http_connection: HTTPConnection):
     """正常なGETリクエストで200を返すこと"""
     http_connection.request("GET", "/")
     response = http_connection.getresponse()
-    assert_response(HTTPStatus.OK, response)
+    assert_response(HTTPStatus.OK, response, HTML_PATH_OK)
 
 
 def test_invalid_method(http_connection: HTTPConnection):
