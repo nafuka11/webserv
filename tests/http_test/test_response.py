@@ -2,7 +2,7 @@ import re
 from http import HTTPStatus
 from http.client import HTTPConnection
 
-from helper import HTML_PATH_OK, assert_response
+from helper import HTML_PATH_404, HTML_PATH_OK, assert_response
 
 
 def test_valid(http_connection: HTTPConnection):
@@ -63,5 +63,19 @@ def test_autoindex_on(http_connection: HTTPConnection):
 def test_autoindex_off(http_connection: HTTPConnection):
     """autoindex offのディレクトリで404を返すこと"""
     http_connection.request("GET", "/subdir/")
+    response = http_connection.getresponse()
+    assert_response(HTTPStatus.NOT_FOUND, response)
+
+
+def test_error_page_found(http_connection: HTTPConnection):
+    """error_pageで設定したファイルが存在する時、そのファイルを返すこと"""
+    http_connection.request("GET", "/error_page/no_such_file.html")
+    response = http_connection.getresponse()
+    assert_response(HTTPStatus.NOT_FOUND, response, HTML_PATH_404)
+
+
+def test_error_page_not_found(http_connection: HTTPConnection):
+    """error_pageで設定したファイルが存在しない時、StatusCodeに応じたレスポンスを返すこと"""
+    http_connection.request("GET", "/error_page_not_found/no_such_file.html")
     response = http_connection.getresponse()
     assert_response(HTTPStatus.NOT_FOUND, response)
