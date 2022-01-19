@@ -42,8 +42,7 @@ void ClientSocket::receiveRequest()
     }
     catch (const HTTPParseException &e)
     {
-        changeState(WRITE_RESPONSE);
-        response_.setStatusCode(e.getStatusCode());
+        handleError(e.getStatusCode());
     }
 }
 
@@ -197,6 +196,32 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
 {
     (void)method;
     (void)uri;
+}
+
+void ClientSocket::handleError(HTTPStatusCode statusCode)
+{
+    response_.setStatusCode(statusCode);
+    const LocationConfig *location = searchLocationConfig(request_.getLocation());
+    if (location)
+    {
+        const std::map<int, std::string> error_pages = location->errorPage();
+        std::map<int, std::string>::const_iterator page_found = error_pages.find(statusCode);
+        if (page_found != error_pages.end())
+        {
+            try
+            {
+                Uri uri = Uri(config_, page_found->second);
+                handleFile(HTTPRequest::HTTP_GET, uri);
+                return;
+            }
+            catch (const HTTPParseException &e)
+            {
+                // 例外をcatchした場合は後続のsetMessageBodyに進むため、catch内では何もしない
+            }
+        }
+    }
+    response_.setMessageBody(response_.generateHTMLfromStatusCode(statusCode));
+    changeState(WRITE_RESPONSE);
 }
 
 void ClientSocket::openFile(const char *path)
