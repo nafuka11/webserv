@@ -57,6 +57,11 @@ void HTTPResponse::setKeepAlive(bool keep_alive)
     keep_alive_ = keep_alive;
 }
 
+void HTTPResponse::setMessageBody(const std::string &body)
+{
+    message_body_ = body;
+}
+
 std::map<HTTPStatusCode, std::string> HTTPResponse::setReasonPhrase()
 {
     std::map<HTTPStatusCode, std::string> reason_phrase;
@@ -72,10 +77,6 @@ std::map<HTTPStatusCode, std::string> HTTPResponse::setReasonPhrase()
 
 void HTTPResponse::setProperties(const LocationConfig *location)
 {
-    if (status_code_ != CODE_200)
-    {
-        message_body_ = generateHTMLfromStatusCode();
-    }
     std::stringstream ss;
     ss << message_body_.size();
     std::string content_length = ss.str();
@@ -108,18 +109,18 @@ void HTTPResponse::setProperties(const LocationConfig *location)
     }
 }
 
-std::string HTTPResponse::generateHTMLfromStatusCode() const
+std::string HTTPResponse::generateHTMLfromStatusCode(HTTPStatusCode statusCode) const
 {
     std::stringstream ss;
 
-    std::string phrase = HTTPResponse::REASON_PHRASE.find(status_code_)->second;
+    std::string phrase = HTTPResponse::REASON_PHRASE.find(statusCode)->second;
     ss << "<html>"
        << "\r\n"
-       << "<head><title>" << status_code_ << " " << phrase << "</title></head>"
+       << "<head><title>" << statusCode << " " << phrase << "</title></head>"
        << "\r\n"
        << "<body>"
        << "\r\n"
-       << "<center><h1>" << status_code_ << " " << phrase << "</h1></center>"
+       << "<center><h1>" << statusCode << " " << phrase << "</h1></center>"
        << "<hr><center>webserv/1.0.0</center>"
        << "\r\n"
        << "</body>"

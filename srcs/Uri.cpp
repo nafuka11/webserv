@@ -4,7 +4,7 @@
 #include "HTTPParseException.hpp"
 
 Uri::Uri(const ServerConfig &config, const std::string &uri)
-    : config_(config), raw_uri_(uri), need_auto_index_(false)
+    : config_(config), raw_uri_(uri), resource_type_(INVALID)
 {
     splitRawUri();
     findPath();
@@ -24,9 +24,9 @@ std::string Uri::getPath() const
     return path_;
 }
 
-bool Uri::getNeedAutoIndex() const
+Uri::Type Uri::getResourceType() const
 {
-    return need_auto_index_;
+    return resource_type_;
 }
 
 void Uri::splitRawUri()
@@ -74,13 +74,14 @@ void Uri::findPathFromLocation(const std::string &location_name,
     }
     if (isRegularFile(path_stat))
     {
+        resource_type_ = FILE;
         return;
     }
     if (!needAutoIndex(location, path))
     {
         throw HTTPParseException(CODE_404);
     }
-    need_auto_index_ = true;
+    resource_type_ = AUTOINDEX;
 }
 
 void Uri::findFileFromIndexes(const LocationConfig &location, std::string &path)
@@ -96,6 +97,7 @@ void Uri::findFileFromIndexes(const LocationConfig &location, std::string &path)
         if (isRegularFile(path_stat))
         {
             path = joined_path;
+            resource_type_ = FILE;
             return;
         }
     }
@@ -104,7 +106,7 @@ void Uri::findFileFromIndexes(const LocationConfig &location, std::string &path)
     {
         throw HTTPParseException(CODE_404);
     }
-    need_auto_index_ = true;
+    resource_type_ = AUTOINDEX;
 }
 
 bool Uri::startsWith(const std::string &str, const std::string &prefix) const
