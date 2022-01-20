@@ -42,8 +42,7 @@ void ClientSocket::receiveRequest()
     }
     catch (const HTTPParseException &e)
     {
-        changeState(WRITE_RESPONSE);
-        response_.setStatusCode(e.getStatusCode());
+        handleError(e.getStatusCode());
     }
 }
 
@@ -140,30 +139,99 @@ void ClientSocket::changeState(State new_state)
 void ClientSocket::prepareResponse()
 {
     response_.setStatusCode(CODE_200);
-    if (request_.getMethod() == HTTPRequest::HTTP_GET)
+
+    Uri uri = Uri(config_, request_.getUri());
+
+    switch (uri.getResourceType())
     {
-        handleGET();
+    case Uri::FILE:
+        handleFile(request_.getMethod(), uri);
+        break;
+    case Uri::AUTOINDEX:
+        handleAutoindex(request_.getMethod(), uri);
+        break;
+    case Uri::REDIRECT:
+        break;
+    case Uri::CGI:
+        handleCGI(request_.getMethod(), uri);
+        break;
+    default:
+        break;
     }
 }
 
-void ClientSocket::handleGET()
+void ClientSocket::handleFile(const std::string &method, const Uri &uri)
 {
-    Uri uri = Uri(config_, request_.getUri());
-    std::string path = uri.getPath();
-
-    if (uri.getNeedAutoIndex())
+    if (method == HTTPRequest::HTTP_GET)
     {
+        std::string path = uri.getPath();
+
+        openFile(path.c_str());
+        setNonBlockingFd(file_fd_);
+        changeState(READ_FILE);
+    }
+}
+
+void ClientSocket::handleAutoindex(const std::string &method, const Uri &uri)
+{
+    if (method == HTTPRequest::HTTP_GET)
+    {
+        std::string path = uri.getPath();
+
         DIR *dir_p = openDirectory(path.c_str());
         std::string body = response_.generateAutoindexHTML(uri, dir_p);
         response_.appendMessageBody(body.c_str());
         closeDirectory(dir_p);
         changeState(WRITE_RESPONSE);
-        return;
     }
+}
 
-    openFile(path.c_str());
-    setNonBlockingFd(file_fd_);
-    changeState(READ_FILE);
+void ClientSocket::handleRedirect(const std::string &method, const Uri &uri)
+{
+    (void)method;
+    (void)uri;
+}
+
+void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
+{
+    (void)method;
+    (void)uri;
+}
+
+void ClientSocket::handleError(HTTPStatusCode statusCode)
+{
+    response_.setStatusCode(statusCode);
+    const LocationConfig *location = searchLocationConfig(request_.getLocation());
+    if (location)
+    {
+        try
+        {
+            handleErrorFromFile(location, statusCode);
+            return;
+        }
+        catch (const HTTPParseException &e)
+        {
+            // 例外をcatchした場合は後続のsetMessageBodyに進むため、catch内では何もしない
+        }
+    }
+    response_.setMessageBody(response_.generateHTMLfromStatusCode(statusCode));
+    changeState(WRITE_RESPONSE);
+}
+
+void ClientSocket::handleErrorFromFile(const LocationConfig *location,
+                                       HTTPStatusCode statusCode)
+{
+    const std::map<int, std::string> error_pages = location->errorPage();
+    std::map<int, std::string>::const_iterator page_found = error_pages.find(statusCode);
+    if (page_found != error_pages.end())
+    {
+        Uri uri = Uri(config_, page_found->second);
+        handleFile(HTTPRequest::HTTP_GET, uri);
+    }
+    else
+    {
+        throw HTTPParseException(CODE_404);
+    }
 }
 
 void ClientSocket::openFile(const char *path)

@@ -8,19 +8,27 @@
 class Uri
 {
 public:
+    enum Type {
+        FILE,
+        AUTOINDEX,
+        REDIRECT,
+        CGI,
+        INVALID
+    };
+
     Uri(const ServerConfig &config, const std::string &uri);
     ~Uri();
 
     std::string getRawUri() const;
     std::string getPath() const;
-    bool getNeedAutoIndex() const;
+    Type getResourceType() const;
 
 private:
     const ServerConfig &config_;
     const std::string &raw_uri_;
     std::string query_;
     std::string path_;
-    bool need_auto_index_;
+    Type resource_type_;
 
     void splitRawUri();
     void findPath();
@@ -33,6 +41,7 @@ private:
     bool execStat(const std::string &path, struct stat *buf) const;
     bool isRegularFile(const struct stat &path_stat) const;
     bool isDirectory(const struct stat &path_stat) const;
+    bool isExecutable(const struct stat &path_stat) const;
 };
 
 #endif /* URI_HPP */

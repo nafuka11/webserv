@@ -1,25 +1,27 @@
 from http import HTTPStatus
 from http.client import HTTPResponse
+from typing import Optional
 
-RESPONSE_BODY_200 = (
-    b"<!DOCTYPE html>\n"
-    b'<html lang="en">\n'
-    b"\n"
-    b"<head>\n"
-    b"  <title>Test</title>\n"
-    b"</head>\n"
-    b"\n"
-    b"<body>\n"
-    b"  <p>Test html</p>\n"
-    b"</body>\n"
-    b"\n"
-    b"</html>"
-)
+HTML_PATH_OK = "./docs/index.html"
+HTML_PATH_404 = "./docs/error_page/404.html"
 
 
-def assert_response(code: HTTPStatus, response: HTTPResponse) -> None:
+def assert_response(
+    code: HTTPStatus, response: HTTPResponse, html_path: Optional[str] = None
+) -> None:
+    """HTTPResponseのassertをする(statusCode, reason, httpVersion, messageBody, Content-Length)
+
+    Args:
+        code (HTTPStatus): StatusCode
+        response (HTTPResponse): HTTPResponse
+        html_path (Optional[str]): 想定されるHTMLのファイルパス。未指定の場合はcodeに応じてHTMLを自動生成する
+    """
     actual_body = response.read()
-    expected_body = _generate_expected_body(code)
+    if html_path:
+        with open(html_path, "r") as f:
+            expected_body = f.read().encode("utf-8")
+    else:
+        expected_body = _generate_expected_body(code)
     assert response.status == code
     assert response.reason == _get_phrase(code)
     assert response.version == 11
@@ -28,6 +30,7 @@ def assert_response(code: HTTPStatus, response: HTTPResponse) -> None:
 
 
 def _get_phrase(code: HTTPStatus) -> str:
+    """StatusCodeに応じたPhraseを取得する"""
     phrase = code.phrase
     # 古いHTTPの規格では "Request Entity Too Large" なのでphraseを変更する
     # https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#4xx_client_errors
@@ -37,9 +40,7 @@ def _get_phrase(code: HTTPStatus) -> str:
 
 
 def _generate_expected_body(code: HTTPStatus) -> bytes:
-    if code == HTTPStatus.OK:
-        return RESPONSE_BODY_200
-
+    """StatusCodeに応じたHTMLを返す"""
     phrase = _get_phrase(code)
     body = (
         "<html>\r\n"
