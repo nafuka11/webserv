@@ -680,7 +680,7 @@ void ConfigParser::setDefaultToUnsetLocationValue(LocationConfig &location_confi
     {
         setIndex(location_config, server_config.index());
     }
-    if (location_config.returnRedirect().empty())
+    if (location_config.returnRedirect().empty() && !server_config.returnRedirect().empty())
     {
         setReturnRedirect(location_config, server_config.returnRedirect());
     }
