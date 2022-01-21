@@ -116,6 +116,7 @@ private:
 
     void validateDuplicateValueTypeStr(const std::string &value);
     void validateDuplicateValueTypeInt(const int value);
+    void validateDuplicateValueTypeMap(const std::map<int, std::string> &pair_value);
     void validateContainsValues(std::vector<std::string> &values,
                                 const std::vector<std::string> &set_values);
     void validateEndContext();
@@ -239,15 +240,15 @@ void ConfigParser::parseIndex(T &config_obj)
 template <typename T>
 void ConfigParser::parseReturnRedirect(T &config_obj)
 {
+    validateDuplicateValueTypeMap(config_obj.returnRedirect())
     validateNumOfArgs(NUM_TWO);
 
     long status_code = convertNumber(parse_line_[DIRECTIVE_VALUE_INDEX]);
     if (status_code < 0 || status_code > 999)
     {
-        throw ConfigConstant(INVALID_VALUE, parse_line_[DIRECTIVE_VALUE_INDEX],
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_VALUE_INDEX],
                              filepath_, (line_pos_ + 1));
     }
-    //TODO: 重複チェック
     std::map<int, std::string> param = validateReturnParam();
     setReturnRedirectParam(config_obj, param);
 }
