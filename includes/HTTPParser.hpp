@@ -30,7 +30,7 @@ private:
     std::string raw_message_;
     size_t parse_pos_;
     size_t content_length_;
-    ParseState state_;
+    ParseState parse_state_;
 
     bool parseStartLine();
     bool parseHeader();

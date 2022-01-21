@@ -8,7 +8,7 @@
 const std::string HTTPParser::NEWLINE = "\r\n";
 
 HTTPParser::HTTPParser(HTTPRequest &request, const ServerConfig &config)
-    : request_(request), config_(config), parse_pos_(0), state_(PARSE_START_LINE)
+    : request_(request), config_(config), parse_pos_(0), parse_state_(PARSE_START_LINE)
 {
 }
 
@@ -20,7 +20,7 @@ void HTTPParser::clear()
 {
     raw_message_ = raw_message_.substr(parse_pos_);
     parse_pos_ = 0;
-    state_ = PARSE_START_LINE;
+    parse_state_ = PARSE_START_LINE;
 }
 
 void HTTPParser::appendRawMessage(const char *message)
@@ -39,7 +39,7 @@ void HTTPParser::parse()
 
     while (need_parse)
     {
-        switch (state_)
+        switch (parse_state_)
         {
         case PARSE_START_LINE:
             need_parse = parseStartLine();
@@ -74,7 +74,7 @@ bool HTTPParser::parseStartLine()
     request_.setMethod(validateMethod(method));
     request_.setUri(validateUri(uri));
     request_.setProtocolVersion(validateProtocolVersion(protocol_version));
-    state_ = PARSE_HEADERS;
+    parse_state_ = PARSE_HEADERS;
     return true;
 }
 
@@ -98,11 +98,11 @@ bool HTTPParser::parseHeader()
         }
         if (needsParsingMessageBody())
         {
-            state_ = PARSE_MESSAGE_BODY;
+            parse_state_ = PARSE_MESSAGE_BODY;
         }
         else
         {
-            state_ = PARSE_FINISH;
+            parse_state_ = PARSE_FINISH;
         }
         return true;
     }
@@ -121,7 +121,7 @@ bool HTTPParser::parseMessageBody()
     std::string message_body = raw_message_.substr(parse_pos_, content_length_);
     request_.setMessageBody(message_body);
     parse_pos_ += content_length_;
-    state_ = PARSE_FINISH;
+    parse_state_ = PARSE_FINISH;
     return true;
 }
 
