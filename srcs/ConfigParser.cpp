@@ -712,7 +712,7 @@ void ConfigParser::validateReturnRedirectValue(std::map<int, std::string> &pair_
     long code_value = convertNumber(*status_code);
     if (code_value < 0 || code_value > 999)
     {
-        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_VALUE_INDEX],
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
                              filepath_, (line_pos_ + 1));
     }
     pair_value.insert(std::make_pair(code_value, *uri));
