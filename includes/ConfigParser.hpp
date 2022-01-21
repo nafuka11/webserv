@@ -117,7 +117,7 @@ private:
     template <typename T>
     void setIndex(T &config_obj, const std::vector<std::string> &values);
     template <typename T>
-    void setReturnRedirectParam(T &config_obj, const std::map<int, std::string> &param);//  TODO:後で変更
+    void setReturnRedirect(T &config_obj, const std::map<int, std::string> &pair_value);
 
     void validateEndContext();
     void validateEndSemicolon();
@@ -267,7 +267,7 @@ void ConfigParser::parseReturnRedirect(T &config_obj)
 
     std::map<int, std::string> pair_value;
     pair_value.insert(std::make_pair(status_code, parse_line_[DIRECTIVE_NAME_INDEX + 1]));
-    setReturnRedirectParam(config_obj, pair_value);
+    setReturnRedirect(config_obj, pair_value);
 }
 
 template <typename T>
@@ -325,15 +325,11 @@ void ConfigParser::setIndex(T &config_obj, const std::vector<std::string> &value
 }
 
 template <typename T>
-void ConfigParser::setReturnRedirectParam(T &config_obj,
-                                          const std::map<int, std::string> &param)//TODO: 後で変数名変更（参考　error_page)
+void ConfigParser::setReturnRedirect(T &config_obj,
+                                     const std::map<int, std::string> &pair_value)
 {
-    for (std::map<int, std::string>::const_iterator const_iter = param.begin();
-         const_iter != param.end();
-         ++const_iter)
-    {
-        config_obj.addReturnRedirect(const_iter->first, const_iter->second);
-    }
+    std::map<int, std::string>::const_iterator pair_value_iter = pair_value.begin();
+    config_obj.addReturnRedirect(pair_value_iter->first, pair_value_iter->second);
 }
 
 #endif /* CONFIGPARSER_HPP */
