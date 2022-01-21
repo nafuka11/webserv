@@ -376,16 +376,6 @@ void ConfigParser::validateDuplicateValueTypeStr(const std::string &value)
     }
 }
 
-void ConfigParser::validateDuplicateValueTypeMap(const std::map<int,
-                                                 std::string> &pair_value)
-{
-    if (!pair_value.empty())
-    {
-        throw ConfigError(DUPLICATE_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX],
-                          filepath_, (line_pos_ + 1));
-    }
-}
-
 void ConfigParser::validateContainsValues(std::vector<std::string> &values,
                                           const std::vector<std::string> &set_values)
 {

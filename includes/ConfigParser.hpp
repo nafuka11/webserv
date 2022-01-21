@@ -126,10 +126,9 @@ private:
     void validateStartLocationContext();
     void validateDuplicateValueTypeInt(const int value);
     void validateDuplicateValueTypeStr(const std::string &value);
-    void validateDuplicateValueTypeMap(const std::map<int, std::string> &pair_value);
     void validateContainsValues(std::vector<std::string> &values,
                                 const std::vector<std::string> &set_values);
-
+    void validatePairValue(std::map<int, std::string> &pair_value);
     bool containsValue(std::string &value, const std::vector<std::string> &set_values);
     bool isAllowedDirective();
     bool isDuplicateLocation(const ServerConfig &server_config, const std::string &path);
@@ -254,7 +253,11 @@ void ConfigParser::parseIndex(T &config_obj)
 template <typename T>
 void ConfigParser::parseReturnRedirect(T &config_obj)
 {
-    validateDuplicateValueTypeMap(config_obj.returnRedirect());
+    if (!config_obj.returnRedirect().empty())
+    {
+        throw ConfigError(DUPLICATE_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
+    }
     validateNumOfArgs(NUM_TWO);
     validateEndSemicolon();
 
