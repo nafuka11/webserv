@@ -431,7 +431,8 @@ void ConfigParser::validateErrorPageValues(std::map<int, std::string> &pair_valu
         std::map<int, std::string>::const_iterator found = set_values.find(code_value);
         if (found != set_values.end())
         {
-            throw ConfigError(DUPLICATE_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+            throw ConfigError(DUPLICATE_VALUE,
+                              parse_line_[DIRECTIVE_NAME_INDEX] + ":" + *status_code,
                               filepath_, (line_pos_ + 1));
         }
         pair_values.insert(std::make_pair(code_value, *uri));
