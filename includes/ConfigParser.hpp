@@ -230,7 +230,8 @@ void ConfigParser::parseErrorPage(T &config_obj)
     if (found != set_value.end())
     {
         throw ConfigError(DUPLICATE_VALUE,
-                          parse_line_[DIRECTIVE_NAME_INDEX] + ":" + parse_line_[DIRECTIVE_VALUE_INDEX],
+                          parse_line_[DIRECTIVE_NAME_INDEX] + ":" +
+                          parse_line_[DIRECTIVE_VALUE_INDEX],
                           filepath_, (line_pos_ + 1));
     }
 
