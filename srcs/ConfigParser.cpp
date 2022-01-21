@@ -404,51 +404,6 @@ void ConfigParser::validateContainsValues(std::vector<std::string> &values,
     }
 }
 
-void ConfigParser::validateErrorPageValues(std::map<int, std::string> &pair_values,
-                                           const std::map<int, std::string> &set_values)
-{
-    std::vector<std::string>::iterator status_code = parse_line_.begin();
-    std::vector<std::string>::iterator uri = parse_line_.end();
-
-    ++status_code;
-    uri = uri - 2;
-
-    for (; status_code != uri; ++status_code)
-    {
-        long code_value = convertNumber(*status_code);
-        if (code_value < 300 || code_value > 599)
-        {
-            throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
-                              filepath_, (line_pos_ + 1));
-        }
-        std::map<int, std::string>::const_iterator found = set_values.find(code_value);
-        if (found != set_values.end())
-        {
-            throw ConfigError(DUPLICATE_VALUE,
-                              parse_line_[DIRECTIVE_NAME_INDEX] + ":" + *status_code,
-                              filepath_, (line_pos_ + 1));
-        }
-        pair_values.insert(std::make_pair(code_value, *uri));
-    }
-}
-
-void ConfigParser::validateReturnRedirectValue(std::map<int, std::string> &pair_value)
-{
-    std::vector<std::string>::iterator status_code = parse_line_.begin();
-    std::vector<std::string>::iterator uri = parse_line_.end();
-
-    ++status_code;
-    uri = uri - 2;
-
-    long code_value = convertNumber(*status_code);
-    if (code_value < 0 || code_value > 999)
-    {
-        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
-                             filepath_, (line_pos_ + 1));
-    }
-    pair_value.insert(std::make_pair(code_value, *uri));
-}
-
 bool ConfigParser::containsValue(std::string &value,
                                  const std::vector<std::string> &set_values)
 {
@@ -724,7 +679,7 @@ void ConfigParser::setDefaultToUnsetLocationValue(LocationConfig &location_confi
     }
     if (location_config.errorPage().empty())
     {
-        setErrorPageParams(location_config, server_config.errorPage());
+        setErrorPage(location_config, server_config.errorPage());
     }
     if (location_config.index().empty())
     {

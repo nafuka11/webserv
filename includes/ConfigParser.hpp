@@ -113,11 +113,11 @@ private:
     template <typename T>
     void setCgiExtension(T &config_obj, const std::vector<std::string> &values);
     template <typename T>
-    void setErrorPageParams(T &config_obj, const std::map<int, std::string> &params);
+    void setErrorPage(T &config_obj, const std::map<int, std::string> &pair_values);
     template <typename T>
     void setIndex(T &config_obj, const std::vector<std::string> &values);
     template <typename T>
-    void setReturnRedirectParam(T &config_obj, const std::map<int, std::string> &param);
+    void setReturnRedirectParam(T &config_obj, const std::map<int, std::string> &param);//  TODO:後で変更
 
     void validateEndContext();
     void validateEndSemicolon();
@@ -129,9 +129,6 @@ private:
     void validateDuplicateValueTypeMap(const std::map<int, std::string> &pair_value);
     void validateContainsValues(std::vector<std::string> &values,
                                 const std::vector<std::string> &set_values);
-    void validateErrorPageValues(std::map<int, std::string> &pair_values,
-                                 const std::map<int, std::string> &set_values);
-    void validateReturnRedirectValue(std::map<int, std::string> &pair_value);
 
     bool containsValue(std::string &value, const std::vector<std::string> &set_values);
     bool isAllowedDirective();
@@ -222,9 +219,25 @@ void ConfigParser::parseErrorPage(T &config_obj)
     validateNumOfArgs(NUM_TWO);
     validateEndSemicolon();
 
-    std::map<int, std::string> pair_values;
-    validateErrorPageValues(pair_values, config_obj.errorPage());
-    setErrorPageParams(config_obj, pair_values);
+    long status_code = convertNumber(parse_line_[DIRECTIVE_VALUE_INDEX]);
+    if (status_code < 300 || status_code > 599)
+    {
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                             filepath_, (line_pos_ + 1));
+    }
+
+    std::map<int, std::string> set_value = config_obj.errorPage();
+    std::map<int, std::string>::const_iterator found = set_value.find(status_code);
+    if (found != set_value.end())
+    {
+        throw ConfigError(DUPLICATE_VALUE,
+                          parse_line_[DIRECTIVE_NAME_INDEX] + ":" + parse_line_[DIRECTIVE_VALUE_INDEX],
+                          filepath_, (line_pos_ + 1));
+    }
+
+    std::map<int, std::string> pair_value;
+    pair_value.insert(std::make_pair(status_code, parse_line_[DIRECTIVE_VALUE_INDEX + 1]));
+    setErrorPage(config_obj, pair_value);
 }
 
 template <typename T>
@@ -245,8 +258,15 @@ void ConfigParser::parseReturnRedirect(T &config_obj)
     validateNumOfArgs(NUM_TWO);
     validateEndSemicolon();
 
+    long status_code = convertNumber(parse_line_[DIRECTIVE_VALUE_INDEX]);
+    if (status_code < 0 || status_code > 999)
+    {
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                             filepath_, (line_pos_ + 1));
+    }
+
     std::map<int, std::string> pair_value;
-    validateReturnRedirectValue(pair_value);
+    pair_value.insert(std::make_pair(status_code, parse_line_[DIRECTIVE_NAME_INDEX + 1]));
     setReturnRedirectParam(config_obj, pair_value);
 }
 
@@ -282,14 +302,14 @@ void ConfigParser::setCgiExtension(T &config_obj, const std::vector<std::string>
 }
 
 template <typename T>
-void ConfigParser::setErrorPageParams(T &config_obj,
-                                      const std::map<int, std::string> &params)
+void ConfigParser::setErrorPage(T &config_obj,
+                                const std::map<int, std::string> &pair_values)
 {
-    for (std::map<int, std::string>::const_iterator const_iter = params.begin();
-         const_iter != params.end();
-         ++const_iter)
+    for (std::map<int, std::string>::const_iterator pair_value = pair_values.begin();
+         pair_value != pair_values.end();
+         ++pair_value)
     {
-        config_obj.addErrorPage(const_iter->first, const_iter->second);
+        config_obj.addErrorPage(pair_value->first, pair_value->second);
     }
 }
 
@@ -306,7 +326,7 @@ void ConfigParser::setIndex(T &config_obj, const std::vector<std::string> &value
 
 template <typename T>
 void ConfigParser::setReturnRedirectParam(T &config_obj,
-                                          const std::map<int, std::string> &param)
+                                          const std::map<int, std::string> &param)//TODO: 後で変数名変更（参考　error_page)
 {
     for (std::map<int, std::string>::const_iterator const_iter = param.begin();
          const_iter != param.end();
