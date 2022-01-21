@@ -46,7 +46,6 @@ public:
     {
         NUM_ONE = 1,
         NUM_TWO,
-        NUM_MULTIPLE_PAIRS,
         NUM_MULTIPLE
     };
 
@@ -220,7 +219,7 @@ void ConfigParser::parseClientMaxBodySize(T &config_obj)
 template <typename T>
 void ConfigParser::parseErrorPage(T &config_obj)
 {
-    validateNumOfArgs(NUM_MULTIPLE_PAIRS);
+    validateNumOfArgs(NUM_TWO);
     validateEndSemicolon();
 
     std::map<int, std::string> pair_values;
