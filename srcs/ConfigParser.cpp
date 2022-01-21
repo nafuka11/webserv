@@ -22,6 +22,11 @@ const int ConfigParser::SERVER_OPEN_BRACE_INDEX = 1;
 const int ConfigParser::LOCATION_OPEN_BRACE_INDEX = 2;
 const int ConfigParser::PORT_MAX_VALUE = 65535;
 const int ConfigParser::PORT_MIN_VALUE = 1;
+const int ConfigParser::ERROR_PAGE_MAX_STATUS_CODE = 599;
+const int ConfigParser::ERROR_PAGE_MIN_STATUS_CODE = 300;
+const int ConfigParser::RETURN_REDIRECT_MAX_STATUS_CODE = 999;
+const int ConfigParser::RETURN_REDIRECT_MIN_STATUS_CODE = 0;
+
 
 ConfigParser::ConfigParser(Config &config) : line_pos_(0), config_(config)
 {

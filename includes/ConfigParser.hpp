@@ -65,6 +65,11 @@ private:
     static const int LOCATION_OPEN_BRACE_INDEX;
     static const int PORT_MAX_VALUE;
     static const int PORT_MIN_VALUE;
+    static const int ERROR_PAGE_MAX_STATUS_CODE;
+    static const int ERROR_PAGE_MIN_STATUS_CODE;
+    static const int RETURN_REDIRECT_MAX_STATUS_CODE;
+    static const int RETURN_REDIRECT_MIN_STATUS_CODE;
+
 
     static std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> >
         createAllowedDirective();
@@ -219,7 +224,8 @@ void ConfigParser::parseErrorPage(T &config_obj)
     validateEndSemicolon();
 
     long status_code = convertNumber(parse_line_[DIRECTIVE_VALUE_INDEX]);
-    if (status_code < 300 || status_code > 599)
+    if (status_code < ERROR_PAGE_MIN_STATUS_CODE
+        || status_code > ERROR_PAGE_MAX_STATUS_CODE)
     {
         throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
                              filepath_, (line_pos_ + 1));
@@ -259,14 +265,16 @@ void ConfigParser::parseReturnRedirect(T &config_obj)
         throw ConfigError(DUPLICATE_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX],
                           filepath_, (line_pos_ + 1));
     }
+
     validateNumOfArgs(NUM_TWO);
     validateEndSemicolon();
 
     long status_code = convertNumber(parse_line_[DIRECTIVE_VALUE_INDEX]);
-    if (status_code < 0 || status_code > 999)
+    if (status_code < RETURN_REDIRECT_MIN_STATUS_CODE
+        || status_code > RETURN_REDIRECT_MAX_STATUS_CODE)
     {
         throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
-                             filepath_, (line_pos_ + 1));
+                          filepath_, (line_pos_ + 1));
     }
 
     std::map<int, std::string> pair_value;
