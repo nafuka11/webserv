@@ -144,16 +144,8 @@ void put_return(const std::map<int, std::string> &return_redirect, const std::st
         std::cout << std::endl;
         return;
     }
-    for (std::map<int, std::string>::const_iterator iter = return_redirect.begin();
-         iter != return_redirect.end();
-         ++iter)
-    {
-        if (iter != return_redirect.begin())
-            std::cout << second_space;
-        std::cout << iter->first << " "
-                  << iter->second << std::endl;
-    }
-
+    std::map<int, std::string>::const_iterator iter = return_redirect.begin();
+    std::cout << iter->first << " " << iter->second << std::endl;
 }
 
 void put_location_config(const std::map<std::string, LocationConfig> &location, const std::string &space)
