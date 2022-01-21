@@ -46,6 +46,7 @@ public:
     {
         NUM_ONE = 1,
         NUM_TWO,
+        NUM_MULTIPLE_PAIRS,
         NUM_MULTIPLE
     };
 
@@ -213,7 +214,7 @@ void ConfigParser::parseClientMaxBodySize(T &config_obj)
 template <typename T>
 void ConfigParser::parseErrorPage(T &config_obj)
 {
-    validateNumOfArgs(NUM_TWO);
+    validateNumOfArgs(NUM_MULTIPLE_PAIRS);
 
     long status_code = convertNumber(parse_line_[DIRECTIVE_VALUE_INDEX]);
     if (status_code < 300 || status_code > 599)
@@ -240,7 +241,7 @@ void ConfigParser::parseIndex(T &config_obj)
 template <typename T>
 void ConfigParser::parseReturnRedirect(T &config_obj)
 {
-    validateDuplicateValueTypeMap(config_obj.returnRedirect())
+    validateDuplicateValueTypeMap(config_obj.returnRedirect());
     validateNumOfArgs(NUM_TWO);
 
     long status_code = convertNumber(parse_line_[DIRECTIVE_VALUE_INDEX]);

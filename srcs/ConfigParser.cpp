@@ -365,6 +365,13 @@ void ConfigParser::validateNumOfArgs(DirectiveNumArgs num)
                               filepath_, (line_pos_ + 1));
         }
         break;
+    case NUM_MULTIPLE_PAIRS:
+        if (count < 2)
+        {
+            throw ConfigError(INVALID_NUM_OF_ARGS, parse_line_[DIRECTIVE_NAME_INDEX],
+                              filepath_, (line_pos_ + 1));
+        }
+        break;
     default:
         break;
     }
