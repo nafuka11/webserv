@@ -117,18 +117,19 @@ private:
 
     void validateDuplicateValueTypeStr(const std::string &value);
     void validateDuplicateValueTypeInt(const int value);
-    void validateDuplicateValueTypeMap(const std::map<int, std::string> &pair_value); //TODO: validateContainsPairValuesができたら消す。
+    void validateDuplicateValueTypeMap(const std::map<int, std::string> &pair_value);
     void validateContainsValues(std::vector<std::string> &values,
                                 const std::vector<std::string> &set_values);
     void validateContainsPairValues(std::map<int, std::string> &pair_values,
-                                const std::map<int, std::string> &set_values);
+                                const std::map<int, std::string> &set_values); //TODO: validateContainsPairValuesができたら消す。
 
     void validateEndContext();
     void validateEndSemicolon();
     void validateNumOfArgs(DirectiveNumArgs num);
     void validateStartServerContext();
     void validateStartLocationContext();
-    const std::map<int, std::string> validateErrorPageParams();
+    void validateErrorPageValues(std::map<int, std::string> &pair_values,
+                                 const std::map<int, std::string> &set_values);
     void validateReturnRedirectValue(std::map<int, std::string> &pair_value);
 
     long convertNumber(const std::string &str);
@@ -220,15 +221,9 @@ void ConfigParser::parseErrorPage(T &config_obj)
     validateNumOfArgs(NUM_MULTIPLE_PAIRS);
     validateEndSemicolon();
 
-    long status_code = convertNumber(parse_line_[DIRECTIVE_VALUE_INDEX]);
-    if (status_code < 300 || status_code > 599)
-    {
-        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_VALUE_INDEX],
-                          filepath_, (line_pos_ + 1));
-    }
-    //TODO: 重複チェック
-    std::map<int, std::string> params = validateErrorPageParams();
-    setErrorPageParams(config_obj, params);
+    std::map<int, std::string> pair_values;
+    validateErrorPageValues(pair_values, config_obj.errorPage());
+    setErrorPageParams(config_obj, pair_values);
 }
 
 template <typename T>

@@ -685,20 +685,31 @@ long ConfigParser::convertNumber(const std::string &str)
     return value;
 }
 
-const std::map<int, std::string> ConfigParser::validateErrorPageParams()
+void ConfigParser::validateErrorPageValues(std::map<int, std::string> &pair_values,
+                                           const std::map<int, std::string> &set_values)
 {
-    std::map<int, std::string> params;
     std::vector<std::string>::iterator status_code = parse_line_.begin();
     std::vector<std::string>::iterator uri = parse_line_.end();
 
     ++status_code;
     uri = uri - 2;
+
     for (; status_code != uri; ++status_code)
     {
-        params.insert(std::make_pair(std::atoi(status_code->c_str()), *uri));
+        long code_value = convertNumber(*status_code);
+        if (code_value < 300 || code_value > 599)
+        {
+            throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                              filepath_, (line_pos_ + 1));
+        }
+        std::map<int, std::string>::const_iterator found = set_values.find(code_value);
+        if (found != set_values.end())
+        {
+            throw ConfigError(DUPLICATE_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                              filepath_, (line_pos_ + 1));
+        }
+        pair_values.insert(std::make_pair(code_value, *uri));
     }
-    // validateEndSemicolon();
-    return params;
 }
 
 void ConfigParser::validateReturnRedirectValue(std::map<int, std::string> &pair_value)
