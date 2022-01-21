@@ -67,10 +67,13 @@ private:
     static const int PORT_MAX_VALUE;
     static const int PORT_MIN_VALUE;
 
-    static std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > createAllowedDirective();
+    static std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> >
+        createAllowedDirective();
     static std::map<ConfigParser::DirectiveType, main_parse_func> createMainParseFunc();
-    static std::map<ConfigParser::DirectiveType, server_parse_func> createServerParseFunc();
-    static std::map<ConfigParser::DirectiveType, location_parse_func> createLocationParseFunc();
+    static std::map<ConfigParser::DirectiveType, server_parse_func>
+        createServerParseFunc();
+    static std::map<ConfigParser::DirectiveType, location_parse_func>
+        createLocationParseFunc();
     static std::vector<ContextType> generateAllowedContext(DirectiveType state);
 
     void readAndSplitLines(std::ifstream &ifs);
@@ -102,8 +105,10 @@ private:
     void setContextType(ContextType type);
     void setDirectiveType(const std::string &directive_name);
     void setDefaultToUnsetMainValue(MainConfig &main_config);
-    void setDefaultToUnsetServerValue(ServerConfig &server_config, const MainConfig &main_config);
-    void setDefaultToUnsetLocationValue(LocationConfig &location_config, const ServerConfig &server_config);
+    void setDefaultToUnsetServerValue(ServerConfig &server_config,
+                                      const MainConfig &main_config);
+    void setDefaultToUnsetLocationValue(LocationConfig &location_config,
+                                        const ServerConfig &server_config);
     template <typename T>
     void setAllowMethod(T &config_obj, const std::vector<std::string> &values);
     template <typename T>
@@ -278,7 +283,8 @@ void ConfigParser::setCgiExtension(T &config_obj, const std::vector<std::string>
 }
 
 template <typename T>
-void ConfigParser::setErrorPageParams(T &config_obj, const std::map<int, std::string> &params)
+void ConfigParser::setErrorPageParams(T &config_obj,
+                                      const std::map<int, std::string> &params)
 {
     for (std::map<int, std::string>::const_iterator const_iter = params.begin();
          const_iter != params.end();
@@ -300,7 +306,8 @@ void ConfigParser::setIndex(T &config_obj, const std::vector<std::string> &value
 }
 
 template <typename T>
-void ConfigParser::setReturnRedirectParam(T &config_obj, const std::map<int, std::string> &param)
+void ConfigParser::setReturnRedirectParam(T &config_obj,
+                                          const std::map<int, std::string> &param)
 {
     for (std::map<int, std::string>::const_iterator const_iter = param.begin();
          const_iter != param.end();

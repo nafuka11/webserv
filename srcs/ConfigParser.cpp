@@ -267,7 +267,8 @@ void ConfigParser::validateEndContext()
 
 void ConfigParser::validateEndSemicolon()
 {
-    std::vector<std::string>::iterator iter = std::find(parse_line_.begin(), parse_line_.end(), ";");
+    std::vector<std::string>::iterator iter =
+        std::find(parse_line_.begin(), parse_line_.end(), ";");
     if (iter == parse_line_.end())
     {
         throw ConfigError(NO_END_SEMICOLON, parse_line_[DIRECTIVE_NAME_INDEX],
@@ -320,7 +321,8 @@ void ConfigParser::validateNumOfArgs(DirectiveNumArgs num)
 
 void ConfigParser::validateStartServerContext()
 {
-    std::vector<std::string>::iterator iter = std::find(parse_line_.begin(), parse_line_.end(), "{");
+    std::vector<std::string>::iterator iter =
+        std::find(parse_line_.begin(), parse_line_.end(), "{");
     if (iter == parse_line_.end())
     {
         throw ConfigError(NO_OPEN_DIRECTIVE, "server", filepath_, (line_pos_ + 1));
@@ -343,7 +345,8 @@ void ConfigParser::validateStartServerContext()
 
 void ConfigParser::validateStartLocationContext()
 {
-    std::vector<std::string>::iterator iter = std::find(parse_line_.begin(), parse_line_.end(), "{");
+    std::vector<std::string>::iterator iter =
+        std::find(parse_line_.begin(), parse_line_.end(), "{");
     if (iter == parse_line_.end())
     {
         throw ConfigError(NO_OPEN_DIRECTIVE, "location", filepath_, (line_pos_ + 1));
@@ -380,7 +383,8 @@ void ConfigParser::validateDuplicateValueTypeStr(const std::string &value)
     }
 }
 
-void ConfigParser::validateDuplicateValueTypeMap(const std::map<int, std::string> &pair_value)
+void ConfigParser::validateDuplicateValueTypeMap(const std::map<int,
+                                                 std::string> &pair_value)
 {
     if (!pair_value.empty())
     {
@@ -399,7 +403,8 @@ void ConfigParser::validateContainsValues(std::vector<std::string> &values,
     {
         if (containsValue(*value, set_values))
         {
-            throw ConfigError(DUPLICATE_VALUE, parse_line_[DIRECTIVE_NAME_INDEX] + ":" + *value,
+            throw ConfigError(DUPLICATE_VALUE,
+                              parse_line_[DIRECTIVE_NAME_INDEX] + ":" + *value,
                               filepath_, (line_pos_ + 1));
         }
         values.push_back(*value);
@@ -450,7 +455,8 @@ void ConfigParser::validateReturnRedirectValue(std::map<int, std::string> &pair_
     pair_value.insert(std::make_pair(code_value, *uri));
 }
 
-bool ConfigParser::containsValue(std::string &value, const std::vector<std::string> &set_values)
+bool ConfigParser::containsValue(std::string &value,
+                                 const std::vector<std::string> &set_values)
 {
     std::vector<std::string>::const_iterator found;
 
@@ -477,7 +483,8 @@ bool ConfigParser::isAllowedDirective()
     return false;
 }
 
-bool ConfigParser::isDuplicateLocation(const ServerConfig &server_config, const std::string &path)
+bool ConfigParser::isDuplicateLocation(const ServerConfig &server_config,
+                                       const std::string &path)
 {
     std::map<std::string, LocationConfig> location = server_config.location();
     std::map<std::string, LocationConfig>::iterator iter = location.find(path);
@@ -489,9 +496,11 @@ bool ConfigParser::isDuplicateLocation(const ServerConfig &server_config, const 
     return false;
 }
 
-std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > ConfigParser::createAllowedDirective()
+std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> >
+    ConfigParser::createAllowedDirective()
 {
-    std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > allowed_directive;
+    std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> >
+        allowed_directive;
 
     allowed_directive[ALIAS] = generateAllowedContext(ALIAS);
     allowed_directive[ALLOW_METHOD] = generateAllowedContext(ALLOW_METHOD);
@@ -527,7 +536,8 @@ long ConfigParser::convertNumber(const std::string &str)
     return value;
 }
 
-std::map<ConfigParser::DirectiveType, ConfigParser::main_parse_func> ConfigParser::createMainParseFunc()
+std::map<ConfigParser::DirectiveType, ConfigParser::main_parse_func>
+    ConfigParser::createMainParseFunc()
 {
     std::map<ConfigParser::DirectiveType, main_parse_func> parse_func;
 
@@ -541,7 +551,8 @@ std::map<ConfigParser::DirectiveType, ConfigParser::main_parse_func> ConfigParse
     return parse_func;
 }
 
-std::map<ConfigParser::DirectiveType, ConfigParser::server_parse_func> ConfigParser::createServerParseFunc()
+std::map<ConfigParser::DirectiveType, ConfigParser::server_parse_func>
+    ConfigParser::createServerParseFunc()
 {
     std::map<ConfigParser::DirectiveType, server_parse_func> parse_func;
 
@@ -559,7 +570,8 @@ std::map<ConfigParser::DirectiveType, ConfigParser::server_parse_func> ConfigPar
     return parse_func;
 }
 
-std::map<ConfigParser::DirectiveType, ConfigParser::location_parse_func> ConfigParser::createLocationParseFunc()
+std::map<ConfigParser::DirectiveType, ConfigParser::location_parse_func>
+    ConfigParser::createLocationParseFunc()
 {
     std::map<ConfigParser::DirectiveType, location_parse_func> parse_func;
 
@@ -574,7 +586,8 @@ std::map<ConfigParser::DirectiveType, ConfigParser::location_parse_func> ConfigP
     return parse_func;
 }
 
-std::vector<ConfigParser::ContextType> ConfigParser::generateAllowedContext(DirectiveType state)
+std::vector<ConfigParser::ContextType>
+    ConfigParser::generateAllowedContext(DirectiveType state)
 {
     std::vector<ContextType> allowed_context;
 
@@ -671,7 +684,8 @@ void ConfigParser::setDefaultToUnsetMainValue(MainConfig &main_config)
     }
 }
 
-void ConfigParser::setDefaultToUnsetServerValue(ServerConfig &server_config, const MainConfig &main_config)
+void ConfigParser::setDefaultToUnsetServerValue(ServerConfig &server_config,
+                                                const MainConfig &main_config)
 {
     if (server_config.allowMethod().empty())
     {
@@ -699,7 +713,8 @@ void ConfigParser::setDefaultToUnsetServerValue(ServerConfig &server_config, con
     }
 }
 
-void ConfigParser::setDefaultToUnsetLocationValue(LocationConfig &location_config, const ServerConfig &server_config)
+void ConfigParser::setDefaultToUnsetLocationValue(LocationConfig &location_config,
+                                                  const ServerConfig &server_config)
 {
     if (location_config.allowMethod().empty())
     {
