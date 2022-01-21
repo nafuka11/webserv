@@ -16,6 +16,14 @@ public:
         PARSE_FINISH
     };
 
+    enum MessageBodyState
+    {
+        CONTENT_LENGTH,
+        CHUNK_SIZE,
+        CHUNK_DATA,
+        NONE
+    };
+
     HTTPParser(HTTPRequest &request, const ServerConfig &config);
     ~HTTPParser();
     void clear();
@@ -29,8 +37,9 @@ private:
     const ServerConfig &config_;
     std::string raw_message_;
     size_t parse_pos_;
-    size_t content_length_;
     ParseState parse_state_;
+    MessageBodyState message_body_state_;
+    size_t content_length_;
 
     bool parseStartLine();
     bool parseHeader();
