@@ -56,26 +56,6 @@ void LocationConfig::addReturnRedirect(const int status_code, const std::string 
     return_redirect_.insert(std::make_pair(status_code, uri));
 }
 
-void LocationConfig::clearErrorPage(const int status_code)
-{
-    std::map<int, std::string>::iterator iter = error_page_.find(status_code);
-
-    if (iter != error_page_.end())
-    {
-        error_page_.erase(iter);
-    }
-}
-
-void LocationConfig::clearReturnRedirect(const int status_code)
-{
-    std::map<int, std::string>::iterator iter = return_redirect_.find(status_code);
-
-    if (iter != return_redirect_.end())
-    {
-        return_redirect_.erase(iter);
-    }
-}
-
 const std::string LocationConfig::alias() const
 {
     return alias_;

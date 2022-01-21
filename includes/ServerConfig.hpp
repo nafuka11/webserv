@@ -24,9 +24,6 @@ public:
     void addLocation(const std::string &path, const LocationConfig &location_config);
     void addReturnRedirect(const int status_code, const std::string &uri);
 
-    void clearErrorPage(const int status_code);
-    void clearReturnRedirect(const int status_code);
-
     const std::vector<std::string> &allowMethod() const;
     const std::string autoindex() const;
     const std::vector<std::string> &cgiExtension() const;

@@ -50,16 +50,6 @@ void MainConfig::addServer(const ServerConfig &server_config)
     server_.push_back(server_config);
 }
 
-void MainConfig::clearErrorPage(int status_code)
-{
-    std::map<int, std::string>::iterator iter = error_page_.find(status_code);
-
-    if (iter != error_page_.end())
-    {
-        error_page_.erase(iter);
-    }
-}
-
 const std::vector<std::string> MainConfig::allowMethod() const
 {
     return allow_method_;

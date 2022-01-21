@@ -71,6 +71,7 @@ private:
     static std::map<ConfigParser::DirectiveType, main_parse_func> createMainParseFunc();
     static std::map<ConfigParser::DirectiveType, server_parse_func> createServerParseFunc();
     static std::map<ConfigParser::DirectiveType, location_parse_func> createLocationParseFunc();
+    static std::vector<ContextType> generateAllowedContext(DirectiveType state);
 
     void readAndSplitLines(std::ifstream &ifs);
     std::vector<std::string> splitLine(const std::string &line);
@@ -111,32 +112,28 @@ private:
     void setErrorPageParams(T &config_obj, const std::map<int, std::string> &params);
     template <typename T>
     void setIndex(T &config_obj, const std::vector<std::string> &values);
-    static std::vector<ContextType> generateAllowedContext(DirectiveType state);
     template <typename T>
     void setReturnRedirectParam(T &config_obj, const std::map<int, std::string> &param);
-
-    void validateDuplicateValueTypeStr(const std::string &value);
-    void validateDuplicateValueTypeInt(const int value);
-    void validateDuplicateValueTypeMap(const std::map<int, std::string> &pair_value);
-    void validateContainsValues(std::vector<std::string> &values,
-                                const std::vector<std::string> &set_values);
-    void validateContainsPairValues(std::map<int, std::string> &pair_values,
-                                const std::map<int, std::string> &set_values); //TODO: validateContainsPairValuesができたら消す。
 
     void validateEndContext();
     void validateEndSemicolon();
     void validateNumOfArgs(DirectiveNumArgs num);
     void validateStartServerContext();
     void validateStartLocationContext();
+    void validateDuplicateValueTypeInt(const int value);
+    void validateDuplicateValueTypeStr(const std::string &value);
+    void validateDuplicateValueTypeMap(const std::map<int, std::string> &pair_value);
+    void validateContainsValues(std::vector<std::string> &values,
+                                const std::vector<std::string> &set_values);
     void validateErrorPageValues(std::map<int, std::string> &pair_values,
                                  const std::map<int, std::string> &set_values);
     void validateReturnRedirectValue(std::map<int, std::string> &pair_value);
 
-    long convertNumber(const std::string &str);
-
     bool containsValue(std::string &value, const std::vector<std::string> &set_values);
     bool isAllowedDirective();
     bool isDuplicateLocation(const ServerConfig &server_config, const std::string &path);
+
+    long convertNumber(const std::string &str);
 
     void putSplitLines(); // TODO: 後で消す
 
@@ -287,7 +284,6 @@ void ConfigParser::setErrorPageParams(T &config_obj, const std::map<int, std::st
          const_iter != params.end();
          ++const_iter)
     {
-        config_obj.clearErrorPage(const_iter->first); // TODO: addErrorPageの中に入れる？
         config_obj.addErrorPage(const_iter->first, const_iter->second);
     }
 }
@@ -310,7 +306,6 @@ void ConfigParser::setReturnRedirectParam(T &config_obj, const std::map<int, std
          const_iter != param.end();
          ++const_iter)
     {
-        config_obj.clearReturnRedirect(const_iter->first);
         config_obj.addReturnRedirect(const_iter->first, const_iter->second);
     }
 }

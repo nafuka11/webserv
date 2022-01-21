@@ -75,26 +75,6 @@ void ServerConfig::addReturnRedirect(const int status_code, const std::string &u
     return_redirect_.insert(std::make_pair(status_code, uri));
 }
 
-void ServerConfig::clearErrorPage(const int status_code)
-{
-    std::map<int, std::string>::iterator iter = error_page_.find(status_code);
-
-    if (iter != error_page_.end())
-    {
-        error_page_.erase(iter);
-    }
-}
-
-void ServerConfig::clearReturnRedirect(const int status_code)
-{
-    std::map<int, std::string>::iterator iter = return_redirect_.find(status_code);
-
-    if (iter != return_redirect_.end())
-    {
-        return_redirect_.erase(iter);
-    }
-}
-
 const std::vector<std::string> &ServerConfig::allowMethod() const
 {
     return allow_method_;
