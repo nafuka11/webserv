@@ -417,7 +417,7 @@ void ConfigParser::validateDuplicateValueTypeMap(const std::map<int, std::string
 }
 
 void ConfigParser::validateContainsValues(std::vector<std::string> &values,
-                                         const std::vector<std::string> &set_values)
+                                          const std::vector<std::string> &set_values)
 {
     std::vector<std::string>::iterator value = parse_line_.begin();
 
@@ -444,7 +444,6 @@ bool ConfigParser::containsValue(std::string &value, const std::vector<std::stri
     }
     return false;
 }
-
 
 std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > ConfigParser::createAllowedDirective()
 {
@@ -698,15 +697,23 @@ const std::map<int, std::string> ConfigParser::validateErrorPageParams()
     {
         params.insert(std::make_pair(std::atoi(status_code->c_str()), *uri));
     }
-    validateEndSemicolon();
+    // validateEndSemicolon();
     return params;
 }
 
-const std::map<int, std::string> ConfigParser::validateReturnParam()
+void ConfigParser::validateReturnRedirectValue(std::map<int, std::string> &pair_value)
 {
-    std::map<int, std::string> param;
+    std::vector<std::string>::iterator status_code = parse_line_.begin();
+    std::vector<std::string>::iterator uri = parse_line_.end();
 
-    param.insert(std::make_pair(std::atoi(parse_line_[1].c_str()), parse_line_[2]));
-    validateEndSemicolon();
-    return param;
+    ++status_code;
+    uri = uri - 2;
+
+    long code_value = convertNumber(*status_code);
+    if (code_value < 0 || code_value > 999)
+    {
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_VALUE_INDEX],
+                             filepath_, (line_pos_ + 1));
+    }
+    pair_value.insert(std::make_pair(code_value, *uri));
 }

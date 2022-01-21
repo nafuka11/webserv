@@ -117,16 +117,19 @@ private:
 
     void validateDuplicateValueTypeStr(const std::string &value);
     void validateDuplicateValueTypeInt(const int value);
-    void validateDuplicateValueTypeMap(const std::map<int, std::string> &pair_value);
+    void validateDuplicateValueTypeMap(const std::map<int, std::string> &pair_value); //TODO: validateContainsPairValuesができたら消す。
     void validateContainsValues(std::vector<std::string> &values,
                                 const std::vector<std::string> &set_values);
+    void validateContainsPairValues(std::map<int, std::string> &pair_values,
+                                const std::map<int, std::string> &set_values);
+
     void validateEndContext();
     void validateEndSemicolon();
     void validateNumOfArgs(DirectiveNumArgs num);
     void validateStartServerContext();
     void validateStartLocationContext();
     const std::map<int, std::string> validateErrorPageParams();
-    const std::map<int, std::string> validateReturnParam();
+    void validateReturnRedirectValue(std::map<int, std::string> &pair_value);
 
     long convertNumber(const std::string &str);
 
@@ -215,6 +218,7 @@ template <typename T>
 void ConfigParser::parseErrorPage(T &config_obj)
 {
     validateNumOfArgs(NUM_MULTIPLE_PAIRS);
+    validateEndSemicolon();
 
     long status_code = convertNumber(parse_line_[DIRECTIVE_VALUE_INDEX]);
     if (status_code < 300 || status_code > 599)
@@ -243,15 +247,11 @@ void ConfigParser::parseReturnRedirect(T &config_obj)
 {
     validateDuplicateValueTypeMap(config_obj.returnRedirect());
     validateNumOfArgs(NUM_TWO);
+    validateEndSemicolon();
 
-    long status_code = convertNumber(parse_line_[DIRECTIVE_VALUE_INDEX]);
-    if (status_code < 0 || status_code > 999)
-    {
-        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_VALUE_INDEX],
-                             filepath_, (line_pos_ + 1));
-    }
-    std::map<int, std::string> param = validateReturnParam();
-    setReturnRedirectParam(config_obj, param);
+    std::map<int, std::string> pair_value;
+    validateReturnRedirectValue(pair_value);
+    setReturnRedirectParam(config_obj, pair_value);
 }
 
 template <typename T>
