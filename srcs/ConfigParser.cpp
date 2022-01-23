@@ -684,14 +684,9 @@ void ConfigParser::setDefaultToUnsetLocationValue(LocationConfig &location_confi
     {
         setIndex(location_config, server_config.index());
     }
-    if (location_config.returnRedirect().empty()
-        && !server_config.returnRedirect().empty())
+    if (location_config.returnRedirect().empty() && !server_config.returnRedirect().empty())
     {
-        std::map<int, std::string>::const_iterator set_return_redirect =
-            server_config.returnRedirect().begin();
-
-        location_config.addReturnRedirect(set_return_redirect->first,
-                                          set_return_redirect->second);
+        setReturnRedirect(location_config, server_config.returnRedirect());
     }
     if (location_config.uploadPath() == ConfigConstant::UNSET_TYPE_STR
         && server_config.uploadPath() != ConfigConstant::UNSET_TYPE_STR)

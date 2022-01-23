@@ -121,6 +121,8 @@ private:
     void setErrorPage(T &config_obj, const std::map<int, std::string> &pair_values);
     template <typename T>
     void setIndex(T &config_obj, const std::vector<std::string> &values);
+    template <typename T>
+    void setReturnRedirect(T &config_obj, const std::map<int, std::string> &pair_value);
 
     void validateEndContext();
     void validateEndSemicolon();
@@ -326,6 +328,14 @@ void ConfigParser::setIndex(T &config_obj, const std::vector<std::string> &value
     {
         config_obj.addIndex(*value);
     }
+}
+
+template <typename T>
+void ConfigParser::setReturnRedirect(T &config_obj,
+                                     const std::map<int, std::string> &pair_value)
+{
+    std::map<int, std::string>::const_iterator pair_value_iter = pair_value.begin();
+    config_obj.addReturnRedirect(pair_value_iter->first, pair_value_iter->second);
 }
 
 #endif /* CONFIGPARSER_HPP */
