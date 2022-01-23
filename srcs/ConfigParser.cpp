@@ -647,6 +647,10 @@ void ConfigParser::setDefaultToUnsetServerValue(ServerConfig &server_config,
     {
         server_config.setClientMaxBodySize(main_config.clientMaxBodySize());
     }
+    if (server_config.errorPage().empty() && !main_config.errorPage().empty())
+    {
+        setErrorPage(server_config, main_config.errorPage());
+    }
     if (server_config.index().empty())
     {
         setIndex(server_config, main_config.index());
@@ -683,5 +687,10 @@ void ConfigParser::setDefaultToUnsetLocationValue(LocationConfig &location_confi
     if (location_config.returnRedirect().empty() && !server_config.returnRedirect().empty())
     {
         setReturnRedirect(location_config, server_config.returnRedirect());
+    }
+    if (location_config.uploadPath() == ConfigConstant::UNSET_TYPE_STR
+        && server_config.uploadPath() != ConfigConstant::UNSET_TYPE_STR)
+    {
+        location_config.setUploadPath(server_config.uploadPath());
     }
 }
