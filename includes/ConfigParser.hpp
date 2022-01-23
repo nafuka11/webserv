@@ -45,6 +45,7 @@ public:
     enum DirectiveNumArgs
     {
         NUM_ONE = 1,
+        NUM_TWO,
         NUM_MULTIPLE
     };
 
@@ -64,11 +65,20 @@ private:
     static const int LOCATION_OPEN_BRACE_INDEX;
     static const int PORT_MAX_VALUE;
     static const int PORT_MIN_VALUE;
+    static const int ERROR_PAGE_MAX_STATUS_CODE;
+    static const int ERROR_PAGE_MIN_STATUS_CODE;
+    static const int RETURN_REDIRECT_MAX_STATUS_CODE;
+    static const int RETURN_REDIRECT_MIN_STATUS_CODE;
 
-    static std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> > createAllowedDirective();
+
+    static std::map<ConfigParser::DirectiveType, std::vector<ConfigParser::ContextType> >
+        createAllowedDirective();
     static std::map<ConfigParser::DirectiveType, main_parse_func> createMainParseFunc();
-    static std::map<ConfigParser::DirectiveType, server_parse_func> createServerParseFunc();
-    static std::map<ConfigParser::DirectiveType, location_parse_func> createLocationParseFunc();
+    static std::map<ConfigParser::DirectiveType, server_parse_func>
+        createServerParseFunc();
+    static std::map<ConfigParser::DirectiveType, location_parse_func>
+        createLocationParseFunc();
+    static std::vector<ContextType> generateAllowedContext(DirectiveType state);
 
     void readAndSplitLines(std::ifstream &ifs);
     std::vector<std::string> splitLine(const std::string &line);
@@ -99,37 +109,36 @@ private:
     void setContextType(ContextType type);
     void setDirectiveType(const std::string &directive_name);
     void setDefaultToUnsetMainValue(MainConfig &main_config);
-    void setDefaultToUnsetServerValue(ServerConfig &server_config, const MainConfig &main_config);
-    void setDefaultToUnsetLocationValue(LocationConfig &location_config, const ServerConfig &server_config);
+    void setDefaultToUnsetServerValue(ServerConfig &server_config,
+                                      const MainConfig &main_config);
+    void setDefaultToUnsetLocationValue(LocationConfig &location_config,
+                                        const ServerConfig &server_config);
     template <typename T>
     void setAllowMethod(T &config_obj, const std::vector<std::string> &values);
     template <typename T>
     void setCgiExtension(T &config_obj, const std::vector<std::string> &values);
     template <typename T>
-    void setErrorPageParams(T &config_obj, const std::map<int, std::string> &params);
+    void setErrorPage(T &config_obj, const std::map<int, std::string> &pair_values);
     template <typename T>
     void setIndex(T &config_obj, const std::vector<std::string> &values);
-    static std::vector<ContextType> generateAllowedContext(DirectiveType state);
     template <typename T>
-    void setReturnRedirectParam(T &config_obj, const std::map<int, std::string> &param);
+    void setReturnRedirect(T &config_obj, const std::map<int, std::string> &pair_value);
 
-    void validateDuplicateValueTypeStr(const std::string &value);
-    void validateDuplicateValueTypeInt(const int value);
-    void validateContainsValues(std::vector<std::string> &values,
-                                const std::vector<std::string> &set_values);
     void validateEndContext();
     void validateEndSemicolon();
     void validateNumOfArgs(DirectiveNumArgs num);
     void validateStartServerContext();
     void validateStartLocationContext();
-    const std::map<int, std::string> validateErrorPageParams();
-    const std::map<int, std::string> validateReturnParam();
-
-    long convertNumber(const std::string &str);
-
+    void validateDuplicateValueTypeInt(const int value);
+    void validateDuplicateValueTypeStr(const std::string &value);
+    void validateContainsValues(std::vector<std::string> &values,
+                                const std::vector<std::string> &set_values);
+    void validatePairValue(std::map<int, std::string> &pair_value);
     bool containsValue(std::string &value, const std::vector<std::string> &set_values);
     bool isAllowedDirective();
     bool isDuplicateLocation(const ServerConfig &server_config, const std::string &path);
+
+    long convertNumber(const std::string &str);
 
     void putSplitLines(); // TODO: 後で消す
 
@@ -211,8 +220,27 @@ void ConfigParser::parseClientMaxBodySize(T &config_obj)
 template <typename T>
 void ConfigParser::parseErrorPage(T &config_obj)
 {
-    std::map<int, std::string> params = validateErrorPageParams();
-    setErrorPageParams(config_obj, params);
+    validateNumOfArgs(NUM_TWO);
+    validateEndSemicolon();
+
+    long status_code = convertNumber(parse_line_[DIRECTIVE_VALUE_INDEX]);
+    if (status_code < ERROR_PAGE_MIN_STATUS_CODE
+        || status_code > ERROR_PAGE_MAX_STATUS_CODE)
+    {
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                             filepath_, (line_pos_ + 1));
+    }
+
+    std::map<int, std::string> set_value = config_obj.errorPage();
+    std::map<int, std::string>::const_iterator found = set_value.find(status_code);
+    if (found != set_value.end())
+    {
+        throw ConfigError(DUPLICATE_VALUE,
+                          parse_line_[DIRECTIVE_NAME_INDEX] + ":" +
+                          parse_line_[DIRECTIVE_VALUE_INDEX],
+                          filepath_, (line_pos_ + 1));
+    }
+    config_obj.addErrorPage(status_code, parse_line_[DIRECTIVE_VALUE_INDEX + 1]);
 }
 
 template <typename T>
@@ -229,8 +257,23 @@ void ConfigParser::parseIndex(T &config_obj)
 template <typename T>
 void ConfigParser::parseReturnRedirect(T &config_obj)
 {
-    std::map<int, std::string> param = validateReturnParam();
-    setReturnRedirectParam(config_obj, param);
+    if (!config_obj.returnRedirect().empty())
+    {
+        throw ConfigError(DUPLICATE_DIRECTIVE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
+    }
+
+    validateNumOfArgs(NUM_TWO);
+    validateEndSemicolon();
+
+    long status_code = convertNumber(parse_line_[DIRECTIVE_VALUE_INDEX]);
+    if (status_code < RETURN_REDIRECT_MIN_STATUS_CODE
+        || status_code > RETURN_REDIRECT_MAX_STATUS_CODE)
+    {
+        throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                          filepath_, (line_pos_ + 1));
+    }
+    config_obj.addReturnRedirect(status_code, parse_line_[DIRECTIVE_NAME_INDEX + 1]);
 }
 
 template <typename T>
@@ -265,14 +308,14 @@ void ConfigParser::setCgiExtension(T &config_obj, const std::vector<std::string>
 }
 
 template <typename T>
-void ConfigParser::setErrorPageParams(T &config_obj, const std::map<int, std::string> &params)
+void ConfigParser::setErrorPage(T &config_obj,
+                                const std::map<int, std::string> &pair_values)
 {
-    for (std::map<int, std::string>::const_iterator const_iter = params.begin();
-         const_iter != params.end();
-         ++const_iter)
+    for (std::map<int, std::string>::const_iterator pair_value = pair_values.begin();
+         pair_value != pair_values.end();
+         ++pair_value)
     {
-        config_obj.clearErrorPage(const_iter->first); // TODO: addErrorPageの中に入れる？
-        config_obj.addErrorPage(const_iter->first, const_iter->second);
+        config_obj.addErrorPage(pair_value->first, pair_value->second);
     }
 }
 
@@ -288,15 +331,11 @@ void ConfigParser::setIndex(T &config_obj, const std::vector<std::string> &value
 }
 
 template <typename T>
-void ConfigParser::setReturnRedirectParam(T &config_obj, const std::map<int, std::string> &param)
+void ConfigParser::setReturnRedirect(T &config_obj,
+                                     const std::map<int, std::string> &pair_value)
 {
-    for (std::map<int, std::string>::const_iterator const_iter = param.begin();
-         const_iter != param.end();
-         ++const_iter)
-    {
-        config_obj.clearReturnRedirect(const_iter->first);
-        config_obj.addReturnRedirect(const_iter->first, const_iter->second);
-    }
+    std::map<int, std::string>::const_iterator pair_value_iter = pair_value.begin();
+    config_obj.addReturnRedirect(pair_value_iter->first, pair_value_iter->second);
 }
 
 #endif /* CONFIGPARSER_HPP */

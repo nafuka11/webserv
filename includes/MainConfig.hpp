@@ -19,8 +19,6 @@ public:
     void addIndex(const std::string &file);
     void addServer(const ServerConfig &server_config);
 
-    void clearErrorPage(int status_code);
-
     const std::vector<std::string> allowMethod() const;
     const std::string autoindex() const;
     const int &clientMaxBodySize() const;
