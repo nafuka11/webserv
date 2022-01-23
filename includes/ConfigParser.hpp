@@ -240,10 +240,7 @@ void ConfigParser::parseErrorPage(T &config_obj)
                           parse_line_[DIRECTIVE_VALUE_INDEX],
                           filepath_, (line_pos_ + 1));
     }
-
-    std::map<int, std::string> pair_value;
-    pair_value.insert(std::make_pair(status_code, parse_line_[DIRECTIVE_VALUE_INDEX + 1]));
-    setErrorPage(config_obj, pair_value);
+    config_obj.addErrorPage(status_code, parse_line_[DIRECTIVE_VALUE_INDEX + 1]);
 }
 
 template <typename T>
