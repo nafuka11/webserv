@@ -84,7 +84,7 @@ def test_error_page_not_found(http_connection: HTTPConnection):
 def test_chunk_size_is_not_hex(http_connection: HTTPConnection):
     """chunk-sizeが16進数でない場合、400を返すこと"""
     headers = {"Transfer-Encoding": "chunked"}
-    body = "1g\r\n0"
+    body = "\r\n".join(["1g", "0", ""])
     http_connection.request("POST", "/test_post/", headers=headers, body=body)
     response = http_connection.getresponse()
     assert_response(HTTPStatus.BAD_REQUEST, response)
@@ -93,7 +93,7 @@ def test_chunk_size_is_not_hex(http_connection: HTTPConnection):
 def test_chunk_size_overflow(http_connection: HTTPConnection):
     """chunk-sizeがオーバーフローする場合、413を返すこと"""
     headers = {"Transfer-Encoding": "chunked"}
-    body = "9999999999999999999\r\n0"
+    body = "\r\n".join([hex(9999999999999999999), "0", ""])
     http_connection.request("POST", "/test_post/", headers=headers, body=body)
     response = http_connection.getresponse()
     assert_response(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, response)
@@ -102,7 +102,7 @@ def test_chunk_size_overflow(http_connection: HTTPConnection):
 def test_chunk_data_not_end_with_newline(http_connection: HTTPConnection):
     """chunk-dataが\r\nで終わらない場合、400を返すこと"""
     headers = {"Transfer-Encoding": "chunked"}
-    body = "5\r\n123456\r\n0"
+    body = "\r\n".join([hex(5), "123456", "0", ""])
     http_connection.request("POST", "/test_post/", headers=headers, body=body)
     response = http_connection.getresponse()
     assert_response(HTTPStatus.BAD_REQUEST, response)
