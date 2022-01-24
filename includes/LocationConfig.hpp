@@ -20,9 +20,6 @@ public:
     void addIndex(const std::string &file);
     void addReturnRedirect(const int status_code, const std::string &uri);
 
-    void clearErrorPage(const int status_code);
-    void clearReturnRedirect(const int status_code);
-
     const std::string alias() const;
     const std::vector<std::string> allowMethod() const;
     const std::string autoindex() const;
