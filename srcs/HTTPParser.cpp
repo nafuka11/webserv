@@ -436,7 +436,7 @@ size_t HTTPParser::convertMessageBodySize(const std::string &value, int radix)
 void HTTPParser::setContentLength(size_t content_length)
 {
     if (config_.clientMaxBodySize() != 0 &&
-    content_length > (size_t)config_.clientMaxBodySize())
+        content_length > (size_t)config_.clientMaxBodySize())
     {
         throw HTTPParseException(CODE_413);
     }
