@@ -70,7 +70,7 @@ private:
     const std::string &validateHeaderValue(const std::string &value);
     bool isValidHeaders();
     void validateHost();
-    void validateContentLength(const std::string &value);
+    size_t convertMessageBodySize(const std::string &value, int radix);
 
     void setContentLength(size_t content_length);
     void setChunkSize(size_t chunk_size);

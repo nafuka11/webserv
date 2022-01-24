@@ -167,27 +167,16 @@ bool HTTPParser::parseMessageBodyFromChunkSize()
     {
         line = line.substr(0, space_index + 1);
     }
-    // 16進数でstrtolした物をchunk_sizeとして扱う。不正な文字列なら400
-    char *endp = NULL;
-    long chunk_size = strtol(line.c_str(), &endp, 16);
-    if (*endp != '\0' || chunk_size < 0)
-    {
-        throw HTTPParseException(CODE_400);
-    }
-    if ((chunk_size == LONG_MAX || chunk_size == LONG_MIN) && errno == ERANGE)
-    {
-        throw HTTPParseException(CODE_413);
-    }
-    // chunk_size超過判定
-    // chunk_sizeでの判定
-    if (chunk_size == 0)
+    // 16進数でstrtolした物をchunk_sizeとして扱う
+    setChunkSize(convertMessageBodySize(line, 16));
+
+    if (chunk_size_ == 0)
     {
         parse_state_ = PARSE_FINISH;
     }
     else
     {
         message_body_state_ = CHUNK_DATA;
-        chunk_size_ = chunk_size;
     }
     return true;
 }
@@ -387,7 +376,7 @@ const std::pair<std::string, std::string> HTTPParser::validateHeader(std::string
     }
     else if (name == "content-length")
     {
-        validateContentLength(value);
+        setContentLength(convertMessageBodySize(value, 10));
     }
     return std::make_pair(name, value);
 }
@@ -429,23 +418,19 @@ void HTTPParser::validateHost()
     }
 }
 
-void HTTPParser::validateContentLength(const std::string &value)
+size_t HTTPParser::convertMessageBodySize(const std::string &value, int radix)
 {
     char *endp = NULL;
-    long length = strtol(value.c_str(), &endp, 10);
-    if (*endp != '\0' || length < 0)
+    long size = strtol(value.c_str(), &endp, radix);
+    if (*endp != '\0' || size < 0)
     {
         throw HTTPParseException(CODE_400);
     }
-    if ((length == LONG_MAX || length == LONG_MIN) && errno == ERANGE)
+    if ((size == LONG_MAX || size == LONG_MIN) && errno == ERANGE)
     {
         throw HTTPParseException(CODE_413);
     }
-    if (config_.clientMaxBodySize() != 0 && length > config_.clientMaxBodySize())
-    {
-        throw HTTPParseException(CODE_413);
-    }
-    content_length_ = length;
+    return size;
 }
 
 void HTTPParser::setContentLength(size_t content_length)
