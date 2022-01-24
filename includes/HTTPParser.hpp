@@ -72,6 +72,9 @@ private:
     void validateHost();
     void validateContentLength(const std::string &value);
 
+    void setContentLength(size_t content_length);
+    void setChunkSize(size_t chunk_size);
+
     bool isSpace(char c);
     bool isToken(const std::string &str);
     bool isTokenChar(char c);

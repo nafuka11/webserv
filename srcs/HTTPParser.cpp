@@ -448,6 +448,26 @@ void HTTPParser::validateContentLength(const std::string &value)
     content_length_ = length;
 }
 
+void HTTPParser::setContentLength(size_t content_length)
+{
+    if (config_.clientMaxBodySize() != 0 &&
+    content_length > (size_t)config_.clientMaxBodySize())
+    {
+        throw HTTPParseException(CODE_413);
+    }
+    content_length_ = content_length;
+}
+
+void HTTPParser::setChunkSize(size_t chunk_size)
+{
+    if (config_.clientMaxBodySize() != 0 &&
+        chunk_size + request_.getMessageBody().size() > (size_t)config_.clientMaxBodySize())
+    {
+        throw HTTPParseException(CODE_413);
+    }
+    chunk_size_ = chunk_size;
+}
+
 bool HTTPParser::isSpace(char c)
 {
     return c == ' ' || c == '\t';
