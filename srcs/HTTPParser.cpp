@@ -101,13 +101,14 @@ bool HTTPParser::parseHeader()
         {
             throw HTTPParseException(CODE_405);
         }
-        if (needsParsingMessageBody())
+        message_body_state_ = judgeParseMessageBodyState();
+        if (message_body_state_ == NONE)
         {
-            parse_state_ = PARSE_MESSAGE_BODY;
+            parse_state_ = PARSE_FINISH;
         }
         else
         {
-            parse_state_ = PARSE_FINISH;
+            parse_state_ = PARSE_MESSAGE_BODY;
         }
         return true;
     }
@@ -130,11 +131,33 @@ bool HTTPParser::parseMessageBody()
     return true;
 }
 
-bool HTTPParser::needsParsingMessageBody()
+HTTPParser::MessageBodyState HTTPParser::judgeParseMessageBodyState()
 {
     const std::map<std::string, std::string> headers = request_.getHeaders();
-    return request_.getMethod() == HTTPRequest::HTTP_POST &&
-           (headers.count("content-length") || headers.count("transfer-encoding"));
+    size_t content_length_count = headers.count("content-length");
+    size_t transfer_encoding_count = headers.count("transfer-encoding");
+
+    if (request_.getMethod() != HTTPRequest::HTTP_POST ||
+        (content_length_count == 0 && transfer_encoding_count == 0))
+    {
+        return HTTPParser::NONE;
+    }
+    if (content_length_count && transfer_encoding_count)
+    {
+        throw HTTPParseException(CODE_400);
+    }
+    if (content_length_count)
+    {
+        return HTTPParser::CONTENT_LENGTH;
+    }
+    if (headers.find("transfer-encoding")->second == "chunked")
+    {
+        return HTTPParser::CHUNK_SIZE;
+    }
+    else
+    {
+        throw HTTPParseException(CODE_400);
+    }
 }
 
 void HTTPParser::findLocation()
