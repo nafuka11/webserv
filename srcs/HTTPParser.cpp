@@ -188,7 +188,7 @@ bool HTTPParser::parseMessageBodyFromChunkData()
         return false;
     }
     if (!(raw_message_.at(parse_pos_ + chunk_size_) == '\r' &&
-        raw_message_.at(parse_pos_ + chunk_size_ + 1) == '\n'))
+          raw_message_.at(parse_pos_ + chunk_size_ + 1) == '\n'))
     {
         throw HTTPParseException(CODE_400);
     }
