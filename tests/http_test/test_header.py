@@ -104,3 +104,19 @@ def test_equal_client_max_body_size(http_connection: HTTPConnection):
     http_connection.request("GET", "/", headers=headers)
     response = http_connection.getresponse()
     assert_response(HTTPStatus.OK, response, HTML_PATH_OK)
+
+
+def test_content_length_and_transfer_encoding(http_connection: HTTPConnection):
+    """Content-LengthとTransfer-Encodingがどちらも存在するとき、400を返すこと"""
+    headers = {"Content-Length": "42", "Transfer-Encoding": "chunked"}
+    http_connection.request("POST", "/test_post/", headers=headers)
+    response = http_connection.getresponse()
+    assert_response(HTTPStatus.BAD_REQUEST, response)
+
+
+def test_transfer_encoding_is_not_chunked(http_connection: HTTPConnection):
+    """Transfer-Encodingの値がchunkedでない場合、400を返すこと"""
+    headers = {"Transfer-Encoding": "invalid"}
+    http_connection.request("POST", "/test_post/", headers=headers)
+    response = http_connection.getresponse()
+    assert_response(HTTPStatus.BAD_REQUEST, response)
