@@ -120,6 +120,23 @@ bool HTTPParser::parseHeader()
 
 bool HTTPParser::parseMessageBody()
 {
+    switch (message_body_state_)
+    {
+    case CONTENT_LENGTH:
+        return parseMessageBodyFromContentLength();
+    case CHUNK_SIZE:
+        return parseMessageBodyFromChunkSize();
+    case CHUNK_DATA:
+        return parseMessageBodyFromChunkData();
+    default:
+        parse_state_ = PARSE_FINISH;
+        break;
+    }
+    return true;
+}
+
+bool HTTPParser::parseMessageBodyFromContentLength()
+{
     if (raw_message_.size() - parse_pos_ < content_length_)
     {
         return false;
@@ -128,6 +145,68 @@ bool HTTPParser::parseMessageBody()
     request_.setMessageBody(message_body);
     parse_pos_ += content_length_;
     parse_state_ = PARSE_FINISH;
+    return true;
+}
+
+bool HTTPParser::parseMessageBodyFromChunkSize()
+{
+    std::string line;
+    if (!tryGetLine(line))
+    {
+        return false;
+    }
+    // ;で分割した最初の文字列を得る
+    size_t chunk_ext_index = line.find(";");
+    if (chunk_ext_index != std::string::npos)
+    {
+        line = line.substr(0, chunk_ext_index);
+    }
+    // 文字列から末尾のスペースを除去する
+    size_t space_index = line.find_last_not_of(" \t");
+    if (space_index != std::string::npos)
+    {
+        line = line.substr(0, space_index + 1);
+    }
+    // 16進数でstrtolした物をchunk_sizeとして扱う。不正な文字列なら400
+    char *endp = NULL;
+    long chunk_size = strtol(line.c_str(), &endp, 16);
+    if (*endp != '\0' || chunk_size < 0)
+    {
+        throw HTTPParseException(CODE_400);
+    }
+    if ((chunk_size == LONG_MAX || chunk_size == LONG_MIN) && errno == ERANGE)
+    {
+        throw HTTPParseException(CODE_413);
+    }
+    // chunk_size超過判定
+    // chunk_sizeでの判定
+    if (chunk_size == 0)
+    {
+        parse_state_ = PARSE_FINISH;
+    }
+    else
+    {
+        message_body_state_ = CHUNK_DATA;
+        chunk_size_ = chunk_size;
+    }
+    return true;
+}
+
+bool HTTPParser::parseMessageBodyFromChunkData()
+{
+    if (raw_message_.size() - parse_pos_ < chunk_size_ + NEWLINE.size())
+    {
+        return false;
+    }
+    if (!(raw_message_.at(parse_pos_ + chunk_size_) == '\r' &&
+        raw_message_.at(parse_pos_ + chunk_size_ + 1) == '\n'))
+    {
+        throw HTTPParseException(CODE_400);
+    }
+    std::string message_body = raw_message_.substr(parse_pos_, chunk_size_);
+    request_.appendMessageBody(message_body);
+    parse_pos_ += chunk_size_ + NEWLINE.size();
+    message_body_state_ = CHUNK_SIZE;
     return true;
 }
 

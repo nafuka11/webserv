@@ -45,6 +45,9 @@ private:
     bool parseStartLine();
     bool parseHeader();
     bool parseMessageBody();
+    bool parseMessageBodyFromContentLength();
+    bool parseMessageBodyFromChunkSize();
+    bool parseMessageBodyFromChunkData();
     MessageBodyState judgeParseMessageBodyState();
     void findLocation();
     bool isAllowMethod(const std::string &method);
