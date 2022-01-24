@@ -32,7 +32,7 @@ void HTTPParser::appendRawMessage(const char *message)
 
 bool HTTPParser::finished()
 {
-    return state_ == PARSE_FINISH;
+    return parse_state_ == PARSE_FINISH;
 }
 
 void HTTPParser::parse()
