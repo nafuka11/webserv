@@ -99,6 +99,15 @@ def test_chunk_size_overflow(http_connection: HTTPConnection):
     assert_response(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, response)
 
 
+def test_chunk_size_over_client_max_body_size(http_connection: HTTPConnection):
+    """chunk-sizeがclient_max_body_sizeを超える場合、413を返すこと"""
+    headers = {"Transfer-Encoding": "chunked"}
+    body = "\r\n".join([hex(99), "a" * 99, hex(2), "a" * 2, "0", ""])
+    http_connection.request("POST", "/test_post/", headers=headers, body=body)
+    response = http_connection.getresponse()
+    assert_response(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, response)
+
+
 def test_chunk_data_not_end_with_newline(http_connection: HTTPConnection):
     """chunk-dataが\r\nで終わらない場合、400を返すこと"""
     headers = {"Transfer-Encoding": "chunked"}
