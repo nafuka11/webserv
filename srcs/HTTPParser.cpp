@@ -202,19 +202,19 @@ bool HTTPParser::parseMessageBodyFromChunkData()
 HTTPParser::MessageBodyState HTTPParser::judgeParseMessageBodyState()
 {
     const std::map<std::string, std::string> headers = request_.getHeaders();
-    size_t content_length_count = headers.count("content-length");
-    size_t transfer_encoding_count = headers.count("transfer-encoding");
+    bool has_content_length = (headers.count("content-length") > 0);
+    bool has_transfer_encoding = (headers.count("transfer-encoding") > 0);
 
     if (request_.getMethod() != HTTPRequest::HTTP_POST ||
-        (content_length_count == 0 && transfer_encoding_count == 0))
+        (!has_content_length && !has_transfer_encoding))
     {
         return HTTPParser::NONE;
     }
-    if (content_length_count && transfer_encoding_count)
+    if (has_content_length && has_transfer_encoding)
     {
         throw HTTPParseException(CODE_400);
     }
-    if (content_length_count)
+    if (has_content_length)
     {
         return HTTPParser::CONTENT_LENGTH;
     }
