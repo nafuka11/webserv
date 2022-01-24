@@ -15,6 +15,7 @@ public:
     ~HTTPRequest();
     void clear();
     bool canKeepAlive();
+    void appendMessageBody(const std::string &message_body);
 
     void setMethod(const std::string &method);
     void setUri(const std::string &uri);
