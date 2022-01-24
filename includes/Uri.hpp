@@ -42,6 +42,8 @@ private:
     bool isRegularFile(const struct stat &path_stat) const;
     bool isDirectory(const struct stat &path_stat) const;
     bool isExecutable(const struct stat &path_stat) const;
+    bool hasCgiExtension(const std::string &path,
+                         const std::vector<std::string> &cgi_extension) const;
 };
 
 #endif /* URI_HPP */

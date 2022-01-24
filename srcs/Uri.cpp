@@ -1,6 +1,7 @@
 #include "Uri.hpp"
 #include <algorithm>
 #include <cerrno>
+#include <iostream> //TODO: 確認できたら消去
 #include "HTTPParseException.hpp"
 
 Uri::Uri(const ServerConfig &config, const std::string &uri)
@@ -74,7 +75,14 @@ void Uri::findPathFromLocation(const std::string &location_name,
     }
     if (isRegularFile(path_stat))
     {
-        resource_type_ = FILE;
+        if (hasCgiExtension(path, location.cgiExtension()))
+        {
+            resource_type_ = CGI;
+        }
+        else
+        {
+            resource_type_ = FILE;
+        }
         return;
     }
     if (!needAutoIndex(location, path))
@@ -96,6 +104,7 @@ void Uri::findFileFromIndexes(const LocationConfig &location, std::string &path)
         }
         if (isRegularFile(path_stat))
         {
+            //TODO: こっちにもhasCgiExtension()いる？
             path = joined_path;
             resource_type_ = FILE;
             return;
@@ -148,4 +157,28 @@ bool Uri::isRegularFile(const struct stat &path_stat) const
 bool Uri::isDirectory(const struct stat &path_stat) const
 {
     return S_ISDIR(path_stat.st_mode);
+}
+
+bool Uri::hasCgiExtension(const std::string &path,
+                          const std::vector<std::string> &cgi_extension) const
+{
+    if (cgi_extension.empty()) //TODO: configでcgi_extensionのデフォルト値を設定するなら消す。
+    {
+        return false;
+    }
+
+    size_t extension_pos = path.rfind(".");
+    if (extension_pos == std::string::npos)
+    {
+        return false;
+    }
+
+    std::string extension = path.substr(extension_pos);
+    std::vector<std::string>::const_iterator found =
+        std::find(cgi_extension.begin(), cgi_extension.end(), extension);
+    if (found == cgi_extension.end())
+    {
+        return false;
+    }
+    return true;
 }
