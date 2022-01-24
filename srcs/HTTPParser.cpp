@@ -10,6 +10,7 @@ const std::string HTTPParser::NEWLINE = "\r\n";
 HTTPParser::HTTPParser(HTTPRequest &request, const ServerConfig &config)
     : request_(request), config_(config), parse_pos_(0),
       parse_state_(PARSE_START_LINE), message_body_state_(NONE),
+      content_length_(0), chunk_size_(0)
 {
 }
 
@@ -23,6 +24,8 @@ void HTTPParser::clear()
     parse_pos_ = 0;
     parse_state_ = PARSE_START_LINE;
     message_body_state_ = NONE;
+    content_length_ = 0;
+    chunk_size_ = 0;
 }
 
 void HTTPParser::appendRawMessage(const char *message)

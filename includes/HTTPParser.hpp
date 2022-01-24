@@ -40,6 +40,7 @@ private:
     ParseState parse_state_;
     MessageBodyState message_body_state_;
     size_t content_length_;
+    size_t chunk_size_;
 
     bool parseStartLine();
     bool parseHeader();
