@@ -17,6 +17,7 @@ public:
         READ_REQUEST,
         WRITE_RESPONSE,
         READ_FILE,
+        READ_CGI,
         CLOSE
     };
 
@@ -26,6 +27,7 @@ public:
     void receiveRequest();
     void sendResponse();
     void readFile(intptr_t offset);
+    void readCGI(intptr_t offset);
     void closeFile();
     void close();
     State getState() const;

@@ -95,6 +95,12 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
             client->readFile(event.data);
         }
         break;
+    case ClientSocket::READ_CGI:
+        if (event.filter == EVFILT_READ)
+        {
+            client->readCGI(event.data);
+        }
+        break;
     case ClientSocket::WRITE_RESPONSE:
         if (event.filter == EVFILT_WRITE)
         {

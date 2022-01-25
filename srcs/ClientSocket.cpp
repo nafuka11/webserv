@@ -86,6 +86,32 @@ void ClientSocket::readFile(intptr_t offset)
     }
 }
 
+void ClientSocket::readCGI(intptr_t offset)
+{
+    char buffer[BUF_SIZE];
+    ssize_t read_byte = read(file_fd_, buffer, BUF_SIZE - 1);
+
+
+    std::cout << "file_fd_: " << file_fd_ << "\n" << "read_byte: " << read_byte << std::endl; //後で消す
+
+    if (read_byte < 0)
+    {
+        response_.setStatusCode(CODE_404);
+    }
+    if (read_byte <= 0)
+    {
+        ::close(file_fd_);
+        return;
+    }
+    buffer[read_byte] = '\0';
+    std::cout << "read buffer: " << buffer << std::endl;
+    response_.appendMessageBody(buffer);
+    if (read_byte == offset)
+    {
+        ::close(file_fd_);
+    }
+}
+
 void ClientSocket::closeFile()
 {
     ::close(file_fd_);
@@ -113,6 +139,7 @@ void ClientSocket::changeState(State new_state)
         poller_.unregisterReadEvent(this, fd_);
         break;
     case READ_FILE:
+    case READ_CGI:
         break;
     case WRITE_RESPONSE:
         poller_.unregisterWriteEvent(this, fd_);
@@ -126,6 +153,7 @@ void ClientSocket::changeState(State new_state)
         poller_.registerReadEvent(this, fd_);
         break;
     case READ_FILE:
+    case READ_CGI:
         poller_.registerReadEvent(this, file_fd_);
         break;
     case WRITE_RESPONSE:
@@ -154,6 +182,7 @@ void ClientSocket::prepareResponse()
     case Uri::REDIRECT:
         break;
     case Uri::CGI:
+        std::cout << "switch handleCGI" << std::endl; //TODO: 後で消す
         handleCGI(request_.getMethod(), uri);
         break;
     default:
@@ -218,7 +247,7 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
         // pathname作成
 
         // argv作成
-        std::string command = "sh";
+        std::string command = "php";
         std::string path = uri.getPath();
         char **argv = new char*[3];
 
@@ -230,7 +259,7 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
 
         // envp作成
 
-        int rc = execve("/bin/sh", argv, NULL);
+        int rc = execve("/usr/bin/php", argv, NULL);
 
         for (int i = 0; argv[i]; i++)
         {
@@ -253,13 +282,7 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
         ::close(pipe_fd[1]);
         file_fd_ = pipe_fd[0];
         setNonBlockingFd(file_fd_);
-
-        // char buf[1024];
-        // ssize_t read_buf = read(pipe_fd[0], buf, 1024);
-        // buf[read_buf] = '\0';
-        // std::cout << "read: " << buf << std::endl;
-
-        changeState(READ_FILE);
+        changeState(READ_CGI);
     }
 
 }
