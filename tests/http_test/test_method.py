@@ -44,6 +44,42 @@ class TestGet:
         assert_response(HTTPStatus.NOT_FOUND, response)
 
 
+class TestDelete:
+    def test_file_found(self, http_connection: HTTPConnection, tmp_path: Path):
+        """DELETEでファイルが存在し削除可能なとき204を返すこと"""
+        file_name = "new_file"
+        file_path = tmp_path / file_name
+        file_path.write_text("This file should be deleted")
+        http_connection.request("DELETE", f"/test_delete/{tmp_path.name}/{file_name}")
+        response = http_connection.getresponse()
+        assert_response(HTTPStatus.NO_CONTENT, response, empty_body=True)
+
+    def test_file_not_found(self, http_connection: HTTPConnection):
+        """DELETEでファイルが存在しないとき404を返すこと"""
+        http_connection.request("DELETE", "/test_delete/no_such_file")
+        response = http_connection.getresponse()
+        assert_response(HTTPStatus.NOT_FOUND, response)
+
+    def test_directory(self, http_connection: HTTPConnection, tmp_path: Path):
+        """DELETEで指定パスがディレクトリのとき404を返すこと"""
+        dir_name = "new_dir"
+        dir_path = tmp_path / dir_name
+        dir_path.mkdir()
+        http_connection.request("DELETE", f"/test_delete/{tmp_path.name}/{dir_name}")
+        response = http_connection.getresponse()
+        assert_response(HTTPStatus.NOT_FOUND, response)
+
+    def test_file_no_permission(self, http_connection: HTTPConnection, tmp_path: Path):
+        """DELETEでファイルに書き込み権限が無いとき403を返すこと"""
+        file_name = "new_file"
+        file_path = tmp_path / file_name
+        file_path.write_text("This file should not be deleted")
+        file_path.chmod(0o444)  # r--r--r--
+        http_connection.request("DELETE", f"/test_delete/{tmp_path.name}/{file_name}")
+        response = http_connection.getresponse()
+        assert_response(HTTPStatus.FORBIDDEN, response)
+
+
 class TestInvalid:
     def test_invalid_method(self, http_connection: HTTPConnection):
         """サポートしていないmethodなら501を返すこと"""
