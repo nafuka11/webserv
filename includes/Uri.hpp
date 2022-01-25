@@ -26,6 +26,7 @@ public:
 
     bool isRegularFile(const struct stat &path_stat) const;
     bool isDirectory(const struct stat &path_stat) const;
+    bool canWrite(const struct stat &path_stat) const;
 
 private:
     const ServerConfig &config_;

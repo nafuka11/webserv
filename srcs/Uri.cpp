@@ -34,6 +34,11 @@ const struct stat &Uri::getStat() const
     return stat_;
 }
 
+bool Uri::canWrite(const struct stat &path_stat) const
+{
+    return (path_stat.st_mode & S_IWUSR) == S_IWUSR;
+}
+
 void Uri::splitRawUri()
 {
     size_t query_pos = raw_uri_.find('?');
