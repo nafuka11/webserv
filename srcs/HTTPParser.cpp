@@ -8,7 +8,9 @@
 const std::string HTTPParser::NEWLINE = "\r\n";
 
 HTTPParser::HTTPParser(HTTPRequest &request, const ServerConfig &config)
-    : request_(request), config_(config), parse_pos_(0), state_(PARSE_START_LINE)
+    : request_(request), config_(config), parse_pos_(0),
+      parse_state_(PARSE_START_LINE), message_body_state_(NONE),
+      content_length_(0), chunk_size_(0)
 {
 }
 
@@ -20,7 +22,10 @@ void HTTPParser::clear()
 {
     raw_message_ = raw_message_.substr(parse_pos_);
     parse_pos_ = 0;
-    state_ = PARSE_START_LINE;
+    parse_state_ = PARSE_START_LINE;
+    message_body_state_ = NONE;
+    content_length_ = 0;
+    chunk_size_ = 0;
 }
 
 void HTTPParser::appendRawMessage(const char *message)
@@ -30,7 +35,7 @@ void HTTPParser::appendRawMessage(const char *message)
 
 bool HTTPParser::finished()
 {
-    return state_ == PARSE_FINISH;
+    return parse_state_ == PARSE_FINISH;
 }
 
 void HTTPParser::parse()
@@ -39,7 +44,7 @@ void HTTPParser::parse()
 
     while (need_parse)
     {
-        switch (state_)
+        switch (parse_state_)
         {
         case PARSE_START_LINE:
             need_parse = parseStartLine();
@@ -74,7 +79,7 @@ bool HTTPParser::parseStartLine()
     request_.setMethod(validateMethod(method));
     request_.setUri(validateUri(uri));
     request_.setProtocolVersion(validateProtocolVersion(protocol_version));
-    state_ = PARSE_HEADERS;
+    parse_state_ = PARSE_HEADERS;
     return true;
 }
 
@@ -96,13 +101,14 @@ bool HTTPParser::parseHeader()
         {
             throw HTTPParseException(CODE_405);
         }
-        if (needsParsingMessageBody())
+        message_body_state_ = judgeParseMessageBodyState();
+        if (message_body_state_ == NONE)
         {
-            state_ = PARSE_MESSAGE_BODY;
+            parse_state_ = PARSE_FINISH;
         }
         else
         {
-            state_ = PARSE_FINISH;
+            parse_state_ = PARSE_MESSAGE_BODY;
         }
         return true;
     }
@@ -114,6 +120,23 @@ bool HTTPParser::parseHeader()
 
 bool HTTPParser::parseMessageBody()
 {
+    switch (message_body_state_)
+    {
+    case CONTENT_LENGTH:
+        return parseMessageBodyFromContentLength();
+    case CHUNK_SIZE:
+        return parseMessageBodyFromChunkSize();
+    case CHUNK_DATA:
+        return parseMessageBodyFromChunkData();
+    default:
+        parse_state_ = PARSE_FINISH;
+        break;
+    }
+    return true;
+}
+
+bool HTTPParser::parseMessageBodyFromContentLength()
+{
     if (raw_message_.size() - parse_pos_ < content_length_)
     {
         return false;
@@ -121,15 +144,88 @@ bool HTTPParser::parseMessageBody()
     std::string message_body = raw_message_.substr(parse_pos_, content_length_);
     request_.setMessageBody(message_body);
     parse_pos_ += content_length_;
-    state_ = PARSE_FINISH;
+    parse_state_ = PARSE_FINISH;
     return true;
 }
 
-bool HTTPParser::needsParsingMessageBody()
+bool HTTPParser::parseMessageBodyFromChunkSize()
+{
+    std::string line;
+    if (!tryGetLine(line))
+    {
+        return false;
+    }
+    // ;で分割した最初の文字列を得る
+    size_t chunk_ext_index = line.find(";");
+    if (chunk_ext_index != std::string::npos)
+    {
+        line = line.substr(0, chunk_ext_index);
+    }
+    // 文字列から末尾のスペースを除去する
+    size_t space_index = line.find_last_not_of(" \t");
+    if (space_index != std::string::npos)
+    {
+        line = line.substr(0, space_index + 1);
+    }
+    // 16進数でstrtolした物をchunk_sizeとして扱う
+    setChunkSize(convertMessageBodySize(line, 16));
+
+    if (chunk_size_ == 0)
+    {
+        parse_state_ = PARSE_FINISH;
+    }
+    else
+    {
+        message_body_state_ = CHUNK_DATA;
+    }
+    return true;
+}
+
+bool HTTPParser::parseMessageBodyFromChunkData()
+{
+    if (raw_message_.size() - parse_pos_ < chunk_size_ + NEWLINE.size())
+    {
+        return false;
+    }
+    if (!(raw_message_.at(parse_pos_ + chunk_size_) == '\r' &&
+          raw_message_.at(parse_pos_ + chunk_size_ + 1) == '\n'))
+    {
+        throw HTTPParseException(CODE_400);
+    }
+    std::string message_body = raw_message_.substr(parse_pos_, chunk_size_);
+    request_.appendMessageBody(message_body);
+    parse_pos_ += chunk_size_ + NEWLINE.size();
+    message_body_state_ = CHUNK_SIZE;
+    return true;
+}
+
+HTTPParser::MessageBodyState HTTPParser::judgeParseMessageBodyState()
 {
     const std::map<std::string, std::string> headers = request_.getHeaders();
-    return request_.getMethod() == HTTPRequest::HTTP_POST &&
-           (headers.count("content-length") || headers.count("transfer-encoding"));
+    bool has_content_length = (headers.count("content-length") > 0);
+    bool has_transfer_encoding = (headers.count("transfer-encoding") > 0);
+
+    if (request_.getMethod() != HTTPRequest::HTTP_POST ||
+        (!has_content_length && !has_transfer_encoding))
+    {
+        return HTTPParser::NONE;
+    }
+    if (has_content_length && has_transfer_encoding)
+    {
+        throw HTTPParseException(CODE_400);
+    }
+    if (has_content_length)
+    {
+        return HTTPParser::CONTENT_LENGTH;
+    }
+    if (headers.find("transfer-encoding")->second == "chunked")
+    {
+        return HTTPParser::CHUNK_SIZE;
+    }
+    else
+    {
+        throw HTTPParseException(CODE_400);
+    }
 }
 
 void HTTPParser::findLocation()
@@ -280,7 +376,7 @@ const std::pair<std::string, std::string> HTTPParser::validateHeader(std::string
     }
     else if (name == "content-length")
     {
-        validateContentLength(value);
+        setContentLength(convertMessageBodySize(value, 10));
     }
     return std::make_pair(name, value);
 }
@@ -322,23 +418,39 @@ void HTTPParser::validateHost()
     }
 }
 
-void HTTPParser::validateContentLength(const std::string &value)
+size_t HTTPParser::convertMessageBodySize(const std::string &value, int radix)
 {
     char *endp = NULL;
-    long length = strtol(value.c_str(), &endp, 10);
-    if (*endp != '\0' || length < 0)
+    long size = strtol(value.c_str(), &endp, radix);
+    if (*endp != '\0' || size < 0)
     {
         throw HTTPParseException(CODE_400);
     }
-    if ((length == LONG_MAX || length == LONG_MIN) && errno == ERANGE)
+    if ((size == LONG_MAX || size == LONG_MIN) && errno == ERANGE)
     {
         throw HTTPParseException(CODE_413);
     }
-    if (config_.clientMaxBodySize() != 0 && length > config_.clientMaxBodySize())
+    return size;
+}
+
+void HTTPParser::setContentLength(size_t content_length)
+{
+    if (config_.clientMaxBodySize() != 0 &&
+        content_length > (size_t)config_.clientMaxBodySize())
     {
         throw HTTPParseException(CODE_413);
     }
-    content_length_ = length;
+    content_length_ = content_length;
+}
+
+void HTTPParser::setChunkSize(size_t chunk_size)
+{
+    if (config_.clientMaxBodySize() != 0 &&
+        chunk_size + request_.getMessageBody().size() > (size_t)config_.clientMaxBodySize())
+    {
+        throw HTTPParseException(CODE_413);
+    }
+    chunk_size_ = chunk_size;
 }
 
 bool HTTPParser::isSpace(char c)
