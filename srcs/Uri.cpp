@@ -29,6 +29,11 @@ Uri::Type Uri::getResourceType() const
     return resource_type_;
 }
 
+const struct stat &Uri::getStat() const
+{
+    return stat_;
+}
+
 void Uri::splitRawUri()
 {
     size_t query_pos = raw_uri_.find('?');

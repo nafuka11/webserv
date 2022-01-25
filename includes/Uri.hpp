@@ -22,6 +22,8 @@ public:
     std::string getRawUri() const;
     std::string getPath() const;
     Type getResourceType() const;
+    const struct stat &getStat() const;
+
 
 private:
     const ServerConfig &config_;
@@ -29,6 +31,7 @@ private:
     std::string query_;
     std::string path_;
     Type resource_type_;
+    struct stat stat_;
 
     void splitRawUri();
     void findPath();
