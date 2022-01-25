@@ -2,6 +2,7 @@
 #include <cerrno>
 #include <unistd.h>
 #include <fcntl.h>
+#include <iostream> //TODO: 後で消す
 #include "SystemError.hpp"
 #include "HTTPParseException.hpp"
 #include "Uri.hpp"
@@ -195,7 +196,72 @@ void ClientSocket::handleRedirect(const std::string &method, const Uri &uri)
 void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
 {
     (void)method;
-    (void)uri;
+
+    int pipe_fd[2];
+    if (pipe(pipe_fd) < 0)
+    {
+        throw SystemError("pipe", errno);
+    }
+
+    pid_t pid;
+    pid = fork();
+    if (pid < 0)
+    {
+        throw SystemError("fork", errno);
+    }
+    if (pid == 0) // Child process
+    {
+        ::close(pipe_fd[0]);
+        ::close(STDOUT_FILENO);
+        dup2(pipe_fd[1], STDOUT_FILENO);
+
+        // pathname作成
+
+        // argv作成
+        std::string command = "sh";
+        std::string path = uri.getPath();
+        char **argv = new char*[3];
+
+        argv[0] = new char[command.size() + 1];
+        std::char_traits<char>::copy(argv[0], command.c_str(), command.size() + 1);
+        argv[1] = new char[path.size() + 1];
+        std::char_traits<char>::copy(argv[1], path.c_str(), path.size() + 1);
+        argv[2] = NULL;
+
+        // envp作成
+
+        int rc = execve("/bin/sh", argv, NULL);
+
+        for (int i = 0; argv[i]; i++)
+        {
+            delete argv[i];
+        }
+        delete[] argv;
+
+        if (rc == -1)
+        {
+            throw SystemError("execve", errno);
+        }
+    }
+    else // Parent process
+    {
+        if (waitpid(pid, NULL, 0) != pid)
+        {
+            throw SystemError("waitpid", errno);
+        }
+
+        ::close(pipe_fd[1]);
+        file_fd_ = pipe_fd[0];
+        setNonBlockingFd(file_fd_);
+
+        // char buf[1024];
+        // ssize_t read_buf = read(pipe_fd[0], buf, 1024);
+        // buf[read_buf] = '\0';
+        // std::cout << "read: " << buf << std::endl;
+
+        changeState(READ_FILE);
+    }
+
 }
 
 void ClientSocket::handleError(HTTPStatusCode statusCode)
