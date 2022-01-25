@@ -66,12 +66,47 @@ std::map<HTTPStatusCode, std::string> HTTPResponse::setReasonPhrase()
 {
     std::map<HTTPStatusCode, std::string> reason_phrase;
 
+    reason_phrase[CODE_100] = "Continue";
+    reason_phrase[CODE_101] = "Switching Protocols";
     reason_phrase[CODE_200] = "OK";
+    reason_phrase[CODE_201] = "Created";
+    reason_phrase[CODE_202] = "Accepted";
+    reason_phrase[CODE_203] = "Non-Authoritative Information";
+    reason_phrase[CODE_204] = "No Content";
+    reason_phrase[CODE_205] = "Reset Content";
+    reason_phrase[CODE_206] = "Partial Content";
+    reason_phrase[CODE_300] = "Multiple Choices";
+    reason_phrase[CODE_301] = "Moved Permanently";
+    reason_phrase[CODE_302] = "Found";
+    reason_phrase[CODE_303] = "See Other";
+    reason_phrase[CODE_304] = "Not Modified";
+    reason_phrase[CODE_305] = "Use Proxy";
+    reason_phrase[CODE_307] = "Temporary Redirect";
     reason_phrase[CODE_400] = "Bad Request";
+    reason_phrase[CODE_401] = "Unauthorized";
+    reason_phrase[CODE_402] = "Payment Required";
+    reason_phrase[CODE_403] = "Forbidden";
     reason_phrase[CODE_404] = "Not Found";
     reason_phrase[CODE_405] = "Method Not Allowed";
+    reason_phrase[CODE_406] = "Not Acceptable";
+    reason_phrase[CODE_407] = "Proxy Authentication Required";
+    reason_phrase[CODE_408] = "Request Timeout";
+    reason_phrase[CODE_409] = "Conflict";
+    reason_phrase[CODE_410] = "Gone";
+    reason_phrase[CODE_411] = "Length Required";
+    reason_phrase[CODE_412] = "Precondition Failed";
     reason_phrase[CODE_413] = "Payload Too Large";
+    reason_phrase[CODE_414] = "URI Too Long";
+    reason_phrase[CODE_415] = "Unsupported Media Type";
+    reason_phrase[CODE_416] = "Range Not Satisfiable";
+    reason_phrase[CODE_417] = "Expectation Failed";
+    reason_phrase[CODE_426] = "Upgrade Required";
+    reason_phrase[CODE_500] = "Internal Server Error";
     reason_phrase[CODE_501] = "Not Implemented";
+    reason_phrase[CODE_502] = "Bad Gateway";
+    reason_phrase[CODE_503] = "Service Unavailable";
+    reason_phrase[CODE_504] = "Gateway Timeout";
+    reason_phrase[CODE_505] = "HTTP Version Not Supported";
     return reason_phrase;
 }
 
