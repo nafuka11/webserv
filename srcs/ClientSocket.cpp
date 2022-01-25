@@ -2,7 +2,6 @@
 #include <cerrno>
 #include <unistd.h>
 #include <fcntl.h>
-#include <iostream> //TODO: 後で消す
 #include "SystemError.hpp"
 #include "HTTPParseException.hpp"
 #include "Uri.hpp"
@@ -91,24 +90,26 @@ void ClientSocket::readCGI(intptr_t offset)
     char buffer[BUF_SIZE];
     ssize_t read_byte = read(file_fd_, buffer, BUF_SIZE - 1);
 
-
-    std::cout << "file_fd_: " << file_fd_ << "\n" << "read_byte: " << read_byte << std::endl; //後で消す
-
     if (read_byte < 0)
     {
         response_.setStatusCode(CODE_404);
     }
     if (read_byte <= 0)
     {
-        ::close(file_fd_);
+        closeFile(); //TODO: CGI用に変更する。
+
+        // ::close(file_fd_);
+        // changeState(WRITE_CGI);
         return;
     }
     buffer[read_byte] = '\0';
-    std::cout << "read buffer: " << buffer << std::endl;
-    response_.appendMessageBody(buffer);
+    response_.appendMessageBody(buffer); //TODO: CGI用に変更する。
     if (read_byte == offset)
     {
-        ::close(file_fd_);
+        closeFile(); //TODO: CGI用に変更する。
+
+        // ::close(file_fd_);
+        // changeState(WRITE_CGI);
     }
 }
 
@@ -182,7 +183,6 @@ void ClientSocket::prepareResponse()
     case Uri::REDIRECT:
         break;
     case Uri::CGI:
-        std::cout << "switch handleCGI" << std::endl; //TODO: 後で消す
         handleCGI(request_.getMethod(), uri);
         break;
     default:
@@ -226,7 +226,7 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
 {
     (void)method;
 
-    int pipe_fd[2];
+    int pipe_fd[2]; // pipeの情報はClientSocketで持ちたい
     if (pipe(pipe_fd) < 0)
     {
         throw SystemError("pipe", errno);
@@ -238,39 +238,14 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
     {
         throw SystemError("fork", errno);
     }
-    if (pid == 0) // Child process
+    if (pid == 0)  // Child prosess
     {
         ::close(pipe_fd[0]);
         ::close(STDOUT_FILENO);
         dup2(pipe_fd[1], STDOUT_FILENO);
 
-        // pathname作成
-
-        // argv作成
-        std::string command = "php";
-        std::string path = uri.getPath();
-        char **argv = new char*[3];
-
-        argv[0] = new char[command.size() + 1];
-        std::char_traits<char>::copy(argv[0], command.c_str(), command.size() + 1);
-        argv[1] = new char[path.size() + 1];
-        std::char_traits<char>::copy(argv[1], path.c_str(), path.size() + 1);
-        argv[2] = NULL;
-
-        // envp作成
-
-        int rc = execve("/usr/bin/php", argv, NULL);
-
-        for (int i = 0; argv[i]; i++)
-        {
-            delete argv[i];
-        }
-        delete[] argv;
-
-        if (rc == -1)
-        {
-            throw SystemError("execve", errno);
-        }
+        CGI cgi = CGI(uri.getPath());
+        cgi.Execute();
     }
     else // Parent process
     {

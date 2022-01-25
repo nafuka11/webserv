@@ -8,6 +8,7 @@
 #include "HTTPParser.hpp"
 #include "ServerConfig.hpp"
 #include "KqueuePoller.hpp"
+#include "CGI.hpp"
 
 class ClientSocket : public Socket
 {
