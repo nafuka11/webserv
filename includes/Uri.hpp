@@ -24,6 +24,8 @@ public:
     Type getResourceType() const;
     const struct stat &getStat() const;
 
+    bool isRegularFile(const struct stat &path_stat) const;
+    bool isDirectory(const struct stat &path_stat) const;
 
 private:
     const ServerConfig &config_;
@@ -42,8 +44,6 @@ private:
     bool startsWith(const std::string &str, const std::string &prefix) const;
     bool needAutoIndex(const LocationConfig &config, const std::string &path) const;
     bool execStat(const std::string &path, struct stat *buf) const;
-    bool isRegularFile(const struct stat &path_stat) const;
-    bool isDirectory(const struct stat &path_stat) const;
     bool isExecutable(const struct stat &path_stat) const;
 };
 
