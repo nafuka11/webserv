@@ -80,6 +80,7 @@ void Uri::findPathFromLocation(const std::string &location_name,
     if (isRegularFile(path_stat))
     {
         resource_type_ = FILE;
+        stat_ = path_stat;
         return;
     }
     if (!needAutoIndex(location, path))
@@ -87,6 +88,7 @@ void Uri::findPathFromLocation(const std::string &location_name,
         throw HTTPParseException(CODE_404);
     }
     resource_type_ = AUTOINDEX;
+    stat_ = path_stat;
 }
 
 void Uri::findFileFromIndexes(const LocationConfig &location, std::string &path)
@@ -103,6 +105,7 @@ void Uri::findFileFromIndexes(const LocationConfig &location, std::string &path)
         {
             path = joined_path;
             resource_type_ = FILE;
+            stat_ = path_stat;
             return;
         }
     }
