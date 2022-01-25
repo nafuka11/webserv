@@ -16,6 +16,14 @@ public:
         PARSE_FINISH
     };
 
+    enum MessageBodyState
+    {
+        CONTENT_LENGTH,
+        CHUNK_SIZE,
+        CHUNK_DATA,
+        NONE
+    };
+
     HTTPParser(HTTPRequest &request, const ServerConfig &config);
     ~HTTPParser();
     void clear();
@@ -29,13 +37,18 @@ private:
     const ServerConfig &config_;
     std::string raw_message_;
     size_t parse_pos_;
+    ParseState parse_state_;
+    MessageBodyState message_body_state_;
     size_t content_length_;
-    ParseState state_;
+    size_t chunk_size_;
 
     bool parseStartLine();
     bool parseHeader();
     bool parseMessageBody();
-    bool needsParsingMessageBody();
+    bool parseMessageBodyFromContentLength();
+    bool parseMessageBodyFromChunkSize();
+    bool parseMessageBodyFromChunkData();
+    MessageBodyState judgeParseMessageBodyState();
     void findLocation();
     bool isAllowMethod(const std::string &method);
 
@@ -57,7 +70,10 @@ private:
     const std::string &validateHeaderValue(const std::string &value);
     bool isValidHeaders();
     void validateHost();
-    void validateContentLength(const std::string &value);
+    size_t convertMessageBodySize(const std::string &value, int radix);
+
+    void setContentLength(size_t content_length);
+    void setChunkSize(size_t chunk_size);
 
     bool isSpace(char c);
     bool isToken(const std::string &str);
