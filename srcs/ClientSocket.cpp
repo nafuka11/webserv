@@ -170,6 +170,20 @@ void ClientSocket::handleFile(const std::string &method, const Uri &uri)
         setNonBlockingFd(file_fd_);
         changeState(READ_FILE);
     }
+    else if (method == HTTPRequest::HTTP_DELETE)
+    {
+        if (uri.isDirectory(uri.getStat()) || !uri.canWrite(uri.getStat()))
+        {
+            throw HTTPParseException(CODE_403);
+        }
+        int unlink_result = unlink(uri.getPath().c_str());
+        if (unlink_result != 0)
+        {
+            throw HTTPParseException(CODE_500);
+        }
+        response_.setStatusCode(CODE_204);
+        changeState(WRITE_RESPONSE);
+    }
 }
 
 void ClientSocket::handleAutoindex(const std::string &method, const Uri &uri)
