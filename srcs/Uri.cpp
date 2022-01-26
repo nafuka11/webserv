@@ -104,9 +104,15 @@ void Uri::findFileFromIndexes(const LocationConfig &location, std::string &path)
         }
         if (isRegularFile(path_stat))
         {
-            //TODO: こっちにもhasCgiExtension()いる？
             path = joined_path;
-            resource_type_ = FILE;
+            if (hasCgiExtension(path, location.cgiExtension()))
+            {
+                resource_type_ = CGI;
+            }
+            else
+            {
+                resource_type_ = FILE;
+            }
             return;
         }
     }
