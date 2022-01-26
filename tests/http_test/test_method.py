@@ -79,6 +79,15 @@ class TestDelete:
         response = http_connection.getresponse()
         assert_response(HTTPStatus.FORBIDDEN, response)
 
+    def test_index(self, http_connection: HTTPConnection, tmp_path: Path):
+        """DELETEでパスにindexが存在するディレクトリが指定されたとき403を返すこと"""
+        file_name = "index.html"
+        file_path = tmp_path / file_name
+        file_path.write_text("This file should not be deleted")
+        http_connection.request("DELETE", f"/test_delete/{tmp_path.name}/")
+        response = http_connection.getresponse()
+        assert_response(HTTPStatus.FORBIDDEN, response)
+
 
 class TestInvalid:
     def test_invalid_method(self, http_connection: HTTPConnection):
