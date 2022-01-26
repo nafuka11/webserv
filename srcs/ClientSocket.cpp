@@ -172,7 +172,8 @@ void ClientSocket::handleFile(const std::string &method, const Uri &uri)
     }
     else if (method == HTTPRequest::HTTP_DELETE)
     {
-        if (uri.isDirectory(uri.getStat()) || !uri.canWrite(uri.getStat()))
+        std::string raw_uri = uri.getRawUri();
+        if (raw_uri.at(raw_uri.size() - 1) == '/' || !uri.canWrite(uri.getStat()))
         {
             throw HTTPParseException(CODE_403);
         }
