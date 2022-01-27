@@ -51,7 +51,6 @@ private:
     bool startsWith(const std::string &str, const std::string &prefix) const;
     bool needAutoIndex(const LocationConfig &config, const std::string &path) const;
     bool execStat(const std::string &path, struct stat *buf) const;
-    bool isExecutable(const struct stat &path_stat) const;
 };
 
 #endif /* URI_HPP */
