@@ -154,6 +154,10 @@ bool Uri::startsWith(const std::string &str, const std::string &prefix) const
 
 bool Uri::needAutoIndex(const LocationConfig &config, const std::string &path) const
 {
+    if (method_ != HTTPRequest::HTTP_GET)
+    {
+        return false;
+    }
     if (config.autoindex() != "on")
     {
         return false;
