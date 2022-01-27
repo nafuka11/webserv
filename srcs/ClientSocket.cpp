@@ -140,7 +140,7 @@ void ClientSocket::prepareResponse()
 {
     response_.setStatusCode(CODE_200);
 
-    Uri uri = Uri(config_, request_.getUri());
+    Uri uri = Uri(config_, request_.getUri(), request_.getMethod());
 
     switch (uri.getResourceType())
     {
@@ -240,7 +240,7 @@ void ClientSocket::handleErrorFromFile(const LocationConfig *location,
     std::map<int, std::string>::const_iterator page_found = error_pages.find(statusCode);
     if (page_found != error_pages.end())
     {
-        Uri uri = Uri(config_, page_found->second);
+        Uri uri = Uri(config_, page_found->second, HTTPRequest::HTTP_GET);
         handleFile(HTTPRequest::HTTP_GET, uri);
     }
     else
