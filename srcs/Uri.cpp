@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cerrno>
 #include "HTTPParseException.hpp"
+#include "HTTPRequest.hpp"
 
 Uri::Uri(const ServerConfig &server_config,
          const std::string &uri, const std::string &method)
