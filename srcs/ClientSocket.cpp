@@ -140,7 +140,7 @@ void ClientSocket::prepareResponse()
 {
     response_.setStatusCode(CODE_200);
 
-    Uri uri = Uri(config_, request_.getUri());
+    Uri uri = Uri(config_, request_.getUri(), request_.getMethod());
 
     switch (uri.getResourceType())
     {
@@ -164,11 +164,26 @@ void ClientSocket::handleFile(const std::string &method, const Uri &uri)
 {
     if (method == HTTPRequest::HTTP_GET)
     {
-        std::string path = uri.getPath();
+        std::string path = uri.getLocalPath();
 
         openFile(path.c_str());
         setNonBlockingFd(file_fd_);
         changeState(READ_FILE);
+    }
+    else if (method == HTTPRequest::HTTP_DELETE)
+    {
+        std::string raw_uri = uri.getRawPath();
+        if (uri.isDirectory(uri.getStat()) || !uri.canWrite(uri.getStat()))
+        {
+            throw HTTPParseException(CODE_403);
+        }
+        int unlink_result = unlink(uri.getLocalPath().c_str());
+        if (unlink_result != 0)
+        {
+            throw HTTPParseException(CODE_500);
+        }
+        response_.setStatusCode(CODE_204);
+        changeState(WRITE_RESPONSE);
     }
 }
 
@@ -176,7 +191,7 @@ void ClientSocket::handleAutoindex(const std::string &method, const Uri &uri)
 {
     if (method == HTTPRequest::HTTP_GET)
     {
-        std::string path = uri.getPath();
+        std::string path = uri.getLocalPath();
 
         DIR *dir_p = openDirectory(path.c_str());
         std::string body = response_.generateAutoindexHTML(uri, dir_p);
@@ -225,7 +240,7 @@ void ClientSocket::handleErrorFromFile(const LocationConfig *location,
     std::map<int, std::string>::const_iterator page_found = error_pages.find(statusCode);
     if (page_found != error_pages.end())
     {
-        Uri uri = Uri(config_, page_found->second);
+        Uri uri = Uri(config_, page_found->second, HTTPRequest::HTTP_GET);
         handleFile(HTTPRequest::HTTP_GET, uri);
     }
     else

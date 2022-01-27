@@ -7,7 +7,10 @@ HTML_PATH_404 = "./docs/error_page/404.html"
 
 
 def assert_response(
-    code: HTTPStatus, response: HTTPResponse, html_path: Optional[str] = None
+    code: HTTPStatus,
+    response: HTTPResponse,
+    html_path: Optional[str] = None,
+    empty_body: Optional[bool] = False,
 ) -> None:
     """HTTPResponseのassertをする(statusCode, reason, httpVersion, messageBody, Content-Length)
 
@@ -15,12 +18,14 @@ def assert_response(
         code (HTTPStatus): StatusCode
         response (HTTPResponse): HTTPResponse
         html_path (Optional[str]): 想定されるHTMLのファイルパス。未指定の場合はcodeに応じてHTMLを自動生成する
+        empty_body (Optional[bool]): StatusCodeを元にHTMLを生成しない場合True
     """
     actual_body = response.read()
+    expected_body = b""
     if html_path:
         with open(html_path, "r") as f:
             expected_body = f.read().encode("utf-8")
-    else:
+    elif not empty_body:
         expected_body = _generate_expected_body(code)
     assert response.status == code
     assert response.reason == _get_phrase(code)
