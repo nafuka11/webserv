@@ -14,12 +14,12 @@ Uri::~Uri()
 {
 }
 
-std::string Uri::getRawUri() const
+const std::string &Uri::getRawUri() const
 {
     return raw_uri_;
 }
 
-std::string Uri::getPath() const
+const std::string &Uri::getPath() const
 {
     return path_;
 }
