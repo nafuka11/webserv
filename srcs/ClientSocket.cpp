@@ -259,7 +259,7 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
         ::close(STDOUT_FILENO);
         dup2(pipe_fd[1], STDOUT_FILENO);
 
-        CGI cgi = CGI(uri.getPath());
+        CGI cgi = CGI(uri.getLocalPath());
         cgi.Execute();
     }
     else // Parent process
