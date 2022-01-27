@@ -76,6 +76,11 @@ void Uri::findPath()
 void Uri::findPathFromLocation(const std::string &location_name,
                                const LocationConfig &location, std::string &path)
 {
+    if (location.returnRedirect().size())
+    {
+        resource_type_ = REDIRECT;
+        return;
+    }
     if (!location.alias().empty())
     {
         path = path.replace(0, location_name.size(), location.alias());
