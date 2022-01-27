@@ -104,7 +104,16 @@ void Uri::findPathFromLocation(const std::string &location_name,
     }
     if (!needAutoIndex(location, path))
     {
-        throw HTTPParseException(CODE_404);
+        if (method_ == HTTPRequest::HTTP_GET)
+        {
+            throw HTTPParseException(CODE_404);
+        }
+        else
+        {
+            resource_type_ = FILE;
+            stat_ = path_stat;
+            return;
+        }
     }
     resource_type_ = AUTOINDEX;
     stat_ = path_stat;
