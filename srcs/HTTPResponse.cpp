@@ -200,9 +200,9 @@ std::string HTTPResponse::generateAutoindexHTML(const Uri &uri, DIR *dir_p) cons
     std::stringstream ss;
 
     ss << "<html>" << CRLF
-       << "<head><title>Index of " << uri.getRawUri() << "</title></head>" << CRLF
+       << "<head><title>Index of " << uri.getRawPath() << "</title></head>" << CRLF
        << "<body>" << CRLF
-       << "<h1>Index of " << uri.getRawUri()
+       << "<h1>Index of " << uri.getRawPath()
        << "</h1><hr><pre style=\"font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace\"><a href=\"../\">../</a>"
        << CRLF;
 
@@ -225,7 +225,7 @@ std::string HTTPResponse::generateAutoindexHTML(const Uri &uri, DIR *dir_p) cons
 void HTTPResponse::appendFileHTML(std::stringstream &ss,
                                   const Uri &uri, const struct dirent *entry) const
 {
-    std::string path = uri.getPath() + entry->d_name;
+    std::string path = uri.getLocalPath() + entry->d_name;
     struct stat path_stat;
     if (stat(path.c_str(), &path_stat) < 0)
     {

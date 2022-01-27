@@ -164,7 +164,7 @@ void ClientSocket::handleFile(const std::string &method, const Uri &uri)
 {
     if (method == HTTPRequest::HTTP_GET)
     {
-        std::string path = uri.getPath();
+        std::string path = uri.getLocalPath();
 
         openFile(path.c_str());
         setNonBlockingFd(file_fd_);
@@ -172,12 +172,12 @@ void ClientSocket::handleFile(const std::string &method, const Uri &uri)
     }
     else if (method == HTTPRequest::HTTP_DELETE)
     {
-        std::string raw_uri = uri.getRawUri();
+        std::string raw_uri = uri.getRawPath();
         if (raw_uri.at(raw_uri.size() - 1) == '/' || !uri.canWrite(uri.getStat()))
         {
             throw HTTPParseException(CODE_403);
         }
-        int unlink_result = unlink(uri.getPath().c_str());
+        int unlink_result = unlink(uri.getLocalPath().c_str());
         if (unlink_result != 0)
         {
             throw HTTPParseException(CODE_500);
@@ -191,7 +191,7 @@ void ClientSocket::handleAutoindex(const std::string &method, const Uri &uri)
 {
     if (method == HTTPRequest::HTTP_GET)
     {
-        std::string path = uri.getPath();
+        std::string path = uri.getLocalPath();
 
         DIR *dir_p = openDirectory(path.c_str());
         std::string body = response_.generateAutoindexHTML(uri, dir_p);
