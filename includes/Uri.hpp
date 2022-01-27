@@ -29,7 +29,7 @@ public:
     bool canWrite(const struct stat &path_stat) const;
 
 private:
-    const ServerConfig &config_;
+    const ServerConfig &server_config_;
     const std::string &raw_uri_;
     std::string raw_path_;
     std::string local_path_;

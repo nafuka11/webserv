@@ -4,7 +4,7 @@
 #include "HTTPParseException.hpp"
 
 Uri::Uri(const ServerConfig &config, const std::string &uri)
-    : config_(config), raw_uri_(uri), resource_type_(INVALID)
+    : server_config_(config), raw_uri_(uri), resource_type_(INVALID)
 {
     splitRawUri();
     findPath();
@@ -49,8 +49,9 @@ void Uri::splitRawUri()
 void Uri::findPath()
 {
     std::string path = raw_path_;
-    const std::map<std::string, LocationConfig> &locations = config_.location();
-    std::map<std::string, LocationConfig>::const_reverse_iterator iter = locations.rbegin();
+    const std::map<std::string, LocationConfig> &locations = server_config_.location();
+    std::map<std::string, LocationConfig>::const_reverse_iterator
+        iter = locations.rbegin();
 
     for (; iter != locations.rend(); ++iter)
     {
