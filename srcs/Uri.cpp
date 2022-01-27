@@ -1,11 +1,13 @@
 #include "Uri.hpp"
 #include <algorithm>
 #include <cerrno>
-#include <iostream> //TODO: 確認できたら消去
 #include "HTTPParseException.hpp"
+#include "HTTPRequest.hpp"
 
-Uri::Uri(const ServerConfig &config, const std::string &uri)
-    : config_(config), raw_uri_(uri), resource_type_(INVALID)
+Uri::Uri(const ServerConfig &server_config,
+         const std::string &uri, const std::string &method)
+    : server_config_(server_config), location_config_(NULL), method_(method),
+      raw_uri_(uri), resource_type_(INVALID)
 {
     splitRawUri();
     findPath();
@@ -15,14 +17,19 @@ Uri::~Uri()
 {
 }
 
-std::string Uri::getRawUri() const
+const LocationConfig *Uri::getLocationConfig() const
 {
-    return raw_uri_;
+    return location_config_;
 }
 
-std::string Uri::getPath() const
+const std::string &Uri::getRawPath() const
 {
-    return path_;
+    return raw_path_;
+}
+
+const std::string &Uri::getLocalPath() const
+{
+    return local_path_;
 }
 
 Uri::Type Uri::getResourceType() const
@@ -30,27 +37,39 @@ Uri::Type Uri::getResourceType() const
     return resource_type_;
 }
 
+const struct stat &Uri::getStat() const
+{
+    return stat_;
+}
+
+bool Uri::canWrite(const struct stat &path_stat) const
+{
+    return (path_stat.st_mode & S_IWUSR) == S_IWUSR;
+}
+
 void Uri::splitRawUri()
 {
     size_t query_pos = raw_uri_.find('?');
-    path_ = raw_uri_.substr(0, query_pos);
+    raw_path_ = raw_uri_.substr(0, query_pos);
     query_ = raw_uri_.substr(query_pos + 1);
 }
 
 void Uri::findPath()
 {
-    std::string path = path_;
-    const std::map<std::string, LocationConfig> &locations = config_.location();
-    std::map<std::string, LocationConfig>::const_reverse_iterator iter = locations.rbegin();
+    std::string path = raw_path_;
+    const std::map<std::string, LocationConfig> &locations = server_config_.location();
+    std::map<std::string, LocationConfig>::const_reverse_iterator
+        iter = locations.rbegin();
 
     for (; iter != locations.rend(); ++iter)
     {
-        if (!startsWith(path_, iter->first))
+        if (!startsWith(raw_path_, iter->first))
         {
             continue;
         }
+        location_config_ = &iter->second;
         findPathFromLocation(iter->first, iter->second, path);
-        path_ = path;
+        local_path_ = path;
         break;
     }
 }
@@ -58,11 +77,16 @@ void Uri::findPath()
 void Uri::findPathFromLocation(const std::string &location_name,
                                const LocationConfig &location, std::string &path)
 {
+    if (location.returnRedirect().size())
+    {
+        resource_type_ = REDIRECT;
+        return;
+    }
     if (!location.alias().empty())
     {
         path = path.replace(0, location_name.size(), location.alias());
     }
-    if (path.at(path.size() - 1) == '/')
+    if (path.at(path.size() - 1) == '/' && method_ == HTTPRequest::HTTP_GET)
     {
         findFileFromIndexes(location, path);
         return;
@@ -83,13 +107,24 @@ void Uri::findPathFromLocation(const std::string &location_name,
         {
             resource_type_ = FILE;
         }
+        stat_ = path_stat;
         return;
     }
     if (!needAutoIndex(location, path))
     {
-        throw HTTPParseException(CODE_404);
+        if (method_ == HTTPRequest::HTTP_GET)
+        {
+            throw HTTPParseException(CODE_404);
+        }
+        else
+        {
+            resource_type_ = FILE;
+            stat_ = path_stat;
+            return;
+        }
     }
     resource_type_ = AUTOINDEX;
+    stat_ = path_stat;
 }
 
 void Uri::findFileFromIndexes(const LocationConfig &location, std::string &path)
@@ -113,6 +148,7 @@ void Uri::findFileFromIndexes(const LocationConfig &location, std::string &path)
             {
                 resource_type_ = FILE;
             }
+            stat_ = path_stat;
             return;
         }
     }
@@ -132,6 +168,10 @@ bool Uri::startsWith(const std::string &str, const std::string &prefix) const
 
 bool Uri::needAutoIndex(const LocationConfig &config, const std::string &path) const
 {
+    if (method_ != HTTPRequest::HTTP_GET)
+    {
+        return false;
+    }
     if (config.autoindex() != "on")
     {
         return false;
