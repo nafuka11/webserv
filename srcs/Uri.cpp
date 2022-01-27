@@ -3,8 +3,9 @@
 #include <cerrno>
 #include "HTTPParseException.hpp"
 
-Uri::Uri(const ServerConfig &config, const std::string &uri)
-    : server_config_(config), location_config_(NULL),
+Uri::Uri(const ServerConfig &server_config,
+         const std::string &uri, const std::string &method)
+    : server_config_(server_config), location_config_(NULL), method_(method),
       raw_uri_(uri), resource_type_(INVALID)
 {
     splitRawUri();

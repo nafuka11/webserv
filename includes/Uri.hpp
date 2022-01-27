@@ -16,7 +16,8 @@ public:
         INVALID
     };
 
-    Uri(const ServerConfig &config, const std::string &uri);
+    Uri(const ServerConfig &server_config,
+        const std::string &uri, const std::string &method);
     ~Uri();
 
     const LocationConfig *getLocationConfig() const;
@@ -32,6 +33,8 @@ public:
 private:
     const ServerConfig &server_config_;
     const LocationConfig *location_config_;
+    const std::string &method_;
+
     const std::string &raw_uri_;
     std::string raw_path_;
     std::string local_path_;
