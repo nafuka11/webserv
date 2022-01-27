@@ -61,13 +61,13 @@ class TestDelete:
         assert_response(HTTPStatus.NOT_FOUND, response)
 
     def test_directory(self, http_connection: HTTPConnection, tmp_path: Path):
-        """DELETEで指定パスがディレクトリのとき404を返すこと"""
+        """DELETEで指定パスがディレクトリのとき403を返すこと"""
         dir_name = "new_dir"
         dir_path = tmp_path / dir_name
         dir_path.mkdir()
         http_connection.request("DELETE", f"/test_delete/{tmp_path.name}/{dir_name}")
         response = http_connection.getresponse()
-        assert_response(HTTPStatus.NOT_FOUND, response)
+        assert_response(HTTPStatus.FORBIDDEN, response)
 
     def test_file_no_permission(self, http_connection: HTTPConnection, tmp_path: Path):
         """DELETEでファイルに書き込み権限が無いとき403を返すこと"""
