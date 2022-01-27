@@ -14,14 +14,14 @@ Uri::~Uri()
 {
 }
 
-const std::string &Uri::getRawUri() const
+const std::string &Uri::getRawPath() const
 {
-    return raw_uri_;
+    return raw_path_;
 }
 
-const std::string &Uri::getPath() const
+const std::string &Uri::getLocalPath() const
 {
-    return path_;
+    return local_path_;
 }
 
 Uri::Type Uri::getResourceType() const
@@ -42,24 +42,24 @@ bool Uri::canWrite(const struct stat &path_stat) const
 void Uri::splitRawUri()
 {
     size_t query_pos = raw_uri_.find('?');
-    path_ = raw_uri_.substr(0, query_pos);
+    raw_path_ = raw_uri_.substr(0, query_pos);
     query_ = raw_uri_.substr(query_pos + 1);
 }
 
 void Uri::findPath()
 {
-    std::string path = path_;
+    std::string path = raw_path_;
     const std::map<std::string, LocationConfig> &locations = config_.location();
     std::map<std::string, LocationConfig>::const_reverse_iterator iter = locations.rbegin();
 
     for (; iter != locations.rend(); ++iter)
     {
-        if (!startsWith(path_, iter->first))
+        if (!startsWith(raw_path_, iter->first))
         {
             continue;
         }
         findPathFromLocation(iter->first, iter->second, path);
-        path_ = path;
+        local_path_ = path;
         break;
     }
 }

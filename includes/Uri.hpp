@@ -19,8 +19,8 @@ public:
     Uri(const ServerConfig &config, const std::string &uri);
     ~Uri();
 
-    const std::string &getRawUri() const;
-    const std::string &getPath() const;
+    const std::string &getRawPath() const;
+    const std::string &getLocalPath() const;
     Type getResourceType() const;
     const struct stat &getStat() const;
 
@@ -31,8 +31,9 @@ public:
 private:
     const ServerConfig &config_;
     const std::string &raw_uri_;
+    std::string raw_path_;
+    std::string local_path_;
     std::string query_;
-    std::string path_;
     Type resource_type_;
     struct stat stat_;
 
