@@ -85,7 +85,7 @@ void Uri::findPathFromLocation(const std::string &location_name,
     {
         path = path.replace(0, location_name.size(), location.alias());
     }
-    if (path.at(path.size() - 1) == '/')
+    if (path.at(path.size() - 1) == '/' && method_ == HTTPRequest::HTTP_GET)
     {
         findFileFromIndexes(location, path);
         return;
