@@ -88,6 +88,12 @@ class TestDelete:
         response = http_connection.getresponse()
         assert_response(HTTPStatus.FORBIDDEN, response)
 
+    def test_autoindex(self, http_connection: HTTPConnection):
+        """DELETEでパスがautoindex onのディレクトリのとき403を返すこと"""
+        http_connection.request("DELETE", "/autoindex/")
+        response = http_connection.getresponse()
+        assert_response(HTTPStatus.FORBIDDEN, response)
+
 
 class TestInvalid:
     def test_invalid_method(self, http_connection: HTTPConnection):
