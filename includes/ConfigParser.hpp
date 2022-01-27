@@ -203,14 +203,14 @@ void ConfigParser::parseCgiExtension(T &config_obj)
          ++value)
     {
         int count = 0;
-        for (size_t i = 0; i < value->length(); i++)
+        for (size_t i = 0; i < value->length(); ++i)
         {
-            if (value[i] == ".")
+            if (value->at(i) == '.')
             {
                 ++count;
             }
         }
-        if (count != 1 || value[0] != ".")
+        if (count != 1 || value->at(0) != '.')
         {
             throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
                               filepath_, (line_pos_ + 1));
