@@ -22,6 +22,11 @@ const LocationConfig *Uri::getLocationConfig() const
     return location_config_;
 }
 
+const std::string &Uri::getQuery() const
+{
+    return query_;
+}
+
 const std::string &Uri::getRawPath() const
 {
     return raw_path_;

@@ -23,6 +23,7 @@ public:
     const LocationConfig *getLocationConfig() const;
     const std::string &getRawPath() const;
     const std::string &getLocalPath() const;
+    const std::string &getQuery() const;
     Type getResourceType() const;
     const struct stat &getStat() const;
 
