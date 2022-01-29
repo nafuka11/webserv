@@ -2,8 +2,10 @@
 #include <cerrno>
 #include <unistd.h>
 #include <fcntl.h>
+#include <netdb.h>
 #include "SystemError.hpp"
 #include "HTTPParseException.hpp"
+#include "AddressInfoError.hpp"
 #include "Uri.hpp"
 
 const size_t ClientSocket::BUF_SIZE = 8192;
@@ -14,6 +16,7 @@ ClientSocket::ClientSocket(int fd, const struct sockaddr_storage &address,
       parser_(request_, config_), state_(READ_REQUEST)
 {
     address_ = address;
+    ip_ = resolveIPAddress(address_);
 }
 
 ClientSocket::~ClientSocket()

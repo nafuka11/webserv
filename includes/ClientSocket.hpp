@@ -39,6 +39,7 @@ private:
     HTTPParser parser_;
     State state_;
     int file_fd_;
+    std::string ip_;
 
     void changeState(State new_state);
     void prepareResponse();
