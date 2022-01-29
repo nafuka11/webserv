@@ -44,6 +44,7 @@ void ServerSocket::open()
 
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG | AI_NUMERICSERV;
+    hints.ai_family = PF_INET;
 
     struct addrinfo *addr_list;
     struct addrinfo *current;

@@ -39,6 +39,7 @@ private:
     HTTPParser parser_;
     State state_;
     int file_fd_;
+    std::string ip_;
 
     void changeState(State new_state);
     void prepareResponse();
@@ -53,6 +54,7 @@ private:
     void closeDirectory(DIR *dir_p);
     void clearRequest();
     const LocationConfig *searchLocationConfig(const std::string &location);
+    std::string resolveIPAddress(const sockaddr_storage &addr) const;
 };
 
 #endif /* CLIENTSOCKET_HPP */
