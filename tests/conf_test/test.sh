@@ -53,7 +53,7 @@ assert_output () {
   local expected_file="$2"
   local conf_file="$3"
   local diff_result=$(diff "${actual_file}" "${expected_file}")
-  if [ $? -eq 0 ]; then
+  if [ -z "${diff_result}" ]; then
     printf "[${COLOR_OK}OK${COLOR_RESET}] ${conf_file}\n"
     (( result_ok += 1 ))
   else
