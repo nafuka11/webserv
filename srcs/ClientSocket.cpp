@@ -2,8 +2,10 @@
 #include <cerrno>
 #include <unistd.h>
 #include <fcntl.h>
+#include <netdb.h>
 #include "SystemError.hpp"
 #include "HTTPParseException.hpp"
+#include "AddressInfoError.hpp"
 #include "Uri.hpp"
 #include <iostream> //TODO: 後で消す
 
@@ -15,6 +17,7 @@ ClientSocket::ClientSocket(int fd, const struct sockaddr_storage &address,
       parser_(request_, config_), state_(READ_REQUEST)
 {
     address_ = address;
+    ip_ = resolveIPAddress(address_);
 }
 
 ClientSocket::~ClientSocket()
@@ -374,4 +377,16 @@ const LocationConfig *ClientSocket::searchLocationConfig(const std::string &loca
         return &(location_found->second);
     }
     return NULL;
+}
+
+std::string ClientSocket::resolveIPAddress(const sockaddr_storage &addr) const
+{
+    char hostname[NI_MAXHOST];
+    int ret = getnameinfo(reinterpret_cast<const sockaddr *>(&addr), addr.ss_len,
+                          hostname, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+    if (ret)
+    {
+        throw AddressInfoError("getnameinfo", ret);
+    }
+    return std::string(hostname);
 }
