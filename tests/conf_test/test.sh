@@ -17,7 +17,7 @@ COLOR_RESET="\033[0m"
 result_ok=0
 result_ko=0
 
-show_result () {
+show_test_result () {
   local -i result_total=$(( result_ok + result_ko ))
   echo
   if [ "${result_ko}" -eq 0 ]; then
@@ -26,6 +26,17 @@ show_result () {
     printf "${COLOR_KO}"
   fi
   printf "${result_ok}/${result_total}${COLOR_RESET}\n"
+}
+
+show_search_result () {
+  local keyword="$1"
+  local -i count="$2"
+  printf "${COLOR_FILE_COUNT}KEYWORD: \"${keyword}\"\n▶︎ ${count} file"
+  if [ ${count} -ne 1 ]; then
+    echo -n "s"
+  fi
+  printf " found !${COLOR_RESET}\n"
+  echo
 }
 
 show_usage () {
@@ -60,7 +71,7 @@ run_tests () {
   for file in "${array[@]}"; do
     run_test "${file}"
   done
-  show_result
+  show_test_result
 }
 
 main () {
@@ -68,13 +79,9 @@ main () {
     array=($(find "${CONF_DIR}" -type f| sort))
     run_tests array
   else
-    array=( $(find "${CONF_DIR}" -name "*$1*.conf" | sort) )
+    array=($(find "${CONF_DIR}" -name "*$1*.conf" | sort))
     if [ ${#array[*]} -ne 0 ] ; then
-      if [ ${#array[*]} -eq 1 ] ; then
-        printf "${COLOR_FILE_COUNT}KEYWORD: \"$1\"\n▶︎ ${#array[*]} file find !${COLOR_RESET}\n"
-      else
-        printf "${COLOR_FILE_COUNT}KEYWORD: \"$1\"\n▶︎ ${#array[*]} files find !${COLOR_RESET}\n"
-      fi
+      show_search_result "$1" ${#array[*]}
       run_tests array
     else
       show_usage
