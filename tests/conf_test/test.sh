@@ -2,17 +2,17 @@
 
 cd "$(dirname $0)"
 
-SCRIPT_DIR=$(pwd)
-EXE_PATH="../../webserv"
-CONF_DIR="./conf"
-EXPECTED_DIR="./expected"
-ACTUAL_DIR="./actual"
+readonly SCRIPT_DIR=$(pwd)
+readonly EXE_PATH="../../webserv"
+readonly CONF_DIR="./conf"
+readonly EXPECTED_DIR="./expected"
+readonly ACTUAL_DIR="./actual"
 
-COLOR_TEST="\033[36m"
-COLOR_FILE_COUNT="\033[33m"
-COLOR_OK="\033[32m"
-COLOR_KO="\033[31m"
-COLOR_RESET="\033[0m"
+readonly COLOR_TEST="\033[36m"
+readonly COLOR_FILE_COUNT="\033[33m"
+readonly COLOR_OK="\033[32m"
+readonly COLOR_KO="\033[31m"
+readonly COLOR_RESET="\033[0m"
 
 result_ok=0
 result_ko=0
