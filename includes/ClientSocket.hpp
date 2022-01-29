@@ -16,9 +16,10 @@ public:
     enum State
     {
         READ_REQUEST,
-        WRITE_RESPONSE,
         READ_FILE,
         READ_CGI,
+        WRITE_RESPONSE,
+        WRITE_CGI_RESPONSE,
         CLOSE
     };
 
@@ -27,6 +28,7 @@ public:
     ~ClientSocket();
     void receiveRequest();
     void sendResponse();
+    void sendCGIResponse();
     void readFile(intptr_t offset);
     void readCGI(intptr_t offset);
     void closeFile();

@@ -5,6 +5,7 @@
 #include "SystemError.hpp"
 #include "HTTPParseException.hpp"
 #include "Uri.hpp"
+#include <iostream> //TODO: 後で消す
 
 const size_t ClientSocket::BUF_SIZE = 8192;
 
@@ -63,6 +64,24 @@ void ClientSocket::sendResponse()
     clearRequest();
 }
 
+void ClientSocket::sendCGIResponse()
+{
+    response_.setKeepAlive(request_.canKeepAlive());
+    std::string message = response_.CGItoString(searchLocationConfig(request_.getLocation()));
+    ::send(fd_, message.c_str(), message.size(), 0);
+    if (request_.canKeepAlive())
+    {
+        changeState(READ_REQUEST);
+        response_.clear();
+    }
+    else
+    {
+        changeState(CLOSE);
+    }
+    clearRequest();
+
+}
+
 void ClientSocket::readFile(intptr_t offset)
 {
     char buffer[BUF_SIZE];
@@ -96,20 +115,16 @@ void ClientSocket::readCGI(intptr_t offset)
     }
     if (read_byte <= 0)
     {
-        closeFile(); //TODO: CGI用に変更する。
-
-        // ::close(file_fd_);
-        // changeState(WRITE_CGI);
+        ::close(file_fd_);
+        changeState(WRITE_CGI_RESPONSE);
         return;
     }
     buffer[read_byte] = '\0';
-    response_.appendMessageBody(buffer); //TODO: CGI用に変更する。
+    response_.appendRawCGIMessage(buffer);
     if (read_byte == offset)
     {
-        closeFile(); //TODO: CGI用に変更する。
-
-        // ::close(file_fd_);
-        // changeState(WRITE_CGI);
+        ::close(file_fd_);
+        changeState(WRITE_CGI_RESPONSE);
     }
 }
 
@@ -143,6 +158,7 @@ void ClientSocket::changeState(State new_state)
     case READ_CGI:
         break;
     case WRITE_RESPONSE:
+    case WRITE_CGI_RESPONSE:
         poller_.unregisterWriteEvent(this, fd_);
         break;
     default:
@@ -158,6 +174,7 @@ void ClientSocket::changeState(State new_state)
         poller_.registerReadEvent(this, file_fd_);
         break;
     case WRITE_RESPONSE:
+    case WRITE_CGI_RESPONSE:
         poller_.registerWriteEvent(this, fd_);
         break;
     default:

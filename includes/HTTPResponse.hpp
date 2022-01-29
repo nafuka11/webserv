@@ -14,7 +14,9 @@ public:
     HTTPResponse();
     ~HTTPResponse();
     std::string toString(const LocationConfig *location);
+    std::string CGItoString(const LocationConfig *location);
     void appendMessageBody(const char *body);
+    void appendRawCGIMessage(const char *raw_message);
     void clear();
     void setStatusCode(HTTPStatusCode status_code);
     void setKeepAlive(bool keep_alive);
@@ -34,6 +36,7 @@ private:
     HTTPStatusCode status_code_;
     std::map<std::string, std::string> headers_;
     std::string message_body_;
+    std::string raw_cgi_message_;
     bool keep_alive_;
 
     static std::map<HTTPStatusCode, std::string> setReasonPhrase();

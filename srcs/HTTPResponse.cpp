@@ -37,9 +37,34 @@ std::string HTTPResponse::toString(const LocationConfig *location)
     return ss.str();
 }
 
+std::string HTTPResponse::CGItoString(const LocationConfig *location)
+{
+    setProperties(location);
+
+    std::stringstream ss;
+
+    std::string phrase = HTTPResponse::REASON_PHRASE.find(status_code_)->second;
+    ss << "HTTP/1.1 " << status_code_ << " " << phrase << "\r\n";
+    for (std::map<std::string, std::string>::iterator iter = headers_.begin();
+         iter != headers_.end();
+         ++iter)
+    {
+        ss << iter->first << ": " << iter->second << "\r\n";
+    }
+    ss << "\r\n";
+    ss << raw_cgi_message_;
+    return ss.str();
+
+}
+
 void HTTPResponse::appendMessageBody(const char *body)
 {
     message_body_.append(body);
+}
+
+void HTTPResponse::appendRawCGIMessage(const char *raw_message)
+{
+    raw_cgi_message_.append(raw_message);
 }
 
 void HTTPResponse::clear()

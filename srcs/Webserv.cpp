@@ -107,6 +107,12 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
             client->sendResponse();
         }
         break;
+    case ClientSocket::WRITE_CGI_RESPONSE:
+        if (event.filter == EVFILT_WRITE)
+        {
+            client->sendCGIResponse();
+        }
+        break;
     default:
         break;
     }
