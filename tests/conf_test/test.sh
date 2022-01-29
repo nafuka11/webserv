@@ -21,11 +21,12 @@ show_test_result () {
   local -i result_total=$(( result_ok + result_ko ))
   echo
   if [ "${result_ko}" -eq 0 ]; then
-    printf "${COLOR_OK}"
+    printf "${COLOR_OK}${result_ok}/${result_total}${COLOR_RESET}\n"
+    exit 0
   else
-    printf "${COLOR_KO}"
+    printf "${COLOR_KO}${result_ok}/${result_total}${COLOR_RESET}\n"
+    exit 1
   fi
-  printf "${result_ok}/${result_total}${COLOR_RESET}\n"
 }
 
 show_search_result () {
