@@ -10,12 +10,13 @@ const std::map<std::string, std::string> CGI::EXEC_PATH = CGI::createExecutePath
 const std::map<std::string,std::string> CGI::EXEC_COMMAND = CGI::createExecuteCommand();
 
 
-CGI::CGI(const HTTPRequest &request, const Uri &uri, const std::string &method, const ServerConfig &config)
-    : request_(request), uri_(uri), method_(method), config_(config)
+CGI::CGI(const HTTPRequest &request, const Uri &uri, const ServerConfig &config,
+         const std::string &method, const std::string &ip)
+    : request_(request), uri_(uri), config_(config)
 {
     setPath(uri_.getLocalPath());
     setArgv(uri_.getLocalPath());
-    setEnvp();
+    setEnvp(ip, method);
 }
 
 CGI::~CGI()
@@ -69,7 +70,7 @@ void CGI::setArgv(const std::string &path)
     argv_[2] = NULL;
 }
 
-void CGI::setEnvp()
+void CGI::setEnvp(const std::string &ip, const std::string &method)
 {
     std::map<std::string, std::string> envs;
     std::map<std::string, std::string> headers = request_.getHeaders();
@@ -101,11 +102,11 @@ void CGI::setEnvp()
     envs["PATH_INFO"] = uri_.getRawPath();
     envs["PATH_TRANSLATED"] = "(test)";
     envs["QUERY_STRING"] = uri_.getQuery();
-    envs["REMOTE_ADDR"] = "(test)"; // TODO: クライアントのネットワークアドレスに設定する。
+    envs["REMOTE_ADDR"] = ip;
     envs["REMOTE_HOST"] = "";
     envs["REMOTE_IDENT"] = "";
     envs["REMOTE_USER"] = "";
-    envs["REQUEST_METHOD"] = method_;
+    envs["REQUEST_METHOD"] = method;
     envs["SCRIPT_NAME"] = envs["PATH_INFO"];
     envs["SERVER_NAME"] = headers["host"];
 

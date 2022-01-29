@@ -9,7 +9,8 @@
 class CGI
 {
 public:
-    CGI(const HTTPRequest &request,  const Uri &uri, const std::string &method, const ServerConfig &config);
+    CGI(const HTTPRequest &request,  const Uri &uri, const ServerConfig &config,
+        const std::string &method, const std::string &ip);
     ~CGI();
     void Execute();
 private:
@@ -20,11 +21,10 @@ private:
     static std::map<std::string, std::string> createExecuteCommand();
     void setPath(const std::string &local_path);
     void setArgv(const std::string &path);
-    void setEnvp();
+    void setEnvp(const std::string &ip, const std::string &method);
 
     HTTPRequest request_;
     Uri         uri_;
-    std::string method_;
     ServerConfig config_;
     std::string extension_;
     std::string path_; // TODO: 必要なければ消す。
