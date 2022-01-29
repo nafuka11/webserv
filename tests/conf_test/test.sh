@@ -68,7 +68,7 @@ run_test () {
   local txt_file=$(basename "${conf_file}" | sed 's/\(.*\)\.[^\.]*$/\1.txt/')
   local expected_file="${EXPECTED_DIR}/${txt_file}"
   local actual_file="${ACTUAL_DIR}/${txt_file}"
-  "${EXE_PATH}" "${conf_file}" 2>&1 | tail -1 > "${expected_file}"
+  "${EXE_PATH}" "${conf_file}" 2>&1 | tail -1 > "${actual_file}"
   assert_output "${expected_file}" "${actual_file}" "${conf_file}"
 }
 
