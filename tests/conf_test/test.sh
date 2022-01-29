@@ -43,6 +43,10 @@ show_usage () {
   echo "Usage: $0 [ Search Keyword ]"
 }
 
+cleanup_actual_files () {
+  rm -f "${ACTUAL_DIR}/*.txt"
+}
+
 assert_output () {
   local actual_file="$1"
   local expected_file="$2"
@@ -68,6 +72,7 @@ run_test () {
 }
 
 run_tests () {
+  cleanup_actual_files
   for file in "${array[@]}"; do
     run_test "${file}"
   done
