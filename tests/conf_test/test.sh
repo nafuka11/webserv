@@ -1,7 +1,13 @@
 #!/bin/bash
 
-EXE_PATH="../webserv"
-CONF_DIR="./conf_test/conf"
+cd "$(dirname $0)"
+
+SCRIPT_DIR=$(pwd)
+EXE_PATH="../../webserv"
+CONF_DIR="./conf"
+EXPECTED_DIR="./expected"
+ACTUAL_DIR="./actual"
+
 COLOR_TEST="\033[36m"
 COLOR_FILE_COUNT="\033[33m"
 COLOR_RESET="\033[0m"
