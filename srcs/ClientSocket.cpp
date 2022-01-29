@@ -294,3 +294,15 @@ const LocationConfig *ClientSocket::searchLocationConfig(const std::string &loca
     }
     return NULL;
 }
+
+std::string ClientSocket::resolveIPAddress(const sockaddr_storage &addr) const
+{
+    char hostname[NI_MAXHOST];
+    int ret = getnameinfo(reinterpret_cast<const sockaddr *>(&addr), addr.ss_len,
+                          hostname, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+    if (ret)
+    {
+        throw AddressInfoError("getnameinfo", ret);
+    }
+    return std::string(hostname);
+}

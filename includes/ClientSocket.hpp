@@ -53,6 +53,7 @@ private:
     void closeDirectory(DIR *dir_p);
     void clearRequest();
     const LocationConfig *searchLocationConfig(const std::string &location);
+    std::string resolveIPAddress(const sockaddr_storage &addr) const;
 };
 
 #endif /* CLIENTSOCKET_HPP */
