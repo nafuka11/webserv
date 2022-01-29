@@ -14,6 +14,20 @@ COLOR_OK="\033[32m"
 COLOR_KO="\033[31m"
 COLOR_RESET="\033[0m"
 
+result_ok=0
+result_ko=0
+
+show_result () {
+  local -i result_total=$(( result_ok + result_ko ))
+  echo
+  if [ "${result_ko}" -eq 0 ]; then
+    printf "${COLOR_OK}"
+  else
+    printf "${COLOR_KO}"
+  fi
+  printf "${result_ok}/${result_total}${COLOR_RESET}\n"
+}
+
 show_usage () {
   echo "Usage: $0 [ Search Keyword ]"
 }
@@ -25,9 +39,11 @@ assert_output () {
   local diff_result=$(diff "${actual_file}" "${expected_file}")
   if [ $? -eq 0 ]; then
     printf "[${COLOR_OK}OK${COLOR_RESET}] ${conf_file}\n"
+    (( result_ok += 1 ))
   else
     printf "[${COLOR_KO}KO${COLOR_RESET}] ${conf_file}\n"
     echo "${diff_result}"
+    (( result_ko += 1 ))
   fi
 }
 
@@ -44,6 +60,7 @@ run_tests () {
   for file in "${array[@]}"; do
     run_test "${file}"
   done
+  show_result
 }
 
 main () {
