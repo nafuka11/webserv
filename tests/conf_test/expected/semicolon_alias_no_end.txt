@@ -1,0 +1,1 @@
+webserv: directive "alias" has no end ";" in ./conf/semicolon_alias_no_end.conf:6

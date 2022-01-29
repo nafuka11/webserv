@@ -1,0 +1,1 @@
+webserv: invalid number of arguments in "cgi_extension" directive in ./conf/invalid_num_of_args_cgi_extensions.conf:1

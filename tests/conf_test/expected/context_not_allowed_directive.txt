@@ -1,0 +1,1 @@
+webserv: "alias" directive is not allowed here in ./conf/context_not_allowed_directive.conf:5

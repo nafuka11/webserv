@@ -1,0 +1,1 @@
+webserv: invalid number of arguments in "index" directive in ./conf/invalid_num_of_args_index.conf:2
