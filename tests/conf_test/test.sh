@@ -64,22 +64,22 @@ run_tests () {
 }
 
 main () {
-if [ $# -eq 0 ] ; then
-  array=($(find "${CONF_DIR}" -type f| sort))
-  run_tests array
-else
-  array=( $(find "${CONF_DIR}" -name "*$1*.conf" | sort) )
-  if [ ${#array[*]} -ne 0 ] ; then
-    if [ ${#array[*]} -eq 1 ] ; then
-      printf "${COLOR_FILE_COUNT}KEYWORD: \"$1\"\n▶︎ ${#array[*]} file find !${COLOR_RESET}\n"
-    else
-      printf "${COLOR_FILE_COUNT}KEYWORD: \"$1\"\n▶︎ ${#array[*]} files find !${COLOR_RESET}\n"
-    fi
+  if [ $# -eq 0 ] ; then
+    array=($(find "${CONF_DIR}" -type f| sort))
     run_tests array
   else
-    show_usage
+    array=( $(find "${CONF_DIR}" -name "*$1*.conf" | sort) )
+    if [ ${#array[*]} -ne 0 ] ; then
+      if [ ${#array[*]} -eq 1 ] ; then
+        printf "${COLOR_FILE_COUNT}KEYWORD: \"$1\"\n▶︎ ${#array[*]} file find !${COLOR_RESET}\n"
+      else
+        printf "${COLOR_FILE_COUNT}KEYWORD: \"$1\"\n▶︎ ${#array[*]} files find !${COLOR_RESET}\n"
+      fi
+      run_tests array
+    else
+      show_usage
+    fi
   fi
-fi
 }
 
 main $@
