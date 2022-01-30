@@ -1,0 +1,1 @@
+webserv: directive "server_name" has no end ";" in ./conf/semicolon_server_name_no_end.conf:2

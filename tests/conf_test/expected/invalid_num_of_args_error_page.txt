@@ -1,0 +1,1 @@
+webserv: invalid number of arguments in "error_page" directive in ./conf/invalid_num_of_args_error_page.conf:2

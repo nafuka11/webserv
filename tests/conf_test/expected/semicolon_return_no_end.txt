@@ -1,0 +1,1 @@
+webserv: directive "return" has no end ";" in ./conf/semicolon_return_no_end.conf:5

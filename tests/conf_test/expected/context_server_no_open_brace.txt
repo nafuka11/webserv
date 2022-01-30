@@ -1,0 +1,1 @@
+webserv: directive "server" has no opening "{" in ./conf/context_server_no_open_brace.conf:1

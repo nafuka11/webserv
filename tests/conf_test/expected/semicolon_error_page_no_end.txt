@@ -1,0 +1,1 @@
+webserv: directive "error_page" has no end ";" in ./conf/semicolon_error_page_no_end.conf:5

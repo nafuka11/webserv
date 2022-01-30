@@ -1,0 +1,1 @@
+webserv: invalid number of arguments in "return" directive in ./conf/invalid_num_of_args_return.conf:2

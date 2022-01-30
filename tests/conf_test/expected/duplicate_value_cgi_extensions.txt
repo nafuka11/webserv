@@ -1,0 +1,1 @@
+webserv: duplicate "cgi_extension:php" value. This value is already set. in ./conf/duplicate_value_cgi_extensions.conf:4
