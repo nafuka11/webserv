@@ -273,7 +273,7 @@ void ConfigParser::parseReturnRedirect(T &config_obj)
         throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
                           filepath_, (line_pos_ + 1));
     }
-    config_obj.addReturnRedirect(status_code, parse_line_[DIRECTIVE_NAME_INDEX + 1]);
+    config_obj.addReturnRedirect(status_code, parse_line_[DIRECTIVE_VALUE_INDEX + 1]);
 }
 
 template <typename T>
