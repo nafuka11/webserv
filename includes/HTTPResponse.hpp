@@ -39,6 +39,7 @@ private:
 
     static std::map<int, std::string> setReasonPhrase();
     void setProperties(const LocationConfig *location);
+    std::string findReasonPhrase(int status_code) const;
     std::string generateDateString() const;
     void appendFileHTML(std::stringstream &ss,
                         const Uri &uri, const struct dirent *entry) const;
