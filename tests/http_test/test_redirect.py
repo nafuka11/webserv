@@ -22,6 +22,7 @@ class TestRedirect:
         http_connection.request("GET", f"/redirect_{status.value}/")
         response = http_connection.getresponse()
         assert_response(status, response, empty_body=True)
+        assert response.getheader("Location") == "http://example.com"
 
     @pytest.mark.parametrize("status", [104, 999])
     def test_no_reason_phrase(self, http_connection: HTTPConnection, status: int):
@@ -29,3 +30,4 @@ class TestRedirect:
         response = http_connection.getresponse()
         assert response.status == status
         assert response.reason == ""
+        assert response.getheader("Location") == "http://example.com"
