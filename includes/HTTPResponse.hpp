@@ -19,6 +19,7 @@ public:
     void setStatusCode(int status_code);
     void setKeepAlive(bool keep_alive);
     void setMessageBody(const std::string &body);
+    void setRedirectResponse(int status_code, const std::string &uri);
     std::string generateAutoindexHTML(const Uri &uri, DIR *dir_p) const;
     std::string generateHTMLfromStatusCode(HTTPStatusCode statusCode) const;
 

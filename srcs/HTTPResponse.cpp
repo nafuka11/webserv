@@ -63,6 +63,12 @@ void HTTPResponse::setMessageBody(const std::string &body)
     message_body_ = body;
 }
 
+void HTTPResponse::setRedirectResponse(int status_code, const std::string &uri)
+{
+    status_code_ = status_code;
+    headers_.insert(std::make_pair("Location", uri));
+}
+
 std::map<int, std::string> HTTPResponse::setReasonPhrase()
 {
     std::map<int, std::string> reason_phrase;
