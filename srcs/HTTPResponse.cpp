@@ -3,7 +3,8 @@
 #include <iomanip>
 
 const std::string HTTPResponse::CRLF = "\r\n";
-const std::map<HTTPStatusCode, std::string> HTTPResponse::REASON_PHRASE = HTTPResponse::setReasonPhrase();
+const std::map<int, std::string>
+    HTTPResponse::REASON_PHRASE = HTTPResponse::setReasonPhrase();
 const size_t HTTPResponse::DATE_STR_LEN = 40;
 const size_t HTTPResponse::MTIME_STR_LEN = 20;
 const size_t HTTPResponse::AUTOINDEX_FILENAME_WIDTH = 50;
@@ -47,7 +48,7 @@ void HTTPResponse::clear()
     message_body_.clear();
 }
 
-void HTTPResponse::setStatusCode(HTTPStatusCode status_code)
+void HTTPResponse::setStatusCode(int status_code)
 {
     status_code_ = status_code;
 }
@@ -62,9 +63,9 @@ void HTTPResponse::setMessageBody(const std::string &body)
     message_body_ = body;
 }
 
-std::map<HTTPStatusCode, std::string> HTTPResponse::setReasonPhrase()
+std::map<int, std::string> HTTPResponse::setReasonPhrase()
 {
-    std::map<HTTPStatusCode, std::string> reason_phrase;
+    std::map<int, std::string> reason_phrase;
 
     reason_phrase[CODE_100] = "Continue";
     reason_phrase[CODE_101] = "Switching Protocols";
