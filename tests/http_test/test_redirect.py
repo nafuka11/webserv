@@ -19,6 +19,7 @@ class TestRedirect:
         ],
     )
     def test_reason_phrase(self, http_connection: HTTPConnection, status: HTTPStatus):
+        """3XX系のstatusCodeのリダイレクト確認"""
         http_connection.request("GET", f"/redirect_{status.value}/")
         response = http_connection.getresponse()
         assert_response(status, response, empty_body=True)
@@ -26,6 +27,7 @@ class TestRedirect:
 
     @pytest.mark.parametrize("status", [104, 999])
     def test_no_reason_phrase(self, http_connection: HTTPConnection, status: int):
+        """reasonPhraseが存在しないstatusCodeのリダイレクト確認"""
         http_connection.request("GET", f"/redirect_{status}/")
         response = http_connection.getresponse()
         assert response.status == status
