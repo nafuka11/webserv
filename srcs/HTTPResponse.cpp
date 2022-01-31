@@ -1,7 +1,6 @@
 #include "HTTPResponse.hpp"
 #include <sstream>
 #include <iomanip>
-#include <iostream>// TODO: 後で消す
 
 const std::string HTTPResponse::CRLF = "\r\n";
 const std::map<int, std::string>
@@ -39,66 +38,19 @@ std::string HTTPResponse::toString(const LocationConfig *location)
     return ss.str();
 }
 
-std::string HTTPResponse::CGItoString(const LocationConfig *location)
-{
-    std::string line;
-    std::string raw_cgi_header; // TODO: 後で消す
-    std::string NEWLINE = "\r\n";
-    size_t newline_pos = 0;
-    size_t parse_pos_ = 0;
-    while (newline_pos < raw_cgi_message_.size())
-    {
-        newline_pos = raw_cgi_message_.find(NEWLINE, parse_pos_);
-        if (newline_pos == std::string::npos)
-        {
-            break;
-        }
-        line = raw_cgi_message_.substr(parse_pos_, newline_pos - parse_pos_);
-        parse_pos_ = newline_pos + NEWLINE.size();
-        if (line.size() == 0)
-        {
-            // TODO:  改行を取り切ってから抜ける
-            break;
-        }
-        std::cout << "case HEADER: " << line << std::endl;// TDDO: テスト出力
-        // TODO: CGIヘッダの解析
-        // TODO: headers_.insert(std::make_pair("field", value)));
-        raw_cgi_header.append(line);
-    }
-    setMessageBody(raw_cgi_message_.substr(parse_pos_, newline_pos - parse_pos_));
-    std::cout << "raw_cgi_header: " << raw_cgi_header << std::endl;// TODO: テスト出力。後で消す
-    std::cout << "message_body: " << message_body_ << std::endl;// TODO: テスト出力。後で消す
-
-    setProperties(location);// TODO: CGI用に作成必要かも
-
-    std::stringstream ss;
-
-    std::string phrase = HTTPResponse::REASON_PHRASE.find(status_code_)->second;
-    ss << "HTTP/1.1 " << status_code_ << " " << phrase << "\r\n";
-    for (std::map<std::string, std::string>::iterator iter = headers_.begin();
-         iter != headers_.end();
-         ++iter)
-    {
-        ss << iter->first << ": " << iter->second << "\r\n";
-    }
-    ss << "\r\n";
-    ss << message_body_;
-    return ss.str();
-}
-
 void HTTPResponse::appendMessageBody(const char *body)
 {
     message_body_.append(body);
 }
 
-void HTTPResponse::appendRawCGIMessage(const char *raw_message)
-{
-    raw_cgi_message_.append(raw_message);
-}
-
 void HTTPResponse::clear()
 {
     message_body_.clear();
+}
+
+void HTTPResponse::setHeader(const std::pair<std::string, std::string> &item)
+{
+    headers_.insert(item);
 }
 
 void HTTPResponse::setStatusCode(int status_code)
@@ -403,4 +355,9 @@ std::string HTTPResponse::escapeUri(const std::string &str) const
         }
     }
     return ss.str();
+}
+
+const std::map<std::string, std::string> HTTPResponse::getHeaders() const
+{
+    return headers_;
 }

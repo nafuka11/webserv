@@ -65,7 +65,7 @@ void HTTPParser::parse()
 bool HTTPParser::parseStartLine()
 {
     std::string line;
-    if (!tryGetLine(line))
+    if (!tryGetLine(line, NEWLINE))
     {
         return false;
     }
@@ -86,7 +86,7 @@ bool HTTPParser::parseStartLine()
 bool HTTPParser::parseHeader()
 {
     std::string line;
-    if (!tryGetLine(line))
+    if (!tryGetLine(line, NEWLINE))
     {
         return false;
     }
@@ -151,7 +151,7 @@ bool HTTPParser::parseMessageBodyFromContentLength()
 bool HTTPParser::parseMessageBodyFromChunkSize()
 {
     std::string line;
-    if (!tryGetLine(line))
+    if (!tryGetLine(line, NEWLINE))
     {
         return false;
     }
@@ -266,15 +266,15 @@ bool HTTPParser::isAllowMethod(const std::string &method)
     return true;
 }
 
-bool HTTPParser::tryGetLine(std::string &line)
+bool HTTPParser::tryGetLine(std::string &line, const std::string &newline)
 {
-    newline_pos_ = raw_message_.find(NEWLINE, parse_pos_);
+    newline_pos_ = raw_message_.find(newline, parse_pos_);
     if (newline_pos_ == std::string::npos)
     {
         return false;
     }
     line = raw_message_.substr(parse_pos_, newline_pos_ - parse_pos_);
-    parse_pos_ = newline_pos_ + NEWLINE.size();
+    parse_pos_ = newline_pos_ + newline.size();
     return true;
 }
 

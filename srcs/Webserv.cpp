@@ -1,5 +1,6 @@
 #include "Webserv.hpp"
 #include "ServerSocket.hpp"
+#include <iostream>
 
 Webserv::Webserv(const std::string &filepath) : config_(Config())
 {
@@ -71,10 +72,10 @@ void Webserv::handleServerEvent(Socket *socket, const struct kevent &event)
 void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
 {
     ClientSocket *client = dynamic_cast<ClientSocket *>(socket);
-
     switch (client->getState())
     {
     case ClientSocket::READ_REQUEST:
+        std::cout << "in READ_REQUEST" << std::endl;//TODO: 後で消す
         if (event.flags & EV_EOF)
         {
             closeClient(client);
@@ -86,6 +87,7 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
         }
         break;
     case ClientSocket::READ_FILE:
+        std::cout << "in READ_FILE" << std::endl;//TODO: 後で消す
         if (event.flags & EV_EOF)
         {
             client->closeFile();
@@ -96,18 +98,21 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
         }
         break;
     case ClientSocket::READ_CGI:
+        std::cout << "in READ_CGI" << std::endl;//TODO: 後で消す
         if (event.filter == EVFILT_READ)
         {
             client->readCGI(event.data);
         }
         break;
     case ClientSocket::WRITE_RESPONSE:
+        std::cout << "in WRITE_RESPONSE" << std::endl;//TODO: 後で消す
         if (event.filter == EVFILT_WRITE)
         {
             client->sendResponse();
         }
         break;
     case ClientSocket::WRITE_CGI_RESPONSE:
+        std::cout << "in WRITE_CGI_RESPONSE" << std::endl;//TODO: 後で消す
         if (event.filter == EVFILT_WRITE)
         {
             client->sendCGIResponse();

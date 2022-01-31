@@ -32,6 +32,7 @@ public:
     void sendCGIResponse();
     void readFile(intptr_t offset);
     void readCGI(intptr_t offset);
+    void parseCGI();
     void closeFile();
     void close();
     State getState() const;

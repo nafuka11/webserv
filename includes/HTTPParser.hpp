@@ -38,11 +38,13 @@ protected:
 
     virtual const std::pair<std::string, std::string> validateHeader(std::string &name,
                                                                      std::string &value);
-
-    bool tryGetLine(std::string &line);
-    void splitHeader(const std::string &line,
-                     std::string &header_name, std::string &header_value);
+    virtual void splitHeader(const std::string &line,
+                             std::string &header_name, std::string &header_value);
+    bool tryGetLine(std::string &line, const std::string &newline);
+    bool isValidHeaders();
+    bool isSpace(char c);
     const std::string &validateHeaderName(std::string &name);
+    const std::string &validateHeaderValue(const std::string &value);
 
 private:
     static const std::string NEWLINE;
@@ -72,15 +74,12 @@ private:
     const std::string &validateMethod(const std::string &method);
     const std::string &validateUri(const std::string &uri);
     const std::string &validateProtocolVersion(const std::string &protocol_version);
-    const std::string &validateHeaderValue(const std::string &value);
-    bool isValidHeaders();
     void validateHost();
     size_t convertMessageBodySize(const std::string &value, int radix);
 
     void setContentLength(size_t content_length);
     void setChunkSize(size_t chunk_size);
 
-    bool isSpace(char c);
     bool isToken(const std::string &str);
     bool isTokenChar(char c);
     bool startsWith(const std::string &str, const std::string &prefix) const;

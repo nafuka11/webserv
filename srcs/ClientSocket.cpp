@@ -7,7 +7,6 @@
 #include "HTTPParseException.hpp"
 #include "AddressInfoError.hpp"
 #include "Uri.hpp"
-#include <iostream> //TODO: 後で消す
 
 const size_t ClientSocket::BUF_SIZE = 8192;
 
@@ -69,22 +68,31 @@ void ClientSocket::sendResponse()
 
 void ClientSocket::sendCGIResponse()
 {
-    cgi_parser_.parse(response_);
-    response_.setKeepAlive(request_.canKeepAlive());
-    // std::string message = response_.CGItoString(searchLocationConfig(request_.getLocation()));
-    std::string message = response_.toString(searchLocationConfig(request_.getLocation()));
-    ::send(fd_, message.c_str(), message.size(), 0);
-    if (request_.canKeepAlive())
+    try
     {
-        changeState(READ_REQUEST);
-        response_.clear();
+        cgi_parser_.parse(response_);
+
+        response_.setKeepAlive(request_.canKeepAlive());
+        // std::string message = response_.CGItoString(searchLocationConfig(request_.getLocation()));
+        std::string message = response_.toString(searchLocationConfig(request_.getLocation()));
+        ::send(fd_, message.c_str(), message.size(), 0);
+        if (request_.canKeepAlive())
+        {
+            changeState(READ_REQUEST);
+            response_.clear();
+        }
+        else
+        {
+            changeState(CLOSE);
+        }
+        request_.clear();
+        cgi_parser_.clear();
     }
-    else
+    catch (const HTTPParseException &e)
     {
-        changeState(CLOSE);
+        std::cout << "in ClientSocket::sendCGIResponse()=" << e.getStatusCode() << std::endl;
+        handleError(e.getStatusCode());
     }
-    request_.clear();
-    cgi_parser_.clear();
 }
 
 void ClientSocket::readFile(intptr_t offset)
@@ -130,6 +138,19 @@ void ClientSocket::readCGI(intptr_t offset)
     {
         ::close(file_fd_);
         changeState(WRITE_CGI_RESPONSE);
+    }
+}
+
+void ClientSocket::parseCGI()
+{
+    try
+    {
+        cgi_parser_.parse(response_);
+        changeState(WRITE_CGI_RESPONSE);
+    }
+    catch (const HTTPParseException &e)
+    {
+        handleError(e.getStatusCode());
     }
 }
 

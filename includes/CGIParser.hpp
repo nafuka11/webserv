@@ -9,10 +9,12 @@ class CGIParser : public HTTPParser
 public:
     CGIParser(HTTPRequest &request, const ServerConfig &config);
     ~CGIParser();
-    void parse(HTTPResponse &respons);
+    void parse(HTTPResponse &response);
 private:
     static const std::string NEWLINE;
-
+    void splitHeader(const std::string &line,
+                     std::string &header_name, std::string &header_value);
+    bool isValidHeaders(const std::map<std::string, std::string> &headers);
     const std::pair<std::string, std::string> validateHeader(std::string &name,
                                                              std::string &value);
     void validateStatus();
