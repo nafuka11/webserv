@@ -9,6 +9,7 @@
 #include "ServerConfig.hpp"
 #include "KqueuePoller.hpp"
 #include "CGI.hpp"
+#include "CGIParser.hpp"
 
 class ClientSocket : public Socket
 {
@@ -42,6 +43,7 @@ private:
     HTTPRequest request_;
     HTTPResponse response_;
     HTTPParser parser_;
+    CGIParser cgi_parser_;
     State state_;
     int file_fd_;
     std::string ip_;

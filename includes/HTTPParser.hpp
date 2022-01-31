@@ -25,18 +25,29 @@ public:
     };
 
     HTTPParser(HTTPRequest &request, const ServerConfig &config);
-    ~HTTPParser();
+    virtual ~HTTPParser();
     void clear();
     void parse();
     void appendRawMessage(const char *message);
     bool finished();
 
+protected:
+    std::string raw_message_;
+    size_t parse_pos_;
+    size_t newline_pos_;
+
+    virtual const std::pair<std::string, std::string> validateHeader(std::string &name,
+                                                                     std::string &value);
+
+    bool tryGetLine(std::string &line);
+    void splitHeader(const std::string &line,
+                     std::string &header_name, std::string &header_value);
+    const std::string &validateHeaderName(std::string &name);
+
 private:
     static const std::string NEWLINE;
     HTTPRequest &request_;
     const ServerConfig &config_;
-    std::string raw_message_;
-    size_t parse_pos_;
     ParseState parse_state_;
     MessageBodyState message_body_state_;
     size_t content_length_;
@@ -52,21 +63,15 @@ private:
     void findLocation();
     bool isAllowMethod(const std::string &method);
 
-    bool tryGetLine(std::string &line);
     void splitStartLine(const std::string &line,
                         std::string &method, std::string &uri,
                         std::string &protocol_version);
-    void splitHeader(const std::string &line,
-                     std::string &header_name, std::string &header_value);
     std::vector<std::string> splitString(const std::string &str,
                                          const std::string &delim);
 
     const std::string &validateMethod(const std::string &method);
     const std::string &validateUri(const std::string &uri);
     const std::string &validateProtocolVersion(const std::string &protocol_version);
-    const std::pair<std::string, std::string> validateHeader(std::string &name,
-                                                             std::string &value);
-    const std::string &validateHeaderName(std::string &name);
     const std::string &validateHeaderValue(const std::string &value);
     bool isValidHeaders();
     void validateHost();

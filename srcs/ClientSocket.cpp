@@ -14,7 +14,7 @@ const size_t ClientSocket::BUF_SIZE = 8192;
 ClientSocket::ClientSocket(int fd, const struct sockaddr_storage &address,
                            const ServerConfig &config, const KqueuePoller &poller)
     : Socket(CLIENT, fd), config_(config), poller_(poller),
-      parser_(request_, config_), state_(READ_REQUEST)
+      parser_(request_, config_), cgi_parser_(request_, config_), state_(READ_REQUEST)
 {
     address_ = address;
     ip_ = resolveIPAddress(address_);
@@ -69,8 +69,10 @@ void ClientSocket::sendResponse()
 
 void ClientSocket::sendCGIResponse()
 {
+    cgi_parser_.parse(response_);
     response_.setKeepAlive(request_.canKeepAlive());
-    std::string message = response_.CGItoString(searchLocationConfig(request_.getLocation()));
+    // std::string message = response_.CGItoString(searchLocationConfig(request_.getLocation()));
+    std::string message = response_.toString(searchLocationConfig(request_.getLocation()));
     ::send(fd_, message.c_str(), message.size(), 0);
     if (request_.canKeepAlive())
     {
@@ -81,8 +83,8 @@ void ClientSocket::sendCGIResponse()
     {
         changeState(CLOSE);
     }
-    clearRequest();
-
+    request_.clear();
+    cgi_parser_.clear();
 }
 
 void ClientSocket::readFile(intptr_t offset)
@@ -123,7 +125,7 @@ void ClientSocket::readCGI(intptr_t offset)
         return;
     }
     buffer[read_byte] = '\0';
-    response_.appendRawCGIMessage(buffer);
+    cgi_parser_.appendRawMessage(buffer);
     if (read_byte == offset)
     {
         ::close(file_fd_);
@@ -294,7 +296,6 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
         setNonBlockingFd(file_fd_);
         changeState(READ_CGI);
     }
-
 }
 
 void ClientSocket::handleError(HTTPStatusCode statusCode)

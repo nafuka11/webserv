@@ -8,7 +8,7 @@
 const std::string HTTPParser::NEWLINE = "\r\n";
 
 HTTPParser::HTTPParser(HTTPRequest &request, const ServerConfig &config)
-    : request_(request), config_(config), parse_pos_(0),
+    : parse_pos_(0), request_(request), config_(config),
       parse_state_(PARSE_START_LINE), message_body_state_(NONE),
       content_length_(0), chunk_size_(0)
 {
@@ -268,13 +268,13 @@ bool HTTPParser::isAllowMethod(const std::string &method)
 
 bool HTTPParser::tryGetLine(std::string &line)
 {
-    size_t newline_pos = raw_message_.find(NEWLINE, parse_pos_);
-    if (newline_pos == std::string::npos)
+    newline_pos_ = raw_message_.find(NEWLINE, parse_pos_);
+    if (newline_pos_ == std::string::npos)
     {
         return false;
     }
-    line = raw_message_.substr(parse_pos_, newline_pos - parse_pos_);
-    parse_pos_ = newline_pos + NEWLINE.size();
+    line = raw_message_.substr(parse_pos_, newline_pos_ - parse_pos_);
+    parse_pos_ = newline_pos_ + NEWLINE.size();
     return true;
 }
 

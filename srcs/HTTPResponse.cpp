@@ -1,6 +1,7 @@
 #include "HTTPResponse.hpp"
 #include <sstream>
 #include <iomanip>
+#include <iostream>// TODO: 後で消す
 
 const std::string HTTPResponse::CRLF = "\r\n";
 const std::map<HTTPStatusCode, std::string> HTTPResponse::REASON_PHRASE = HTTPResponse::setReasonPhrase();
@@ -39,7 +40,35 @@ std::string HTTPResponse::toString(const LocationConfig *location)
 
 std::string HTTPResponse::CGItoString(const LocationConfig *location)
 {
-    setProperties(location);
+    std::string line;
+    std::string raw_cgi_header; // TODO: 後で消す
+    std::string NEWLINE = "\r\n";
+    size_t newline_pos = 0;
+    size_t parse_pos_ = 0;
+    while (newline_pos < raw_cgi_message_.size())
+    {
+        newline_pos = raw_cgi_message_.find(NEWLINE, parse_pos_);
+        if (newline_pos == std::string::npos)
+        {
+            break;
+        }
+        line = raw_cgi_message_.substr(parse_pos_, newline_pos - parse_pos_);
+        parse_pos_ = newline_pos + NEWLINE.size();
+        if (line.size() == 0)
+        {
+            // TODO:  改行を取り切ってから抜ける
+            break;
+        }
+        std::cout << "case HEADER: " << line << std::endl;// TDDO: テスト出力
+        // TODO: CGIヘッダの解析
+        // TODO: headers_.insert(std::make_pair("field", value)));
+        raw_cgi_header.append(line);
+    }
+    setMessageBody(raw_cgi_message_.substr(parse_pos_, newline_pos - parse_pos_));
+    std::cout << "raw_cgi_header: " << raw_cgi_header << std::endl;// TODO: テスト出力。後で消す
+    std::cout << "message_body: " << message_body_ << std::endl;// TODO: テスト出力。後で消す
+
+    setProperties(location);// TODO: CGI用に作成必要かも
 
     std::stringstream ss;
 
@@ -52,9 +81,8 @@ std::string HTTPResponse::CGItoString(const LocationConfig *location)
         ss << iter->first << ": " << iter->second << "\r\n";
     }
     ss << "\r\n";
-    ss << raw_cgi_message_;
+    ss << message_body_;
     return ss.str();
-
 }
 
 void HTTPResponse::appendMessageBody(const char *body)
