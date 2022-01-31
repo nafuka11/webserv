@@ -1,0 +1,1 @@
+webserv: invalid number of arguments in "location" directive in ./conf/context_location_no_path.conf:5

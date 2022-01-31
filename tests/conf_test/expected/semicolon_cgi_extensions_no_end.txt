@@ -1,0 +1,1 @@
+webserv: directive "cgi_extension" has no end ";" in ./conf/semicolon_cgi_extensions_no_end.conf:1

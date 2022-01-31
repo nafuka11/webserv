@@ -1,0 +1,1 @@
+webserv: invalid number of arguments in "server_name" directive in ./conf/invalid_num_of_args_server_name.conf:2

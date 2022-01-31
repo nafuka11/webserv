@@ -203,6 +203,7 @@ void ClientSocket::prepareResponse()
         handleAutoindex(request_.getMethod(), uri);
         break;
     case Uri::REDIRECT:
+        handleRedirect(uri);
         break;
     case Uri::CGI:
         handleCGI(request_.getMethod(), uri);
@@ -253,10 +254,12 @@ void ClientSocket::handleAutoindex(const std::string &method, const Uri &uri)
     }
 }
 
-void ClientSocket::handleRedirect(const std::string &method, const Uri &uri)
+void ClientSocket::handleRedirect(const Uri &uri)
 {
-    (void)method;
-    (void)uri;
+    const std::map<int, std::string>
+        redirects = uri.getLocationConfig()->returnRedirect();
+    response_.setRedirectResponse(redirects.begin()->first, redirects.begin()->second);
+    changeState(WRITE_RESPONSE);
 }
 
 void ClientSocket::handleCGI(const std::string &method, const Uri &uri)

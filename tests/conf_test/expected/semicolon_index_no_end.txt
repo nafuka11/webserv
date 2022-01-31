@@ -1,0 +1,1 @@
+webserv: directive "index" has no end ";" in ./conf/semicolon_index_no_end.conf:5

@@ -1,0 +1,1 @@
+webserv: invalid number of arguments in "alias" directive in ./conf/invalid_num_of_args_alias.conf:3

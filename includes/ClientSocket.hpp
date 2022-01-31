@@ -52,7 +52,7 @@ private:
     void prepareResponse();
     void handleFile(const std::string &method, const Uri &uri);
     void handleAutoindex(const std::string &method, const Uri &uri);
-    void handleRedirect(const std::string &method, const Uri &uri);
+    void handleRedirect(const Uri &uri);
     void handleCGI(const std::string &method, const Uri &uri);
     void handleError(HTTPStatusCode statusCode);
     void handleErrorFromFile(const LocationConfig *location, HTTPStatusCode statusCode);

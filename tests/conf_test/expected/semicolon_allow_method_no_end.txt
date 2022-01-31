@@ -1,0 +1,1 @@
+webserv: directive "allow_method" has no end ";" in ./conf/semicolon_allow_method_no_end.conf:5
