@@ -3,7 +3,8 @@
 #include <iomanip>
 
 const std::string HTTPResponse::CRLF = "\r\n";
-const std::map<HTTPStatusCode, std::string> HTTPResponse::REASON_PHRASE = HTTPResponse::setReasonPhrase();
+const std::map<int, std::string>
+    HTTPResponse::REASON_PHRASE = HTTPResponse::setReasonPhrase();
 const size_t HTTPResponse::DATE_STR_LEN = 40;
 const size_t HTTPResponse::MTIME_STR_LEN = 20;
 const size_t HTTPResponse::AUTOINDEX_FILENAME_WIDTH = 50;
@@ -24,7 +25,7 @@ std::string HTTPResponse::toString(const LocationConfig *location)
 
     std::stringstream ss;
 
-    std::string phrase = HTTPResponse::REASON_PHRASE.find(status_code_)->second;
+    std::string phrase = findReasonPhrase(status_code_);
     ss << "HTTP/1.1 " << status_code_ << " " << phrase << "\r\n";
     for (std::map<std::string, std::string>::iterator iter = headers_.begin();
          iter != headers_.end();
@@ -47,7 +48,7 @@ void HTTPResponse::clear()
     message_body_.clear();
 }
 
-void HTTPResponse::setStatusCode(HTTPStatusCode status_code)
+void HTTPResponse::setStatusCode(int status_code)
 {
     status_code_ = status_code;
 }
@@ -62,9 +63,15 @@ void HTTPResponse::setMessageBody(const std::string &body)
     message_body_ = body;
 }
 
-std::map<HTTPStatusCode, std::string> HTTPResponse::setReasonPhrase()
+void HTTPResponse::setRedirectResponse(int status_code, const std::string &uri)
 {
-    std::map<HTTPStatusCode, std::string> reason_phrase;
+    status_code_ = status_code;
+    headers_.insert(std::make_pair("Location", uri));
+}
+
+std::map<int, std::string> HTTPResponse::setReasonPhrase()
+{
+    std::map<int, std::string> reason_phrase;
 
     reason_phrase[CODE_100] = "Continue";
     reason_phrase[CODE_101] = "Switching Protocols";
@@ -136,7 +143,6 @@ void HTTPResponse::setProperties(const LocationConfig *location)
     ss << message_body_.size();
     std::string content_length = ss.str();
 
-    headers_.clear();
     headers_.insert(std::make_pair("Server", "webserv/1.0.0"));
     headers_.insert(std::make_pair("Date", generateDateString()));
     headers_.insert(std::make_pair("Content-Length", content_length));
@@ -162,6 +168,17 @@ void HTTPResponse::setProperties(const LocationConfig *location)
         }
         headers_.insert(std::make_pair("Allow", allow_value));
     }
+}
+
+std::string HTTPResponse::findReasonPhrase(int status_code) const
+{
+    std::map<int, std::string>::const_iterator found =
+        HTTPResponse::REASON_PHRASE.find(status_code);
+    if (found != REASON_PHRASE.end())
+    {
+        return found->second;
+    }
+    return "";
 }
 
 std::string HTTPResponse::generateHTMLfromStatusCode(HTTPStatusCode statusCode) const
