@@ -25,13 +25,14 @@ void CGIParser::parse()
         }
         std::string name, value;
         splitHeader(line, name, value);
-        response_.setHeader(validateHeader(name, value));
+        headers_.insert(validateHeader(name, value));
         std::cout << " name=[" << name << "] value=[" << value << "]" << std::endl; //TODO: 後で消す
     }
     if (!isValidHeaders())
     {
         throw HTTPParseException(CODE_502);
     }
+    setInResponseHeaders();
     response_.setMessageBody(raw_message_.substr(parse_pos_, newline_pos_ - parse_pos_));
 }
 
@@ -60,10 +61,10 @@ void CGIParser::splitHeader(const std::string &line,
 bool CGIParser::isValidHeaders()
 {
     std::cout << "Called CGIParser::isValidHeaders: "; //TODO: 後で消す
-    std::map<std::string, std::string> headers = response_.getHeaders();
-    if (headers.count("content-type") == 0
-        && headers.count("location") == 0
-        && headers.count("status") == 0)
+    // std::map<std::string, std::string> headers = response_.getHeaders();
+    if (headers_.count("content-type") == 0
+        && headers_.count("location") == 0
+        && headers_.count("status") == 0)
     {
         std::cout << "false" << std::endl; //TODO: 後で消す
         return false;
@@ -108,4 +109,20 @@ void CGIParser::validateStatus(const std::string &value)
         throw HTTPParseException(CODE_502);
     }
     response_.setStatusCode(status);
+}
+
+void CGIParser::setInResponseHeaders()
+{
+    if (headers_.count("content-type") == 1)
+    {
+        response_.setHeader(std::make_pair("Content-Type", headers_["content-type"]));
+    }
+    if (headers_.count("location") == 1)
+    {
+        response_.setHeader(std::make_pair("Location", headers_["location"]));
+    }
+    if (headers_.count("status") == 1)
+    {
+        response_.setHeader(std::make_pair("Content-Type", headers_["Status"]));
+    }
 }

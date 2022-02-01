@@ -46,16 +46,16 @@ std::string HTTPResponse::CGItoString(const LocationConfig *location)
     std::stringstream ss;
 
     std::string phrase;
-    std::map<std::string, std::string>::const_iterator found = headers_.find("status");
+    std::map<std::string, std::string>::const_iterator found = headers_.find("Status");
     if (found != headers_.end())
     {
         phrase = found->second.substr((found->second.find_last_of(' ') + 1), found->second.length());
+        headers_.erase("Status");
     }
     else
     {
         phrase = findReasonPhrase(status_code_);
     }
-    headers_.erase("status");
     ss << "HTTP/1.1 " << status_code_ << " " << phrase << "\r\n";
     for (std::map<std::string, std::string>::iterator iter = headers_.begin();
          iter != headers_.end();
