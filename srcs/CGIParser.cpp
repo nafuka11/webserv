@@ -123,6 +123,6 @@ void CGIParser::setInResponseHeaders()
     }
     if (headers_.count("status") == 1)
     {
-        response_.setHeader(std::make_pair("Content-Type", headers_["Status"]));
+        response_.setHeader(std::make_pair("Status", headers_["status"]));
     }
 }
