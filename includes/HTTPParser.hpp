@@ -40,8 +40,8 @@ protected:
                                                                      std::string &value);
     virtual void splitHeader(const std::string &line,
                              std::string &header_name, std::string &header_value);
+    virtual bool isValidHeaders();
     bool tryGetLine(std::string &line, const std::string &newline);
-    bool isValidHeaders();
     bool isSpace(char c);
     const std::string &validateHeaderName(std::string &name);
     const std::string &validateHeaderValue(const std::string &value);

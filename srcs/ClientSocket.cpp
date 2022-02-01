@@ -13,7 +13,7 @@ const size_t ClientSocket::BUF_SIZE = 8192;
 ClientSocket::ClientSocket(int fd, const struct sockaddr_storage &address,
                            const ServerConfig &config, const KqueuePoller &poller)
     : Socket(CLIENT, fd), config_(config), poller_(poller),
-      parser_(request_, config_), cgi_parser_(request_, config_), state_(READ_REQUEST)
+      parser_(request_, config_), cgi_parser_(request_, config_, response_), state_(READ_REQUEST)
 {
     address_ = address;
     ip_ = resolveIPAddress(address_);
@@ -70,11 +70,10 @@ void ClientSocket::sendCGIResponse()
 {
     try
     {
-        cgi_parser_.parse(response_);
+        cgi_parser_.parse();
 
         response_.setKeepAlive(request_.canKeepAlive());
-        // std::string message = response_.CGItoString(searchLocationConfig(request_.getLocation()));
-        std::string message = response_.toString(searchLocationConfig(request_.getLocation()));
+        std::string message = response_.CGItoString(searchLocationConfig(request_.getLocation()));
         ::send(fd_, message.c_str(), message.size(), 0);
         if (request_.canKeepAlive())
         {
@@ -90,7 +89,7 @@ void ClientSocket::sendCGIResponse()
     }
     catch (const HTTPParseException &e)
     {
-        std::cout << "in ClientSocket::sendCGIResponse()=" << e.getStatusCode() << std::endl;
+        // std::cout << "in ClientSocket::sendCGIResponse()=" << e.getStatusCode() << std::endl;
         handleError(e.getStatusCode());
     }
 }
@@ -138,19 +137,6 @@ void ClientSocket::readCGI(intptr_t offset)
     {
         ::close(file_fd_);
         changeState(WRITE_CGI_RESPONSE);
-    }
-}
-
-void ClientSocket::parseCGI()
-{
-    try
-    {
-        cgi_parser_.parse(response_);
-        changeState(WRITE_CGI_RESPONSE);
-    }
-    catch (const HTTPParseException &e)
-    {
-        handleError(e.getStatusCode());
     }
 }
 

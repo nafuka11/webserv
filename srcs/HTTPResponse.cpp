@@ -1,6 +1,7 @@
 #include "HTTPResponse.hpp"
 #include <sstream>
 #include <iomanip>
+#include <iostream> //TODO: 後で消す
 
 const std::string HTTPResponse::CRLF = "\r\n";
 const std::map<int, std::string>
@@ -36,6 +37,36 @@ std::string HTTPResponse::toString(const LocationConfig *location)
     ss << "\r\n";
     ss << message_body_;
     return ss.str();
+}
+
+std::string HTTPResponse::CGItoString(const LocationConfig *location)
+{
+    setProperties(location);
+
+    std::stringstream ss;
+
+    std::string phrase;
+    std::map<std::string, std::string>::const_iterator found = headers_.find("status");
+    if (found != headers_.end())
+    {
+        phrase = found->second.substr((found->second.find_last_of(' ') + 1), found->second.length());
+    }
+    else
+    {
+        phrase = findReasonPhrase(status_code_);
+    }
+    headers_.erase("status");
+    ss << "HTTP/1.1 " << status_code_ << " " << phrase << "\r\n";
+    for (std::map<std::string, std::string>::iterator iter = headers_.begin();
+         iter != headers_.end();
+         ++iter)
+    {
+        ss << iter->first << ": " << iter->second << "\r\n";
+    }
+    ss << "\r\n";
+    ss << message_body_;
+    return ss.str();
+
 }
 
 void HTTPResponse::appendMessageBody(const char *body)

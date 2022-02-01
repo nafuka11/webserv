@@ -1,11 +1,11 @@
 #include "CGIParser.hpp"
 #include "HTTPParseException.hpp"
-#include <iostream>　//TODO:  後で消す
+#include <iostream> //TODO: 後で消す
 
 const std::string CGIParser::NEWLINE = "\n";
 
-CGIParser::CGIParser(HTTPRequest &request, const ServerConfig &config)
-    : HTTPParser(request, config)
+CGIParser::CGIParser(HTTPRequest &request, const ServerConfig &config, HTTPResponse &response)
+    : HTTPParser(request, config), response_(response)
 {
 }
 
@@ -13,27 +13,26 @@ CGIParser::~CGIParser()
 {
 }
 
-void CGIParser::parse(HTTPResponse &response)
+void CGIParser::parse()
 {
-    std::cout << "\nCalled CGIParser::parse" << std::endl; //TODO:  後で消す
     std::string line;
     while (tryGetLine(line, NEWLINE))
     {
-        std::cout << "line: " << line; //TODO:  後で消す
+        std::cout << "line=[" << line << "]"; //TODO:  後で消す
         if (line.empty())
         {
             break;
         }
         std::string name, value;
         splitHeader(line, name, value);
-        response.setHeader(validateHeader(name, value));
-        std::cout << " name: " << name << " value: " << value << std::endl; //TODO: 後で消す
+        response_.setHeader(validateHeader(name, value));
+        std::cout << " name=[" << name << "] value=[" << value << "]" << std::endl; //TODO: 後で消す
     }
-    if (!isValidHeaders(response.getHeaders()))
+    if (!isValidHeaders())
     {
         throw HTTPParseException(CODE_502);
     }
-    response.setMessageBody(raw_message_.substr(parse_pos_, newline_pos_ - parse_pos_));
+    response_.setMessageBody(raw_message_.substr(parse_pos_, newline_pos_ - parse_pos_));
 }
 
 void CGIParser::splitHeader(const std::string &line,
@@ -58,9 +57,10 @@ void CGIParser::splitHeader(const std::string &line,
     header_value = line.substr(value_start, value_end - value_start);
 }
 
-bool CGIParser::isValidHeaders(const std::map<std::string, std::string> &headers)
+bool CGIParser::isValidHeaders()
 {
-    std::cout << "Called CGIParser::isValidHeaders: "; //TODO:  後で消す
+    std::cout << "Called CGIParser::isValidHeaders: "; //TODO: 後で消す
+    std::map<std::string, std::string> headers = response_.getHeaders();
     if (headers.count("content-type") == 0
         && headers.count("location") == 0
         && headers.count("status") == 0)
@@ -76,16 +76,36 @@ const std::pair<std::string, std::string> CGIParser::validateHeader(std::string 
 {
     name = validateHeaderName(name);
     value = validateHeaderValue(value);
+    std::cout << "name: " << name << " value: " << value << std::endl;
     if (name == "status")
     {
-        validateStatus();
+        validateStatus(value);
     }
     return std::make_pair(name, value);
 }
 
-void CGIParser::validateStatus()
+void CGIParser::validateStatus(const std::string &value)
 {
-    // statusが3桁の整数値かチェック。
-        // if (statusがエラー値)
-            // HTTPParseException(502);
+    std::string::size_type found = value.find(' ');
+    if (found == std::string::npos)
+    {
+        throw HTTPParseException(CODE_502);
+    }
+
+    std::string status_value = value.substr(0, found);
+    char *endp = NULL;
+    long status = strtol(status_value.c_str(), &endp, 10);
+    if (*endp != '\0' || status < 0)
+    {
+        throw HTTPParseException(CODE_502);
+    }
+    if ((status == LONG_MAX || status == LONG_MIN) && errno == ERANGE)
+    {
+        throw HTTPParseException(CODE_502);
+    }
+    if (status < 100 || status > 999)
+    {
+        throw HTTPParseException(CODE_502);
+    }
+    response_.setStatusCode(status);
 }

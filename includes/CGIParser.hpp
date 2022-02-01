@@ -7,17 +7,18 @@
 class CGIParser : public HTTPParser
 {
 public:
-    CGIParser(HTTPRequest &request, const ServerConfig &config);
+    CGIParser(HTTPRequest &request, const ServerConfig &config, HTTPResponse &response);
     ~CGIParser();
-    void parse(HTTPResponse &response);
+    void parse();
 private:
     static const std::string NEWLINE;
+    HTTPResponse &response_;
     void splitHeader(const std::string &line,
                      std::string &header_name, std::string &header_value);
-    bool isValidHeaders(const std::map<std::string, std::string> &headers);
+    bool isValidHeaders();
     const std::pair<std::string, std::string> validateHeader(std::string &name,
                                                              std::string &value);
-    void validateStatus();
+    void validateStatus(const std::string &value);
 };
 
 #endif /* CGIPARSER_HPP */
