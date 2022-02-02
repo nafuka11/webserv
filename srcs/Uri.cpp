@@ -3,6 +3,7 @@
 #include <cerrno>
 #include "HTTPParseException.hpp"
 #include "HTTPRequest.hpp"
+#include <iostream> //TODO: 後で消す
 
 Uri::Uri(const ServerConfig &server_config,
          const std::string &uri, const std::string &method)
@@ -26,6 +27,12 @@ const std::string &Uri::getQuery() const
 {
     return query_;
 }
+
+const std::vector<std::string> &Uri::getArguments() const
+{
+    return arguments_;
+}
+
 
 const std::string &Uri::getRawPath() const
 {
@@ -57,7 +64,27 @@ void Uri::splitRawUri()
     size_t query_pos = raw_uri_.find('?');
     raw_path_ = raw_uri_.substr(0, query_pos);
     query_ = raw_uri_.substr(query_pos + 1);
+    parseQuery();
 }
+
+void Uri::parseQuery()
+{
+    size_t found = query_.find('=');
+    if (found != std::string::npos)
+        return;
+
+    std::string split_word = "+";
+    size_t start_pos = 0;
+    for (size_t split_pos = query_.find(split_word);
+         split_pos != std::string::npos;
+         split_pos = query_.find(split_word, start_pos))
+    {
+        arguments_.push_back(query_.substr(start_pos, (split_pos - start_pos)));
+        start_pos = split_pos + split_word.size();
+    }
+    arguments_.push_back(query_.substr(start_pos));
+}
+
 
 void Uri::findPath()
 {
@@ -213,7 +240,7 @@ bool Uri::isDirectory(const struct stat &path_stat) const
 bool Uri::hasCgiExtension(const std::string &path,
                           const std::vector<std::string> &cgi_extension) const
 {
-    if (cgi_extension.empty()) //TODO: configでcgi_extensionのデフォルト値を設定するなら消す。
+    if (cgi_extension.empty())
     {
         return false;
     }

@@ -39,6 +39,7 @@ std::map<std::string,std::string> CGI::createExecutePath()
     std::map<std::string,std::string> exec_path;
 
     exec_path[".php"] = "/usr/bin/php";
+    exec_path[".pl"] =  "/usr/bin/perl";
     return exec_path;
 }
 
@@ -47,6 +48,7 @@ std::map<std::string, std::string> CGI::createExecuteCommand()
     std::map<std::string,std::string> exec_command;
 
     exec_command[".php"] = "php";
+    exec_command[".pl"] = "perl";
     return exec_command;
 }
 
@@ -60,14 +62,22 @@ void CGI::setPath(const std::string &local_path)
 
 void CGI::setArgv(const std::string &path)
 {
-    argv_ = new char*[3];
+    std::vector<std::string> uri_args = uri_.getArguments();
     std::string command = EXEC_COMMAND.find(extension_)->second;
+    int size = uri_args.size() + 2;
+    int index = 0;
 
-    argv_[0] = new char[std::strlen(command.c_str()) + 1];
-    std::char_traits<char>::copy(argv_[0], command.c_str(), std::strlen(command.c_str()) + 1);
-    argv_[1] = new char[path.size() + 1];
-    std::char_traits<char>::copy(argv_[1], path.c_str(), path.size() + 1);
-    argv_[2] = NULL;
+    argv_ = new char*[size];
+    argv_[index++] = strdup(command.c_str());
+    argv_[index++] = strdup(path.c_str());
+
+    for (std::vector<std::string>::iterator arg = uri_args.begin();
+         arg != uri_args.end();
+         ++arg)
+    {
+        argv_[index] = strdup(arg->c_str());
+    }
+    argv_[index] = NULL;
 }
 
 void CGI::setEnvp(const std::string &ip, const std::string &method)
@@ -123,9 +133,9 @@ void CGI::setEnvp(const std::string &ip, const std::string &method)
          env++, index++)
     {
         std::string env_str = env->first + "=" + env->second;
-        envp_[index] = new char[env_str.size() + 1];
-        std::char_traits<char>::copy(envp_[index], env_str.c_str(), env_str.size() + 1);
-        // envp_[index] = strdup(env->c_str());
+        // envp_[index] = new char[env_str.size() + 1];
+        // std::char_traits<char>::copy(envp_[index], env_str.c_str(), env_str.size() + 1);
+        envp_[index] = strdup(env_str.c_str());
     }
     envp_[index] = NULL;
 }
