@@ -10,6 +10,7 @@ public:
     CGIParser(HTTPRequest &request, const ServerConfig &config, HTTPResponse &response);
     ~CGIParser();
     void parse();
+    void clear();
 private:
     static const std::string NEWLINE;
 

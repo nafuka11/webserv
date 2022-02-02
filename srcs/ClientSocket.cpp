@@ -84,8 +84,7 @@ void ClientSocket::sendCGIResponse()
         {
             changeState(CLOSE);
         }
-        request_.clear();
-        cgi_parser_.clear();
+        clearRequest();
     }
     catch (const HTTPParseException &e)
     {
@@ -127,23 +126,32 @@ void ClientSocket::readCGI(intptr_t offset)
     }
     if (read_byte <= 0)
     {
-        ::close(file_fd_);
-        changeState(WRITE_CGI_RESPONSE);
+        closeFile();
         return;
     }
     buffer[read_byte] = '\0';
     cgi_parser_.appendRawMessage(buffer);
     if (read_byte == offset)
     {
-        ::close(file_fd_);
-        changeState(WRITE_CGI_RESPONSE);
+        closeFile();
     }
 }
 
 void ClientSocket::closeFile()
 {
     ::close(file_fd_);
-    changeState(WRITE_RESPONSE);
+
+    switch (state_)
+    {
+    case READ_FILE:
+        changeState(WRITE_RESPONSE);
+        break;
+    case READ_CGI:
+        changeState(WRITE_CGI_RESPONSE);
+        break;
+    default:
+        break;
+    }
 }
 
 void ClientSocket::close()
@@ -376,6 +384,7 @@ void ClientSocket::clearRequest()
 {
     request_.clear();
     parser_.clear();
+    cgi_parser_.clear();
 }
 
 const LocationConfig *ClientSocket::searchLocationConfig(const std::string &location)

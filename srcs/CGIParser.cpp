@@ -13,6 +13,12 @@ CGIParser::~CGIParser()
 {
 }
 
+void CGIParser::clear()
+{
+    headers_.clear();
+    HTTPParser::clear();
+}
+
 void CGIParser::parse()
 {
     std::string line;
