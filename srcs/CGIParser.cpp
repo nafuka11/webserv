@@ -60,13 +60,10 @@ void CGIParser::splitHeader(const std::string &line,
 
 bool CGIParser::isValidHeaders()
 {
-    std::cout << "Called CGIParser::isValidHeaders: "; //TODO: 後で消す
-    // std::map<std::string, std::string> headers = response_.getHeaders();
     if (headers_.count("content-type") == 0
         && headers_.count("location") == 0
         && headers_.count("status") == 0)
     {
-        std::cout << "false" << std::endl; //TODO: 後で消す
         return false;
     }
     return true;
@@ -81,6 +78,10 @@ const std::pair<std::string, std::string> CGIParser::validateHeader(std::string 
     if (name == "status")
     {
         validateStatus(value);
+    }
+    if (name == "location")
+    {
+        response_.setStatusCode(302);
     }
     return std::make_pair(name, value);
 }
