@@ -9,6 +9,12 @@ ConfigError::ConfigError(const ConfigErrorType error_type, const std::string &er
     setErrorMessage(error_type, error_word);
 }
 
+ConfigError::ConfigError(const ConfigErrorType error_type, const std::string &error_word)
+    : error_message_(SERVER_NAME), file_info_("")
+{
+    setErrorMessage(error_type, error_word);
+}
+
 ConfigError::~ConfigError() throw()
 {
 }

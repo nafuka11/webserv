@@ -10,6 +10,7 @@ class ConfigError : public std::exception
 public:
     ConfigError(const ConfigErrorType error_type, const std::string &error_word,
                 const std::string &filepath, int line_pos);
+    ConfigError(const ConfigErrorType error_type, const std::string &error_word);
     virtual ~ConfigError() throw();
     virtual const char *what() const throw();
 private:
