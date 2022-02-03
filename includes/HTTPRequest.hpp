@@ -3,6 +3,7 @@
 
 #include <string>
 #include <map>
+#include "ServerConfig.hpp"
 
 class HTTPRequest
 {
@@ -22,6 +23,7 @@ public:
     void setProtocolVersion(const std::string &protocol_version);
     void setHeader(const std::pair<std::string, std::string> &item);
     void setMessageBody(const std::string &message_body);
+    void setServerConfig(const ServerConfig *server_config);
     void setLocation(const std::string &location);
 
     const std::string &getMethod() const;
@@ -29,6 +31,7 @@ public:
     const std::string &getProtocolVersion() const;
     const std::map<std::string, std::string> &getHeaders() const;
     const std::string &getMessageBody() const;
+    const ServerConfig *getServerConfig() const;
     const std::string &getLocation() const;
 
 private:
@@ -37,6 +40,7 @@ private:
     std::string protocol_version_;
     std::map<std::string, std::string> headers_;
     std::string message_body_;
+    const ServerConfig *server_config_;
     std::string location_;
 };
 
