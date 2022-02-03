@@ -403,9 +403,14 @@ const std::string &HTTPParser::validateHeaderValue(const std::string &value)
 bool HTTPParser::isValidHeaders()
 {
     const std::map<std::string, std::string> headers = request_.getHeaders();
-    if (headers.count("host") == 0)
+    if (headers.count("content-length"))
     {
-        return false;
+        int client_max_body_size = request_.getServerConfig()->clientMaxBodySize();
+        if (client_max_body_size != 0 &&
+            content_length_ > static_cast<size_t>(client_max_body_size))
+        {
+            throw HTTPParseException(CODE_413);
+        }
     }
     return true;
 }
@@ -435,11 +440,6 @@ size_t HTTPParser::convertMessageBodySize(const std::string &value, int radix)
 
 void HTTPParser::setContentLength(size_t content_length)
 {
-    if (config_.clientMaxBodySize() != 0 &&
-        content_length > (size_t)config_.clientMaxBodySize())
-    {
-        throw HTTPParseException(CODE_413);
-    }
     content_length_ = content_length;
 }
 
