@@ -72,7 +72,7 @@ private:
                                          const std::string &delim);
 
     const std::string &validateMethod(const std::string &method);
-    const std::string &validateUri(const std::string &uri);
+    const std::string validateUri(const std::string &uri);
     const std::string &validateProtocolVersion(const std::string &protocol_version);
     void validateHost();
     size_t convertMessageBodySize(const std::string &value, int radix);

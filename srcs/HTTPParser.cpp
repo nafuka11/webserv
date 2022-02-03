@@ -4,6 +4,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <cerrno>
+#include <sstream>
 
 const std::string HTTPParser::NEWLINE = "\r\n";
 
@@ -350,9 +351,39 @@ const std::string &HTTPParser::validateMethod(const std::string &method)
     throw HTTPParseException(CODE_501);
 }
 
-const std::string &HTTPParser::validateUri(const std::string &uri)
+const std::string HTTPParser::validateUri(const std::string &uri)
 {
-    return uri;
+    size_t parse_pos = uri.find('%');
+    if (parse_pos == std::string::npos)
+    {
+        return uri;
+    }
+
+    std::stringstream ss;
+    size_t start_parse_pos = 0;
+    char *endp = NULL;
+    while (parse_pos != std::string::npos)
+    {
+        ss << uri.substr(start_parse_pos, (parse_pos - start_parse_pos));
+
+        long num = std::strtol(uri.substr((parse_pos + 1), 2).c_str(), &endp, 16);
+        if (*endp != '\0' || num < 0)
+        {
+            throw HTTPParseException(CODE_400);
+        }
+        if ((num == LONG_MAX || num == LONG_MIN) && errno == ERANGE)
+        {
+            throw HTTPParseException(CODE_400);
+        }
+        ss << static_cast<char>(num);
+        start_parse_pos = (parse_pos + 3);
+        parse_pos = uri.find('%', start_parse_pos);
+    }
+    if (start_parse_pos < uri.size())
+    {
+        ss << uri.substr(start_parse_pos, (uri.size() - start_parse_pos));
+    }
+    return ss.str();
 }
 
 const std::string &HTTPParser::validateProtocolVersion(
