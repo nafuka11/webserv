@@ -21,7 +21,8 @@ public:
     };
 
     ClientSocket(int fd, const struct sockaddr_storage &address,
-                 const ServerConfig &config, const KqueuePoller &poller);
+                 const std::vector<ServerConfig> &configs,
+                 const KqueuePoller &poller);
     ~ClientSocket();
     void receiveRequest();
     void sendResponse();
@@ -32,7 +33,7 @@ public:
 
 private:
     static const size_t BUF_SIZE;
-    const ServerConfig &config_;
+    const std::vector<ServerConfig> &configs_;
     const KqueuePoller &poller_;
     HTTPRequest request_;
     HTTPResponse response_;

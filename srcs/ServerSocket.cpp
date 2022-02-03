@@ -31,7 +31,7 @@ ClientSocket *ServerSocket::acceptConnection(const KqueuePoller &poller) const
         throw SystemError("accept", errno);
     }
     setNonBlockingFd(connect_d);
-    ClientSocket *clientSocket = new ClientSocket(connect_d, address, config_, poller);
+    ClientSocket *clientSocket = new ClientSocket(connect_d, address, configs_, poller);
     return clientSocket;
 }
 
