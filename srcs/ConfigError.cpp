@@ -61,7 +61,7 @@ void ConfigError::setErrorMessage(const ConfigErrorType error_type, const std::s
     }
 }
 
-const char *ConfigError::ConfigError::what()  const throw()
+const char *ConfigError::ConfigError::what() const throw()
 {
     return error_message_.c_str();
 }
