@@ -81,7 +81,7 @@ const std::string &HTTPRequest::getProtocolVersion() const
     return protocol_version_;
 }
 
-const std::map<std::string, std::string> HTTPRequest::getHeaders() const
+const std::map<std::string, std::string> &HTTPRequest::getHeaders() const
 {
     return headers_;
 }

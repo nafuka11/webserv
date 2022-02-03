@@ -27,7 +27,7 @@ public:
     const std::string &getMethod() const;
     const std::string &getUri() const;
     const std::string &getProtocolVersion() const;
-    const std::map<std::string, std::string> getHeaders() const;
+    const std::map<std::string, std::string> &getHeaders() const;
     const std::string &getMessageBody() const;
     const std::string &getLocation() const;
 
