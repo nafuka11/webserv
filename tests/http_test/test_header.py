@@ -3,7 +3,8 @@ from http import HTTPStatus
 from http.client import HTTPConnection
 from typing import Callable
 
-from helper import HTML_PATH_OK, assert_response
+from conftest import VIRTUAL_HOST_PORT
+from helper import HTML_PATH_OK, HTML_PATH_VIRTUAL_HOST, assert_response
 
 
 # Test response header
@@ -120,3 +121,27 @@ def test_transfer_encoding_is_not_chunked(http_connection: HTTPConnection):
     http_connection.request("POST", "/test_post/", headers=headers)
     response = http_connection.getresponse()
     assert_response(HTTPStatus.BAD_REQUEST, response)
+
+
+def test_host_matches_server_name(
+    http_connection_factory: Callable[[int], HTTPConnection]
+):
+    """Hostの値がserver_nameと一致する場合、一致するserverからlocation探索すること"""
+    http_connection = http_connection_factory(VIRTUAL_HOST_PORT)
+    http_connection.putrequest("GET", "/", skip_host=True)
+    http_connection.putheader("host", "another_host")
+    http_connection.endheaders()
+    response = http_connection.getresponse()
+    assert_response(HTTPStatus.OK, response, HTML_PATH_VIRTUAL_HOST)
+
+
+def test_host_does_not_match_server_name(
+    http_connection_factory: Callable[[int], HTTPConnection]
+):
+    """Hostの値がserver_nameと一致しない場合、同portの最初のserverからlocation探索すること"""
+    http_connection = http_connection_factory(VIRTUAL_HOST_PORT)
+    http_connection.putrequest("GET", "/", skip_host=True)
+    http_connection.putheader("host", "no_such_host")
+    http_connection.endheaders()
+    response = http_connection.getresponse()
+    assert_response(HTTPStatus.OK, response, HTML_PATH_OK)
