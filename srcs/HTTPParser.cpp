@@ -7,8 +7,8 @@
 
 const std::string HTTPParser::NEWLINE = "\r\n";
 
-HTTPParser::HTTPParser(HTTPRequest &request, const ServerConfig &config)
-    : request_(request), config_(config), parse_pos_(0),
+HTTPParser::HTTPParser(HTTPRequest &request, const std::vector<ServerConfig> &configs)
+    : request_(request), configs_(configs), parse_pos_(0),
       parse_state_(PARSE_START_LINE), message_body_state_(NONE),
       content_length_(0), chunk_size_(0)
 {
@@ -92,11 +92,12 @@ bool HTTPParser::parseHeader()
     }
     if (line.empty())
     {
+        findServerConfig();
+        findLocation();
         if (!isValidHeaders())
         {
             throw HTTPParseException(CODE_400);
         }
-        findLocation();
         if (!isAllowMethod(request_.getMethod()))
         {
             throw HTTPParseException(CODE_405);
@@ -228,10 +229,33 @@ HTTPParser::MessageBodyState HTTPParser::judgeParseMessageBodyState()
     }
 }
 
+void HTTPParser::findServerConfig()
+{
+    std::map<std::string, std::string>::const_iterator
+        host = request_.getHeaders().find("host");
+    if (host != request_.getHeaders().end())
+    {
+        for (size_t i = 0; i < configs_.size(); i++)
+        {
+            if (configs_.at(i).serverName() == host->second)
+            {
+                request_.setServerConfig(&configs_.at(i));
+                return;
+            }
+        }
+    }
+    else
+    {
+        throw HTTPParseException(CODE_400);
+    }
+    request_.setServerConfig(&configs_.at(0));
+}
+
 void HTTPParser::findLocation()
 {
     const std::string uri = request_.getUri();
-    const std::map<std::string, LocationConfig> &locations = config_.location();
+    const std::map<std::string, LocationConfig> &
+        locations = request_.getServerConfig()->location();
     std::map<std::string, LocationConfig>::const_reverse_iterator
         riter = locations.rbegin();
 
@@ -248,10 +272,11 @@ void HTTPParser::findLocation()
 
 bool HTTPParser::isAllowMethod(const std::string &method)
 {
-    const std::map<std::string, LocationConfig> location = config_.location();
+    const std::map<std::string, LocationConfig> &
+        locations = request_.getServerConfig()->location();
     std::map<std::string, LocationConfig>::const_iterator
-        location_found = location.find(request_.getLocation());
-    if (location_found == location.end())
+        location_found = locations.find(request_.getLocation());
+    if (location_found == locations.end())
     {
         throw HTTPParseException(CODE_404);
     }
@@ -445,8 +470,9 @@ void HTTPParser::setContentLength(size_t content_length)
 
 void HTTPParser::setChunkSize(size_t chunk_size)
 {
-    if (config_.clientMaxBodySize() != 0 &&
-        chunk_size + request_.getMessageBody().size() > (size_t)config_.clientMaxBodySize())
+    int client_max_body_size = request_.getServerConfig()->clientMaxBodySize();
+    if (client_max_body_size != 0 &&
+        chunk_size + request_.getMessageBody().size() > static_cast<size_t>(client_max_body_size))
     {
         throw HTTPParseException(CODE_413);
     }
