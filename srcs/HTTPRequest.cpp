@@ -4,7 +4,7 @@ const std::string HTTPRequest::HTTP_GET = "GET";
 const std::string HTTPRequest::HTTP_POST = "POST";
 const std::string HTTPRequest::HTTP_DELETE = "DELETE";
 
-HTTPRequest::HTTPRequest()
+HTTPRequest::HTTPRequest() : server_config_(NULL)
 {
 }
 
@@ -61,6 +61,11 @@ void HTTPRequest::setMessageBody(const std::string &message_body)
     message_body_ = message_body;
 }
 
+void HTTPRequest::setServerConfig(const ServerConfig *server_config)
+{
+    server_config_ = server_config;
+}
+
 void HTTPRequest::setLocation(const std::string &location)
 {
     location_ = location;
@@ -81,7 +86,7 @@ const std::string &HTTPRequest::getProtocolVersion() const
     return protocol_version_;
 }
 
-const std::map<std::string, std::string> HTTPRequest::getHeaders() const
+const std::map<std::string, std::string> &HTTPRequest::getHeaders() const
 {
     return headers_;
 }
@@ -89,6 +94,11 @@ const std::map<std::string, std::string> HTTPRequest::getHeaders() const
 const std::string &HTTPRequest::getMessageBody() const
 {
     return message_body_;
+}
+
+const ServerConfig *HTTPRequest::getServerConfig() const
+{
+    return server_config_;
 }
 
 const std::string &HTTPRequest::getLocation() const

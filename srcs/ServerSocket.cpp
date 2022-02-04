@@ -7,9 +7,10 @@
 #include "AddressInfoError.hpp"
 #include "SystemError.hpp"
 
-ServerSocket::ServerSocket(const ServerConfig &config) : Socket(SERVER), config_(config)
+ServerSocket::ServerSocket(int port, const std::vector<ServerConfig> &configs)
+    : Socket(SERVER), configs_(configs)
 {
-    open();
+    open(port);
     listen();
     setNonBlockingFd(fd_);
 }
@@ -30,14 +31,14 @@ ClientSocket *ServerSocket::acceptConnection(const KqueuePoller &poller) const
         throw SystemError("accept", errno);
     }
     setNonBlockingFd(connect_d);
-    ClientSocket *clientSocket = new ClientSocket(connect_d, address, config_, poller);
+    ClientSocket *clientSocket = new ClientSocket(connect_d, address, configs_, poller);
     return clientSocket;
 }
 
-void ServerSocket::open()
+void ServerSocket::open(int port)
 {
     std::stringstream sstream;
-    sstream << config_.listen();
+    sstream << port;
     std::string string_port = sstream.str();
 
     struct addrinfo hints = {};

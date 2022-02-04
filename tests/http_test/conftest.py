@@ -10,6 +10,7 @@ import pytest
 HOST = "localhost"
 PORT = 4242
 CLIENT_MAX_BODY_SIZE_PORT = 8080
+VIRTUAL_HOST_PORT = 4243
 WEBSERV_PATH = "../../webserv"
 CONF_FILE = "./conf/default.conf"
 SLEEP_TIME = 0.1
