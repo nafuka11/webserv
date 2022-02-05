@@ -1,6 +1,6 @@
 #include "CGIParser.hpp"
 #include "HTTPParseException.hpp"
-#include <iostream> //TODO: 後で消す
+#include "SystemError.hpp"
 
 const std::string CGIParser::NEWLINE = "\n";
 
@@ -16,7 +16,12 @@ CGIParser::~CGIParser()
 void CGIParser::clear()
 {
     headers_.clear();
-    HTTPParser::clear();
+    raw_message_.clear();
+    parse_pos_ = 0;
+    parse_state_ = PARSE_START_LINE;
+    message_body_state_ = NONE;
+    content_length_ = 0;
+    chunk_size_ = 0;
 }
 
 void CGIParser::parse()
@@ -24,7 +29,6 @@ void CGIParser::parse()
     std::string line;
     while (tryGetLine(line, NEWLINE))
     {
-        std::cout << "line=[" << line << "]"; //TODO:  後で消す
         if (line.empty())
         {
             break;
@@ -32,7 +36,6 @@ void CGIParser::parse()
         std::string name, value;
         splitHeader(line, name, value);
         headers_.insert(validateHeader(name, value));
-        std::cout << " name=[" << name << "] value=[" << value << "]" << std::endl; //TODO: 後で消す
     }
     if (!isValidHeaders())
     {
@@ -80,7 +83,6 @@ const std::pair<std::string, std::string> CGIParser::validateHeader(std::string 
 {
     name = validateHeaderName(name);
     value = validateHeaderValue(value);
-    std::cout << "name: " << name << " value: " << value << std::endl;
     if (name == "status")
     {
         validateStatus(value);

@@ -26,21 +26,26 @@ public:
 
     HTTPParser(HTTPRequest &request, const std::vector<ServerConfig> &configs);
     virtual ~HTTPParser();
-    void clear();
-    void parse();
+    virtual void clear();
+    virtual void parse();
     void appendRawMessage(const char *message);
     bool finished();
+    size_t getContentLength() const;
 
 protected:
     std::string raw_message_;
     size_t parse_pos_;
     size_t newline_pos_;
+    ParseState parse_state_;
+    MessageBodyState message_body_state_;
+    size_t content_length_;
+    size_t chunk_size_;
 
-    virtual const std::pair<std::string, std::string> validateHeader(std::string &name,
-                                                                     std::string &value);
     virtual void splitHeader(const std::string &line,
                              std::string &header_name, std::string &header_value);
     virtual bool isValidHeaders();
+    virtual const std::pair<std::string, std::string> validateHeader(std::string &name,
+                                                                     std::string &value);
     bool tryGetLine(std::string &line, const std::string &newline);
     bool isSpace(char c);
     const std::string &validateHeaderName(std::string &name);
@@ -50,12 +55,6 @@ private:
     static const std::string NEWLINE;
     HTTPRequest &request_;
     const std::vector<ServerConfig> &configs_;
-    // std::string raw_message_;
-    // size_t parse_pos_;
-    ParseState parse_state_;
-    MessageBodyState message_body_state_;
-    size_t content_length_;
-    size_t chunk_size_;
 
     bool parseStartLine();
     bool parseHeader();

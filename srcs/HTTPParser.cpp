@@ -9,9 +9,9 @@
 const std::string HTTPParser::NEWLINE = "\r\n";
 
 HTTPParser::HTTPParser(HTTPRequest &request, const std::vector<ServerConfig> &configs)
-    : parse_pos_(0), request_(request), configs_(configs),
-      parse_state_(PARSE_START_LINE), message_body_state_(NONE),
-      content_length_(0), chunk_size_(0)
+    : parse_pos_(0), parse_state_(PARSE_START_LINE),
+      message_body_state_(NONE), content_length_(0), chunk_size_(0),
+      request_(request), configs_(configs)
 {
 }
 
@@ -38,6 +38,12 @@ bool HTTPParser::finished()
 {
     return parse_state_ == PARSE_FINISH;
 }
+
+size_t HTTPParser::getContentLength() const
+{
+    return content_length_;
+}
+
 
 void HTTPParser::parse()
 {
