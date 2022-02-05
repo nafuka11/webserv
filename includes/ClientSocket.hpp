@@ -59,6 +59,9 @@ private:
     void handleErrorFromFile(const LocationConfig *location, HTTPStatusCode statusCode);
     void openFile(const char *path);
     DIR *openDirectory(const char *path);
+    void createPipe(const std::string &method, int *pipe_cgi_read, int *pipe_cgi_write);
+    void prepareCGIInOut(const std::string &method, int *pipe_cgi_read, int *pipe_cgi_write);
+    void prepareServerInOut(const std::string &method, int *pipe_cgi_read, int *pipe_cgi_write);
     void closeDirectory(DIR *dir_p);
     void clearRequest();
     const LocationConfig *searchLocationConfig(const std::string &location);

@@ -89,7 +89,6 @@ void ClientSocket::sendCGIResponse()
     }
     catch (const HTTPParseException &e)
     {
-        // std::cout << "in ClientSocket::sendCGIResponse()=" << e.getStatusCode() << std::endl;
         handleError(e.getStatusCode());
     }
 }
@@ -280,13 +279,9 @@ void ClientSocket::handleRedirect(const Uri &uri)
 
 void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
 {
-    (void)method;
-
-    int pipe_fd[2]; // pipeの情報はClientSocketで持ちたい
-    if (pipe(pipe_fd) < 0)
-    {
-        throw SystemError("pipe", errno);
-    }
+    int pipe_cgi_read[2];
+    int pipe_cgi_write[2];
+    createPipe(method, pipe_cgi_read, pipe_cgi_write);
 
     pid_t pid;
     pid = fork();
@@ -296,22 +291,26 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
     }
     if (pid == 0)  // Child prosess
     {
-        ::close(pipe_fd[0]);
-        ::close(STDOUT_FILENO);
-        dup2(pipe_fd[1], STDOUT_FILENO);
+        prepareCGIInOut(method, pipe_cgi_read, pipe_cgi_write);
 
         CGI cgi = CGI(request_, uri, *request_.getServerConfig(), method, ip_);
         cgi.Execute();
     }
     else // Parent process
     {
+        prepareServerInOut(method, pipe_cgi_read, pipe_cgi_write);
+
+        if (method == "POST")
+        {
+            write(pipe_cgi_read[1], request_.getMessageBody().c_str(), parser_.getContentLength());
+            ::close(pipe_cgi_read[1]);
+        }
+
         if (waitpid(pid, NULL, 0) != pid)
         {
             throw SystemError("waitpid", errno);
         }
 
-        ::close(pipe_fd[1]);
-        file_fd_ = pipe_fd[0];
         setNonBlockingFd(file_fd_);
         changeState(READ_CGI);
     }
@@ -371,6 +370,49 @@ DIR *ClientSocket::openDirectory(const char *path)
     }
     return dir_p;
 }
+
+void ClientSocket::createPipe(const std::string &method,
+                              int *pipe_cgi_read, int *pipe_cgi_write)
+{
+    if (method == "POST")
+    {
+        if (pipe(pipe_cgi_read) < 0)
+        {
+            throw SystemError("pipe", errno);
+        }
+    }
+    if (pipe(pipe_cgi_write) < 0)
+    {
+        throw SystemError("pipe", errno);
+    }
+}
+
+void ClientSocket::prepareCGIInOut(const std::string &method,
+                                   int *pipe_cgi_read, int *pipe_cgi_write)
+{
+    if (method == "POST")
+    {
+        ::close(pipe_cgi_read[1]);
+        ::close(STDIN_FILENO);
+        dup2(pipe_cgi_read[0], STDIN_FILENO);
+    }
+    ::close(pipe_cgi_write[0]);
+    ::close(STDOUT_FILENO);
+    dup2(pipe_cgi_write[1], STDOUT_FILENO);
+}
+
+void ClientSocket::prepareServerInOut(const std::string &method,
+                                      int *pipe_cgi_read, int *pipe_cgi_write)
+{
+    if (method == "POST")
+    {
+        ::close(pipe_cgi_read[0]);
+    }
+    ::close(pipe_cgi_write[1]);
+    file_fd_ = pipe_cgi_write[0];
+}
+
+
 
 void ClientSocket::closeDirectory(DIR *dir_p)
 {
