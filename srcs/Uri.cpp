@@ -3,7 +3,6 @@
 #include <cerrno>
 #include "HTTPParseException.hpp"
 #include "HTTPRequest.hpp"
-#include <iostream> //TODO: 後で消す
 
 Uri::Uri(const ServerConfig &server_config,
          const std::string &uri, const std::string &method)

@@ -1,7 +1,6 @@
 #include "HTTPResponse.hpp"
 #include <sstream>
 #include <iomanip>
-#include <iostream> //TODO: 後で消す
 
 const std::string HTTPResponse::CRLF = "\r\n";
 const std::map<int, std::string>

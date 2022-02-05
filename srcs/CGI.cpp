@@ -4,8 +4,6 @@
 #include <unistd.h>
 #include "SystemError.hpp"
 
-#include <iostream>//TODO: 後で消す
-
 const std::map<std::string, std::string> CGI::EXEC_PATH = CGI::createExecutePath();
 const std::map<std::string,std::string> CGI::EXEC_COMMAND = CGI::createExecuteCommand();
 
@@ -133,8 +131,6 @@ void CGI::setEnvp(const std::string &ip, const std::string &method)
          env++, index++)
     {
         std::string env_str = env->first + "=" + env->second;
-        // envp_[index] = new char[env_str.size() + 1];
-        // std::char_traits<char>::copy(envp_[index], env_str.c_str(), env_str.size() + 1);
         envp_[index] = strdup(env_str.c_str());
     }
     envp_[index] = NULL;
