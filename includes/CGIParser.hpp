@@ -7,7 +7,7 @@
 class CGIParser : public HTTPParser
 {
 public:
-    CGIParser(HTTPRequest &request, const ServerConfig &config, HTTPResponse &response);
+    CGIParser(HTTPRequest &request, const std::vector<ServerConfig> &configs, HTTPResponse &response);
     ~CGIParser();
     void parse();
     void clear();

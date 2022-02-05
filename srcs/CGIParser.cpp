@@ -4,8 +4,8 @@
 
 const std::string CGIParser::NEWLINE = "\n";
 
-CGIParser::CGIParser(HTTPRequest &request, const ServerConfig &config, HTTPResponse &response)
-    : HTTPParser(request, config), response_(response)
+CGIParser::CGIParser(HTTPRequest &request, const std::vector<ServerConfig> &configs, HTTPResponse &response)
+    : HTTPParser(request, configs), response_(response)
 {
 }
 

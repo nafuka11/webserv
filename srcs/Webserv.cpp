@@ -23,9 +23,12 @@ void Webserv::run()
 
 void Webserv::setupServers()
 {
-    for (size_t i = 0; i < config_.server().size(); i++)
+    std::map<int, std::vector<ServerConfig> >::const_iterator
+        iter = config_.server().begin();
+
+    for (; iter != config_.server().end(); ++iter)
     {
-        ServerSocket *server = new ServerSocket(config_.server()[i]);
+        ServerSocket *server = new ServerSocket(iter->first, iter->second);
         sockets_.insert(std::make_pair(server->getFd(), server));
     }
 }

@@ -24,7 +24,7 @@ public:
         NONE
     };
 
-    HTTPParser(HTTPRequest &request, const ServerConfig &config);
+    HTTPParser(HTTPRequest &request, const std::vector<ServerConfig> &configs);
     virtual ~HTTPParser();
     void clear();
     void parse();
@@ -49,7 +49,9 @@ protected:
 private:
     static const std::string NEWLINE;
     HTTPRequest &request_;
-    const ServerConfig &config_;
+    const std::vector<ServerConfig> &configs_;
+    // std::string raw_message_;
+    // size_t parse_pos_;
     ParseState parse_state_;
     MessageBodyState message_body_state_;
     size_t content_length_;
@@ -62,6 +64,7 @@ private:
     bool parseMessageBodyFromChunkSize();
     bool parseMessageBodyFromChunkData();
     MessageBodyState judgeParseMessageBodyState();
+    void findServerConfig();
     void findLocation();
     bool isAllowMethod(const std::string &method);
 

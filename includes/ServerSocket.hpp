@@ -9,14 +9,14 @@
 class ServerSocket : public Socket
 {
 public:
-    ServerSocket(const ServerConfig &config);
+    ServerSocket(int port, const std::vector<ServerConfig> &configs);
     ~ServerSocket();
     ClientSocket *acceptConnection(const KqueuePoller &poller) const;
 
 private:
-    const ServerConfig &config_;
+    const std::vector<ServerConfig> &configs_;
 
-    void open();
+    void open(int port);
     int openFromAddress(struct addrinfo *address);
     void listen();
 };

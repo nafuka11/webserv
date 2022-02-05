@@ -11,9 +11,10 @@
 const size_t ClientSocket::BUF_SIZE = 8192;
 
 ClientSocket::ClientSocket(int fd, const struct sockaddr_storage &address,
-                           const ServerConfig &config, const KqueuePoller &poller)
-    : Socket(CLIENT, fd), config_(config), poller_(poller),
-      parser_(request_, config_), cgi_parser_(request_, config_, response_), state_(READ_REQUEST)
+                           const std::vector<ServerConfig> &configs,
+                           const KqueuePoller &poller)
+    : Socket(CLIENT, fd), configs_(configs), poller_(poller),
+      parser_(request_, configs_), cgi_parser_(request_, configs_, response_), state_(READ_REQUEST)
 {
     address_ = address;
     ip_ = resolveIPAddress(address_);
@@ -207,7 +208,7 @@ void ClientSocket::prepareResponse()
 {
     response_.setStatusCode(CODE_200);
 
-    Uri uri = Uri(config_, request_.getUri(), request_.getMethod());
+    Uri uri = Uri(*request_.getServerConfig(), request_.getUri(), request_.getMethod());
 
     switch (uri.getResourceType())
     {
@@ -299,7 +300,7 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
         ::close(STDOUT_FILENO);
         dup2(pipe_fd[1], STDOUT_FILENO);
 
-        CGI cgi = CGI(request_, uri, config_, method, ip_);
+        CGI cgi = CGI(request_, uri, *request_.getServerConfig(), method, ip_);
         cgi.Execute();
     }
     else // Parent process
@@ -343,7 +344,7 @@ void ClientSocket::handleErrorFromFile(const LocationConfig *location,
     std::map<int, std::string>::const_iterator page_found = error_pages.find(statusCode);
     if (page_found != error_pages.end())
     {
-        Uri uri = Uri(config_, page_found->second, HTTPRequest::HTTP_GET);
+        Uri uri = Uri(*request_.getServerConfig(), page_found->second, HTTPRequest::HTTP_GET);
         handleFile(HTTPRequest::HTTP_GET, uri);
     }
     else
@@ -389,7 +390,12 @@ void ClientSocket::clearRequest()
 
 const LocationConfig *ClientSocket::searchLocationConfig(const std::string &location)
 {
-    const std::map<std::string, LocationConfig> &locations = config_.location();
+    if (request_.getServerConfig() == NULL)
+    {
+        return NULL;
+    }
+    const std::map<std::string, LocationConfig> &
+        locations = request_.getServerConfig()->location();
     const std::map<std::string, LocationConfig>::const_iterator
         location_found = locations.find(location);
     if (location_found != locations.end())
