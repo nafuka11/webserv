@@ -61,6 +61,12 @@ bool Uri::canWrite(const struct stat &path_stat) const
 void Uri::splitRawUri()
 {
     size_t query_pos = raw_uri_.find('?');
+    if (query_pos == std::string::npos)
+    {
+        raw_path_ = raw_uri_;
+        query_ = "";
+        return ;
+    }
     raw_path_ = raw_uri_.substr(0, query_pos);
     query_ = raw_uri_.substr(query_pos + 1);
     parseQuery();
