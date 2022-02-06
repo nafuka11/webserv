@@ -76,6 +76,7 @@ void HTTPResponse::appendMessageBody(const char *body, size_t size)
 void HTTPResponse::clear()
 {
     message_body_.clear();
+    headers_.clear();
 }
 
 void HTTPResponse::setHeader(const std::pair<std::string, std::string> &item)
