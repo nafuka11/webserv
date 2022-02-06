@@ -82,7 +82,7 @@ void ClientSocket::readFile(intptr_t offset)
         return;
     }
     buffer[read_byte] = '\0';
-    response_.appendMessageBody(buffer);
+    response_.appendMessageBody(buffer, read_byte);
     if (read_byte == offset)
     {
         closeFile();
@@ -200,7 +200,7 @@ void ClientSocket::handleAutoindex(const std::string &method, const Uri &uri)
 
         DIR *dir_p = openDirectory(path.c_str());
         std::string body = response_.generateAutoindexHTML(uri, dir_p);
-        response_.appendMessageBody(body.c_str());
+        response_.appendMessageBody(body.c_str(), body.size());
         closeDirectory(dir_p);
         changeState(WRITE_RESPONSE);
     }
