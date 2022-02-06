@@ -327,3 +327,16 @@ std::string ClientSocket::resolveIPAddress(const sockaddr_storage &addr) const
     }
     return std::string(hostname);
 }
+
+std::string ClientSocket::buildUploadFilePath(const std::string &upload_dir)
+{
+    time_t now = time(NULL);
+    struct tm *now_time = gmtime(&now);
+    char str[20];
+
+    // ファイルフォーマット: yyyymmddHHMMSS_rand()
+    strftime(str, sizeof(str), "%Y%m%d%H%M%S", now_time);
+    std::stringstream ss;
+    ss << upload_dir << str << "_" << rand();
+    return ss.str();
+}
