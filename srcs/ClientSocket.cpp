@@ -1,4 +1,5 @@
 #include "ClientSocket.hpp"
+#include <sstream>
 #include <cerrno>
 #include <unistd.h>
 #include <fcntl.h>
@@ -89,6 +90,19 @@ void ClientSocket::readFile(intptr_t offset)
     }
 }
 
+void ClientSocket::writeFile()
+{
+    const std::string &body = request_.getMessageBody();
+    ssize_t write_byte = write(file_fd_, body.c_str(), body.size());
+    if (write_byte < 0)
+    {
+        closeFile();
+        handleError(CODE_500);
+    }
+    closeFile();
+    response_.setStatusCode(CODE_201);
+}
+
 void ClientSocket::closeFile()
 {
     ::close(file_fd_);
@@ -120,6 +134,8 @@ void ClientSocket::changeState(State new_state)
     case WRITE_RESPONSE:
         poller_.unregisterWriteEvent(this, fd_);
         break;
+    case WRITE_FILE:
+        break;
     default:
         break;
     }
@@ -134,6 +150,8 @@ void ClientSocket::changeState(State new_state)
     case WRITE_RESPONSE:
         poller_.registerWriteEvent(this, fd_);
         break;
+    case WRITE_FILE:
+        poller_.registerWriteEvent(this, file_fd_);
     default:
         break;
     }
@@ -189,6 +207,18 @@ void ClientSocket::handleFile(const std::string &method, const Uri &uri)
         }
         response_.setStatusCode(CODE_204);
         changeState(WRITE_RESPONSE);
+    }
+    else if (method == HTTPRequest::HTTP_POST)
+    {
+        if (uri.getLocationConfig()->uploadPath().empty())
+        {
+            throw HTTPParseException(CODE_403);
+        }
+        std::string path = buildUploadFilePath(uri.getLocationConfig()->uploadPath());
+
+        openFileToWrite(path);
+        setNonBlockingFd(file_fd_);
+        changeState(WRITE_FILE);
     }
 }
 

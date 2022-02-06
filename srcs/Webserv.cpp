@@ -104,6 +104,15 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
             client->sendResponse();
         }
         break;
+    case ClientSocket::WRITE_FILE:
+        if (event.flags & EV_EOF)
+        {
+            client->closeFile();
+        }
+        if (event.filter == EVFILT_WRITE)
+        {
+            client->writeFile();
+        }
     default:
         break;
     }
