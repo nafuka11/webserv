@@ -15,7 +15,7 @@ public:
     ~HTTPResponse();
     std::string toString(const LocationConfig *location);
     std::string CGItoString(const LocationConfig *location);
-    void appendMessageBody(const char *body);
+    void appendMessageBody(const char *body, size_t size);
     void clear();
     void setHeader(const std::pair<std::string, std::string> &item);
     void setStatusCode(int status_code);

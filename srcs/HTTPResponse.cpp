@@ -68,9 +68,9 @@ std::string HTTPResponse::CGItoString(const LocationConfig *location)
 
 }
 
-void HTTPResponse::appendMessageBody(const char *body)
+void HTTPResponse::appendMessageBody(const char *body, size_t size)
 {
-    message_body_.append(body);
+    message_body_.append(body, size);
 }
 
 void HTTPResponse::clear()
