@@ -35,7 +35,7 @@ void ClientSocket::receiveRequest()
         return;
     }
     buffer[read_byte] = '\0';
-    parser_.appendRawMessage(buffer);
+    parser_.appendRawMessage(buffer, read_byte);
     try
     {
         parser_.parse();
