@@ -50,7 +50,8 @@ private:
     void handleCGI(const std::string &method, const Uri &uri);
     void handleError(HTTPStatusCode statusCode);
     void handleErrorFromFile(const LocationConfig *location, HTTPStatusCode statusCode);
-    void openFile(const char *path);
+    void openFileToRead(const std::string &path);
+    void openFileToWrite(const std::string &path);
     DIR *openDirectory(const char *path);
     void closeDirectory(DIR *dir_p);
     void clearRequest();

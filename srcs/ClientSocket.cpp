@@ -171,7 +171,7 @@ void ClientSocket::handleFile(const std::string &method, const Uri &uri)
     {
         std::string path = uri.getLocalPath();
 
-        openFile(path.c_str());
+        openFileToRead(path.c_str());
         setNonBlockingFd(file_fd_);
         changeState(READ_FILE);
     }
@@ -256,9 +256,18 @@ void ClientSocket::handleErrorFromFile(const LocationConfig *location,
     }
 }
 
-void ClientSocket::openFile(const char *path)
+void ClientSocket::openFileToRead(const std::string &path)
 {
-    file_fd_ = open(path, O_RDONLY);
+    file_fd_ = open(path.c_str(), O_RDONLY);
+    if (file_fd_ < 0)
+    {
+        throw HTTPParseException(CODE_404);
+    }
+}
+
+void ClientSocket::openFileToWrite(const std::string &path)
+{
+    file_fd_ = open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (file_fd_ < 0)
     {
         throw HTTPParseException(CODE_404);
