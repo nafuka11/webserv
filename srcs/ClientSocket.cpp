@@ -69,11 +69,7 @@ void ClientSocket::sendResponse()
 
 void ClientSocket::sendCGIResponse()
 {
-    try
-    {
-        cgi_parser_.parse();
-
-        response_.setKeepAlive(request_.canKeepAlive());
+    response_.setKeepAlive(request_.canKeepAlive());
         std::string message = response_.CGItoString(searchLocationConfig(request_.getLocation()));
         ::send(fd_, message.c_str(), message.size(), 0);
         if (request_.canKeepAlive())
@@ -86,11 +82,6 @@ void ClientSocket::sendCGIResponse()
             changeState(CLOSE);
         }
         clearRequest();
-    }
-    catch (const HTTPParseException &e)
-    {
-        handleError(e.getStatusCode());
-    }
 }
 
 void ClientSocket::readFile(intptr_t offset)
@@ -124,16 +115,22 @@ void ClientSocket::readCGI(intptr_t offset)
     {
         response_.setStatusCode(CODE_404);
     }
-    if (read_byte <= 0)
+    if (read_byte != 0)
     {
-        closeFile();
-        return;
+        buffer[read_byte] = '\0';
+        cgi_parser_.appendRawMessage(buffer, read_byte);
     }
-    buffer[read_byte] = '\0';
-    cgi_parser_.appendRawMessage(buffer);
-    if (read_byte == offset)
+    if ((read_byte == 0) || (read_byte == offset))
     {
         closeFile();
+        try
+        {
+            cgi_parser_.parse();
+        }
+        catch (const HTTPParseException &e)
+        {
+            handleError(e.getStatusCode());
+        }
     }
 }
 

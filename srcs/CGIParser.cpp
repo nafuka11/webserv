@@ -7,6 +7,7 @@ const std::string CGIParser::NEWLINE = "\n";
 CGIParser::CGIParser(HTTPRequest &request, const std::vector<ServerConfig> &configs, HTTPResponse &response)
     : HTTPParser(request, configs), response_(response)
 {
+    parse_state_ = PARSE_HEADERS;
 }
 
 CGIParser::~CGIParser()
@@ -15,10 +16,10 @@ CGIParser::~CGIParser()
 
 void CGIParser::clear()
 {
-    headers_.clear();
+    raw_cgi_headers_.clear();
     raw_message_.clear();
     parse_pos_ = 0;
-    parse_state_ = PARSE_START_LINE;
+    parse_state_ = PARSE_HEADERS;
     message_body_state_ = NONE;
     content_length_ = 0;
     chunk_size_ = 0;
@@ -26,24 +27,59 @@ void CGIParser::clear()
 
 void CGIParser::parse()
 {
-    std::string line;
-    while (tryGetLine(line, NEWLINE))
+    bool need_parse = true;
+
+    while (need_parse)
     {
-        if (line.empty())
+        switch (parse_state_)
         {
+        case PARSE_HEADERS:
+            need_parse = parseHeader();
+            break;
+        case PARSE_MESSAGE_BODY:
+            need_parse = parseMessageBody();
+            break;
+        case PARSE_FINISH:
+            need_parse = false;
+            break;
+        default:
             break;
         }
-        std::string name, value;
-        splitHeader(line, name, value);
-        headers_.insert(validateHeader(name, value));
     }
-    if (!isValidHeaders())
-    {
-        throw HTTPParseException(CODE_502);
-    }
-    setInResponseHeaders();
-    response_.setMessageBody(raw_message_.substr(parse_pos_, newline_pos_ - parse_pos_));
 }
+
+bool CGIParser::parseHeader()
+{
+    std::string line;
+    if (!tryGetLine(line, NEWLINE))
+    {
+        return false;
+    }
+    if (line.empty())
+    {
+        if (!isValidHeaders())
+        {
+            throw HTTPParseException(CODE_502);
+        }
+        generateResponseHeaders();
+        parse_state_ = PARSE_MESSAGE_BODY;
+        return true;
+    }
+    std::string name, value;
+    splitHeader(line, name, value);
+    raw_cgi_headers_.insert(validateHeader(name, value));
+    return true;
+}
+
+bool CGIParser::parseMessageBody()
+{
+    std::string message_body = raw_message_.substr(parse_pos_);
+    response_.appendMessageBody(message_body.c_str(), message_body.size());
+    parse_pos_ += content_length_;
+    parse_state_ = PARSE_FINISH;
+    return true;
+}
+
 
 void CGIParser::splitHeader(const std::string &line,
                             std::string &header_name, std::string &header_value)
@@ -69,9 +105,9 @@ void CGIParser::splitHeader(const std::string &line,
 
 bool CGIParser::isValidHeaders()
 {
-    if (headers_.count("content-type") == 0
-        && headers_.count("location") == 0
-        && headers_.count("status") == 0)
+    if (raw_cgi_headers_.count("content-type") == 0
+        && raw_cgi_headers_.count("location") == 0
+        && raw_cgi_headers_.count("status") == 0)
     {
         return false;
     }
@@ -120,18 +156,18 @@ void CGIParser::validateStatus(const std::string &value)
     response_.setStatusCode(status);
 }
 
-void CGIParser::setInResponseHeaders()
+void CGIParser::generateResponseHeaders()
 {
-    if (headers_.count("content-type") == 1)
+    if (raw_cgi_headers_.count("content-type") == 1)
     {
-        response_.setHeader(std::make_pair("Content-Type", headers_["content-type"]));
+        response_.setHeader(std::make_pair("Content-Type", raw_cgi_headers_["content-type"]));
     }
-    if (headers_.count("location") == 1)
+    if (raw_cgi_headers_.count("location") == 1)
     {
-        response_.setHeader(std::make_pair("Location", headers_["location"]));
+        response_.setHeader(std::make_pair("Location", raw_cgi_headers_["location"]));
     }
-    if (headers_.count("status") == 1)
+    if (raw_cgi_headers_.count("status") == 1)
     {
-        response_.setHeader(std::make_pair("Status", headers_["status"]));
+        response_.setHeader(std::make_pair("Status", raw_cgi_headers_["status"]));
     }
 }

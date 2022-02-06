@@ -41,6 +41,9 @@ protected:
     size_t content_length_;
     size_t chunk_size_;
 
+    virtual bool parseHeader();
+    virtual bool parseMessageBody();
+
     virtual void splitHeader(const std::string &line,
                              std::string &header_name, std::string &header_value);
     virtual bool isValidHeaders();
@@ -57,8 +60,8 @@ private:
     const std::vector<ServerConfig> &configs_;
 
     bool parseStartLine();
-    bool parseHeader();
-    bool parseMessageBody();
+    // bool parseHeader();
+    // bool parseMessageBody();
     bool parseMessageBodyFromContentLength();
     bool parseMessageBodyFromChunkSize();
     bool parseMessageBodyFromChunkData();

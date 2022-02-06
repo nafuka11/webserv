@@ -1,6 +1,5 @@
 #include "Webserv.hpp"
 #include "ServerSocket.hpp"
-#include <iostream>
 
 Webserv::Webserv(const std::string &filepath) : config_(Config())
 {
