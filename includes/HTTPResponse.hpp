@@ -14,7 +14,7 @@ public:
     HTTPResponse();
     ~HTTPResponse();
     std::string toString(const LocationConfig *location);
-    void appendMessageBody(const char *body);
+    void appendMessageBody(const char *body, size_t size);
     void clear();
     void setStatusCode(int status_code);
     void setKeepAlive(bool keep_alive);
