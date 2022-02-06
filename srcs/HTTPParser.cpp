@@ -28,9 +28,9 @@ void HTTPParser::clear()
     chunk_size_ = 0;
 }
 
-void HTTPParser::appendRawMessage(const char *message)
+void HTTPParser::appendRawMessage(const char *message, size_t size)
 {
-    raw_message_.append(message);
+    raw_message_.append(message, size);
 }
 
 bool HTTPParser::finished()

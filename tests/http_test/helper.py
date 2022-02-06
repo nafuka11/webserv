@@ -5,6 +5,7 @@ from typing import Optional
 HTML_PATH_OK = "./docs/index.html"
 HTML_PATH_404 = "./docs/error_page/404.html"
 HTML_PATH_VIRTUAL_HOST = "./docs/vhost/index.html"
+HTML_PATH_NULL = "./docs/contains_null.html"
 
 
 def assert_response(

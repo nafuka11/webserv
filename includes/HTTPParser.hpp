@@ -28,7 +28,7 @@ public:
     ~HTTPParser();
     void clear();
     void parse();
-    void appendRawMessage(const char *message);
+    void appendRawMessage(const char *message, size_t size);
     bool finished();
 
 private:
