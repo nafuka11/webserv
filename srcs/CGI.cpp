@@ -62,7 +62,7 @@ void CGI::setArgv(const std::string &path)
 {
     std::vector<std::string> uri_args = uri_.getArguments();
     std::string command = EXEC_COMMAND.find(extension_)->second;
-    int size = uri_args.size() + 2;
+    int size = uri_args.size() + 3;
     int index = 0;
 
     argv_ = new char*[size];
@@ -73,7 +73,7 @@ void CGI::setArgv(const std::string &path)
          arg != uri_args.end();
          ++arg)
     {
-        argv_[index] = strdup(arg->c_str());
+        argv_[index++] = strdup(arg->c_str());
     }
     argv_[index] = NULL;
 }
@@ -108,7 +108,7 @@ void CGI::setEnvp(const std::string &ip, const std::string &method)
     }
     envs["GATEWAY_INTERFACE"] = "CGI/1.1";
     envs["PATH_INFO"] = uri_.getRawPath();
-    envs["PATH_TRANSLATED"] = "(test)";
+    envs["PATH_TRANSLATED"] = "";
     envs["QUERY_STRING"] = uri_.getQuery();
     envs["REMOTE_ADDR"] = ip;
     envs["REMOTE_HOST"] = "";
