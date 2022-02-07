@@ -13,41 +13,41 @@ CGI::CGI(const HTTPRequest &request, const Uri &uri, const ServerConfig &config,
     : request_(request), uri_(uri), config_(config)
 {
     setPath(uri_.getLocalPath());
-    setArgv(uri_.getLocalPath());
-    setEnvp(ip, method);
+    setArgs(uri_.getLocalPath());
+    setEnvs(ip, method);
 }
 
 CGI::~CGI()
 {
-    for (int i = 0; argv_[i]; i++)
+    for (int i = 0; exec_args_[i]; i++)
     {
-        delete argv_[i];
+        delete exec_args_[i];
     }
-    delete[] argv_;
+    delete[] exec_args_;
 
-    for (int i = 0; envp_[i]; i++)
+    for (int i = 0; exec_envs_[i]; i++)
     {
-        delete envp_[i];
+        delete exec_envs_[i];
     }
-    delete[]  envp_;
+    delete[]  exec_envs_;
 }
 
 std::map<std::string,std::string> CGI::createExecutePath()
 {
-    std::map<std::string,std::string> exec_path;
+    std::map<std::string,std::string> path;
 
-    exec_path[".php"] = "/usr/bin/php";
-    exec_path[".pl"] =  "/usr/bin/perl";
-    return exec_path;
+    path[".php"] = "/usr/bin/php";
+    path[".pl"] =  "/usr/bin/perl";
+    return path;
 }
 
 std::map<std::string, std::string> CGI::createExecuteCommand()
 {
-    std::map<std::string,std::string> exec_command;
+    std::map<std::string,std::string> command;
 
-    exec_command[".php"] = "php";
-    exec_command[".pl"] = "perl";
-    return exec_command;
+    command[".php"] = "php";
+    command[".pl"] = "perl";
+    return command;
 }
 
 
@@ -55,90 +55,90 @@ void CGI::setPath(const std::string &local_path)
 {
     size_t extension_pos = local_path.rfind(".");
     extension_ = local_path.substr(extension_pos);
-    path_ = EXEC_PATH.find(extension_)->second;
+    exec_path_ = EXEC_PATH.find(extension_)->second;
 }
 
-void CGI::setArgv(const std::string &path)
+void CGI::setArgs(const std::string &path)
 {
     std::vector<std::string> uri_args = uri_.getArguments();
     std::string command = EXEC_COMMAND.find(extension_)->second;
     int size = uri_args.size() + 3;
     int index = 0;
 
-    argv_ = new char*[size];
-    argv_[index++] = strdup(command.c_str());
-    argv_[index++] = strdup(path.c_str());
+    exec_args_ = new char*[size];
+    exec_args_[index++] = strdup(command.c_str());
+    exec_args_[index++] = strdup(path.c_str());
 
     for (std::vector<std::string>::iterator arg = uri_args.begin();
          arg != uri_args.end();
          ++arg)
     {
-        argv_[index++] = strdup(arg->c_str());
+        exec_args_[index++] = strdup(arg->c_str());
     }
-    argv_[index] = NULL;
+    exec_args_[index] = NULL;
 }
 
-void CGI::setEnvp(const std::string &ip, const std::string &method)
+void CGI::setEnvs(const std::string &ip, const std::string &method)
 {
-    std::map<std::string, std::string> envs;
+    std::map<std::string, std::string> tmp_envs;
     std::map<std::string, std::string> headers = request_.getHeaders();
 
     std::map<std::string, std::string>::const_iterator authorization = headers.find("authorization");
     if (authorization != headers.end())
     {
-        envs["AUTH_TYPE"] = authorization->second;
+        tmp_envs["AUTH_TYPE"] = authorization->second;
     }
     else
     {
-        envs["AUTH_TYPE"] = "";
+        tmp_envs["AUTH_TYPE"] = "";
     }
     std::map<std::string, std::string>::const_iterator content_length = headers.find("content-length");
     if (content_length != headers.end())
     {
-        envs["CONTENT_LENGTH"] = content_length->second;
+        tmp_envs["CONTENT_LENGTH"] = content_length->second;
     }
     else
     {
-        envs["CONTENT_LENGTH"] = "";
+        tmp_envs["CONTENT_LENGTH"] = "";
     }
     std::map<std::string, std::string>::const_iterator content_type = headers.find("content-type");
     if (content_type != headers.end())
     {
-        envs["CONTENT_TYPE"] = content_type->second;
+        tmp_envs["CONTENT_TYPE"] = content_type->second;
     }
-    envs["GATEWAY_INTERFACE"] = "CGI/1.1";
-    envs["PATH_INFO"] = uri_.getRawPath();
-    envs["PATH_TRANSLATED"] = "";
-    envs["QUERY_STRING"] = uri_.getQuery();
-    envs["REMOTE_ADDR"] = ip;
-    envs["REMOTE_HOST"] = "";
-    envs["REMOTE_IDENT"] = "";
-    envs["REMOTE_USER"] = "";
-    envs["REQUEST_METHOD"] = method;
-    envs["SCRIPT_NAME"] = envs["PATH_INFO"];
-    envs["SERVER_NAME"] = headers["host"];
+    tmp_envs["GATEWAY_INTERFACE"] = "CGI/1.1";
+    tmp_envs["PATH_INFO"] = uri_.getRawPath();
+    tmp_envs["PATH_TRANSLATED"] = "";
+    tmp_envs["QUERY_STRING"] = uri_.getQuery();
+    tmp_envs["REMOTE_ADDR"] = ip;
+    tmp_envs["REMOTE_HOST"] = "";
+    tmp_envs["REMOTE_IDENT"] = "";
+    tmp_envs["REMOTE_USER"] = "";
+    tmp_envs["REQUEST_METHOD"] = method;
+    tmp_envs["SCRIPT_NAME"] = tmp_envs["PATH_INFO"];
+    tmp_envs["SERVER_NAME"] = headers["host"];
 
     std::stringstream ss;
     ss << config_.listen();
-    envs["SERVER_PORT"] = ss.str();
-    envs["SERVER_PROTOCOL"] = "HTTP/1.1";
-    envs["SERVER_SOFTWARE"] = "webserv/1.0.0";
+    tmp_envs["SERVER_PORT"] = ss.str();
+    tmp_envs["SERVER_PROTOCOL"] = "HTTP/1.1";
+    tmp_envs["SERVER_SOFTWARE"] = "webserv/1.0.0";
 
-    envp_ = new char*[18];
+    exec_envs_ = new char*[18];
     size_t index = 0;
-    for (std::map<std::string, std::string>::const_iterator env = envs.begin();
-         env != envs.end();
+    for (std::map<std::string, std::string>::const_iterator env = tmp_envs.begin();
+         env != tmp_envs.end();
          env++, index++)
     {
         std::string env_str = env->first + "=" + env->second;
-        envp_[index] = strdup(env_str.c_str());
+        exec_envs_[index] = strdup(env_str.c_str());
     }
-    envp_[index] = NULL;
+    exec_envs_[index] = NULL;
 }
 
 void CGI::Execute()
 {
-    int rc = execve(path_.c_str(), argv_, envp_);
+    int rc = execve(exec_path_.c_str(), exec_args_, exec_envs_);
 
     if (rc == -1)
     {

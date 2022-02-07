@@ -20,16 +20,16 @@ private:
     static std::map<std::string, std::string> createExecutePath();
     static std::map<std::string, std::string> createExecuteCommand();
     void setPath(const std::string &local_path);
-    void setArgv(const std::string &path);
-    void setEnvp(const std::string &ip, const std::string &method);
+    void setArgs(const std::string &path);
+    void setEnvs(const std::string &ip, const std::string &method);
 
     HTTPRequest request_;
     Uri         uri_;
     ServerConfig config_;
     std::string extension_;
-    std::string path_; // TODO: 必要なければ消す。
-    char **argv_;
-    char **envp_;
+    std::string exec_path_;
+    char **exec_args_;
+    char **exec_envs_;
 };
 
 #endif /* CGI_HPP */
