@@ -60,8 +60,6 @@ private:
     const std::vector<ServerConfig> &configs_;
 
     bool parseStartLine();
-    // bool parseHeader();
-    // bool parseMessageBody();
     bool parseMessageBodyFromContentLength();
     bool parseMessageBodyFromChunkSize();
     bool parseMessageBodyFromChunkData();
