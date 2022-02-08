@@ -28,6 +28,11 @@ re			: fclean all ## Rebuild executable
 srcs		: ## Update SRCS
 	sed -i .bak -e "s#^\(SRCS.*= \).*#\1$$(find srcs -name '*.cpp' -type f | sort | tr '\n' ' ' | sed 's/ *$$//')#" ./Makefile
 
+.PHONY		: debug
+debug		: clean ## Shows server settings
+	$(MAKE) CXXFLAGS="$(CXXFLAGS) -D DEBUG"
+	$(MAKE) clean
+
 .PHONY		: help
 help		: ## Show this message
 	@echo "Target lists:"
