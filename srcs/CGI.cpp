@@ -124,7 +124,7 @@ void CGI::setEnvs(const std::string &ip, const std::string &method)
     tmp_envs["SERVER_PROTOCOL"] = "HTTP/1.1";
     tmp_envs["SERVER_SOFTWARE"] = "webserv/1.0.0";
 
-    exec_envs_ = new char*[18];
+    exec_envs_ = new char*[tmp_envs.size() + 1];
     size_t index = 0;
     for (std::map<std::string, std::string>::const_iterator env = tmp_envs.begin();
          env != tmp_envs.end();
