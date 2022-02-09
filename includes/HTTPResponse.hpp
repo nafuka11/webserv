@@ -16,6 +16,7 @@ public:
     std::string toString(const LocationConfig *location);
     void appendMessageBody(const char *body, size_t size);
     void clear();
+    void setHeader(const std::pair<std::string, std::string> &item);
     void setStatusCode(int status_code);
     void setKeepAlive(bool keep_alive);
     void setMessageBody(const std::string &body);

@@ -48,6 +48,11 @@ void HTTPResponse::clear()
     message_body_.clear();
 }
 
+void HTTPResponse::setHeader(const std::pair<std::string, std::string> &item)
+{
+    headers_.insert(item);
+}
+
 void HTTPResponse::setStatusCode(int status_code)
 {
     status_code_ = status_code;
