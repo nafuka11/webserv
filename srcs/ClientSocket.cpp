@@ -282,8 +282,7 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
 
     createPipe(method, pipe_cgi_read, pipe_cgi_write);
 
-    pid_t pid;
-    pid = fork();
+    pid_t pid = fork();
     if (pid < 0)
     {
         throw SystemError("fork", errno);
