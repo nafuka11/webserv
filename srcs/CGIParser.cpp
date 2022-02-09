@@ -1,4 +1,5 @@
 #include "CGIParser.hpp"
+#include <cerrno>
 #include "HTTPParseException.hpp"
 #include "SystemError.hpp"
 
