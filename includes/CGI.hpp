@@ -22,6 +22,7 @@ private:
     void setPath(const std::string &local_path);
     void setArgs(const std::string &path);
     void setEnvs(const std::string &ip, const std::string &method);
+    char *allocateString(const std::string &str);
 
     HTTPRequest request_;
     Uri         uri_;
