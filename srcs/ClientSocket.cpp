@@ -235,6 +235,10 @@ void ClientSocket::handleFile(const std::string &method, const Uri &uri)
         openFile(path.c_str());
         setNonBlockingFd(file_fd_);
         changeState(READ_FILE);
+        if (uri.getStat().st_size == 0)
+        {
+            closeFile();
+        }
     }
     else if (method == HTTPRequest::HTTP_DELETE)
     {
