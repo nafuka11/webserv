@@ -4,6 +4,7 @@
 Webserv::Webserv(const std::string &filepath) : config_(Config())
 {
     config_.readFile(filepath);
+    srand(static_cast<unsigned int>(time(NULL)));
     setupServers();
     registerEvents();
 }
