@@ -106,10 +106,7 @@ class TestPost:
 
         # Location確認
         location = response.getheader("Location")
-        assert location is not None
-        http_connection.request("POST", location, body)
-        response = http_connection.getresponse()
-        assert_response(HTTPStatus.OK, response, body=body)
+        self._assert_location_file(upload_dir, location, body)
 
     def test_upload_file_empty_body(
         self, http_connection: HTTPConnection, upload_dir: Path
@@ -123,10 +120,7 @@ class TestPost:
 
         # Location確認
         location = response.getheader("Location")
-        assert location is not None
-        http_connection.request("POST", location, body)
-        response = http_connection.getresponse()
-        assert_response(HTTPStatus.OK, response, body=body)
+        self._assert_location_file(upload_dir, location, body)
 
     def test_upload_no_permission(
         self, http_connection: HTTPConnection, upload_no_perm_dir: Path
@@ -160,6 +154,14 @@ class TestPost:
         for _ in dir.iterdir():
             file_count += 1
         return file_count == 0
+
+    def _assert_location_file(self, dir: Path, location: str, expected_body: str):
+        """Locationヘッダの値で設定されたファイルの中身がexpected_bodyか確認する"""
+        assert location is not None
+        filename = location[location.rfind("/") + 1:]
+        filepath = dir / filename
+        with filepath.open("r") as f:
+            assert f.read() == expected_body
 
 
 class TestInvalid:
