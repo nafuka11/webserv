@@ -198,6 +198,24 @@ void ConfigParser::parseCgiExtension(T &config_obj)
 
     std::vector<std::string> values;
     validateContainsValues(values, config_obj.cgiExtension());
+    for (std::vector<std::string>::const_iterator value = values.begin();
+         value != values.end();
+         ++value)
+    {
+        int count = 0;
+        for (size_t i = 0; i < value->length(); ++i)
+        {
+            if (value->at(i) == '.')
+            {
+                ++count;
+            }
+        }
+        if (count != 1 || value->at(0) != '.')
+        {
+            throw ConfigError(INVALID_VALUE, parse_line_[DIRECTIVE_NAME_INDEX],
+                              filepath_, (line_pos_ + 1));
+        }
+    }
     setCgiExtension(config_obj, values);
 }
 

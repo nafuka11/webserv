@@ -75,7 +75,6 @@ void Webserv::handleServerEvent(Socket *socket, const struct kevent &event)
 void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
 {
     ClientSocket *client = dynamic_cast<ClientSocket *>(socket);
-
     switch (client->getState())
     {
     case ClientSocket::READ_REQUEST:
@@ -99,6 +98,12 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
             client->readFile(event.data);
         }
         break;
+    case ClientSocket::READ_CGI:
+        if (event.filter == EVFILT_READ)
+        {
+            client->readCGI(event.data);
+        }
+        break;
     case ClientSocket::WRITE_RESPONSE:
         if (event.filter == EVFILT_WRITE)
         {
@@ -114,6 +119,12 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
         {
             client->writeFile();
         }
+    case ClientSocket::WRITE_CGI_RESPONSE:
+        if (event.filter == EVFILT_WRITE)
+        {
+            client->sendCGIResponse();
+        }
+        break;
     default:
         break;
     }

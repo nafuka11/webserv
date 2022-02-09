@@ -38,6 +38,36 @@ std::string HTTPResponse::toString(const LocationConfig *location)
     return ss.str();
 }
 
+std::string HTTPResponse::CGItoString(const LocationConfig *location)
+{
+    setProperties(location);
+
+    std::stringstream ss;
+
+    std::string phrase;
+    std::map<std::string, std::string>::const_iterator found = headers_.find("Status");
+    if (found != headers_.end())
+    {
+        phrase = found->second.substr((found->second.find_last_of(' ') + 1), found->second.length());
+        headers_.erase("Status");
+    }
+    else
+    {
+        phrase = findReasonPhrase(status_code_);
+    }
+    ss << "HTTP/1.1 " << status_code_ << " " << phrase << "\r\n";
+    for (std::map<std::string, std::string>::iterator iter = headers_.begin();
+         iter != headers_.end();
+         ++iter)
+    {
+        ss << iter->first << ": " << iter->second << "\r\n";
+    }
+    ss << "\r\n";
+    ss << message_body_;
+    return ss.str();
+
+}
+
 void HTTPResponse::appendMessageBody(const char *body, size_t size)
 {
     message_body_.append(body, size);
@@ -46,6 +76,12 @@ void HTTPResponse::appendMessageBody(const char *body, size_t size)
 void HTTPResponse::clear()
 {
     message_body_.clear();
+    headers_.clear();
+}
+
+void HTTPResponse::setHeader(const std::pair<std::string, std::string> &item)
+{
+    headers_.insert(item);
 }
 
 void HTTPResponse::setHeader(const std::pair<std::string, std::string> &item)
@@ -355,4 +391,9 @@ std::string HTTPResponse::escapeUri(const std::string &str) const
         }
     }
     return ss.str();
+}
+
+const std::map<std::string, std::string> HTTPResponse::getHeaders() const
+{
+    return headers_;
 }
