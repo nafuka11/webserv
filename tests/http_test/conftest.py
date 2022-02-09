@@ -1,11 +1,13 @@
 import subprocess
 import time
 from http.client import HTTPConnection
+from pathlib import Path
 from typing import Callable
 from urllib.error import URLError
 from urllib.request import urlopen
 
 import pytest
+from pytest import TempPathFactory
 
 HOST = "localhost"
 PORT = 4242
@@ -52,3 +54,17 @@ def _wait_for_connection() -> None:
             return
         except URLError:
             time.sleep(SLEEP_TIME)
+
+
+@pytest.fixture(scope="session")
+def upload_dir(tmp_path_factory: TempPathFactory) -> Path:
+    dir = tmp_path_factory.getbasetemp() / "upload"
+    dir.mkdir(exist_ok=True)
+    return dir
+
+
+@pytest.fixture(scope="session")
+def upload_no_perm_dir(tmp_path_factory: TempPathFactory) -> Path:
+    dir = tmp_path_factory.getbasetemp() / "upload_no_perm"
+    dir.mkdir(0o444, exist_ok=True)
+    return dir
