@@ -215,7 +215,10 @@ void ClientSocket::handleFile(const std::string &method, const Uri &uri)
             throw HTTPParseException(CODE_403);
         }
         std::string filename = buildUploadFilename();
+        std::string location = request_.getLocation() + filename;
         std::string path = uri.getLocationConfig()->uploadPath() + filename;
+
+        response_.setHeader(std::make_pair("Location", location));
 
         openFileToWrite(path);
         setNonBlockingFd(file_fd_);
