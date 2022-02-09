@@ -3,7 +3,6 @@
 
 #include <exception>
 #include <string>
-#include <iostream> // TODO: 後で消す
 #include "ConfigError.hpp"
 #include "MainConfig.hpp"
 #include "HTTPRequest.hpp"
@@ -139,8 +138,6 @@ private:
     bool isDuplicateLocation(const ServerConfig &server_config, const std::string &path);
 
     long convertNumber(const std::string &str);
-
-    void putSplitLines(); // TODO: 後で消す
 
     std::string filepath_;
     std::vector<std::vector<std::string> > parse_lines_;
