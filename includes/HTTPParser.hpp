@@ -35,7 +35,6 @@ public:
 protected:
     std::string raw_message_;
     size_t parse_pos_;
-    size_t newline_pos_;
     ParseState parse_state_;
     MessageBodyState message_body_state_;
     size_t content_length_;

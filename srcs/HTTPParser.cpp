@@ -300,13 +300,13 @@ bool HTTPParser::isAllowMethod(const std::string &method)
 
 bool HTTPParser::tryGetLine(std::string &line, const std::string &newline)
 {
-    newline_pos_ = raw_message_.find(newline, parse_pos_);
-    if (newline_pos_ == std::string::npos)
+    size_t newline_pos = raw_message_.find(newline, parse_pos_);
+    if (newline_pos == std::string::npos)
     {
         return false;
     }
-    line = raw_message_.substr(parse_pos_, newline_pos_ - parse_pos_);
-    parse_pos_ = newline_pos_ + newline.size();
+    line = raw_message_.substr(parse_pos_, newline_pos - parse_pos_);
+    parse_pos_ = newline_pos + newline.size();
     return true;
 }
 
