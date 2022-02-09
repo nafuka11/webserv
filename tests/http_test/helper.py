@@ -12,6 +12,7 @@ def assert_response(
     code: HTTPStatus,
     response: HTTPResponse,
     html_path: Optional[str] = None,
+    body: Optional[str] = None,
     empty_body: Optional[bool] = False,
 ) -> None:
     """HTTPResponseのassertをする(statusCode, reason, httpVersion, messageBody, Content-Length)
@@ -20,6 +21,7 @@ def assert_response(
         code (HTTPStatus): StatusCode
         response (HTTPResponse): HTTPResponse
         html_path (Optional[str]): 想定されるHTMLのファイルパス。未指定の場合はcodeに応じてHTMLを自動生成する
+        body (Optional[str]): 想定されるmessageBodyの文字列
         empty_body (Optional[bool]): StatusCodeを元にHTMLを生成しない場合True
     """
     actual_body = response.read()
@@ -29,6 +31,8 @@ def assert_response(
             expected_body = f.read().encode("utf-8")
     elif not empty_body:
         expected_body = _generate_expected_body(code)
+    elif body:
+        expected_body = body
     assert response.status == code
     assert response.reason == _get_phrase(code)
     assert response.version == 11
