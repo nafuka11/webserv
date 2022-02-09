@@ -383,11 +383,17 @@ const std::string &HTTPParser::validateUri(const std::string &uri)
 const std::string &HTTPParser::validateProtocolVersion(
     const std::string &protocol_version)
 {
-    if (protocol_version != "HTTP/1.1")
+    if (protocol_version == "HTTP/1.1")
     {
-        throw HTTPParseException(CODE_400);
+        return protocol_version;
     }
-    return protocol_version;
+    if (startsWith(protocol_version, "HTTP/") && protocol_version.size() == 8 &&
+        isdigit(protocol_version.at(5)) && protocol_version.at(6) == '.' &&
+        isdigit(protocol_version.at(7)))
+    {
+        throw HTTPParseException(CODE_505);
+    }
+    throw HTTPParseException(CODE_400);
 }
 
 const std::pair<std::string, std::string> HTTPParser::validateHeader(std::string &name,
