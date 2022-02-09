@@ -4,9 +4,17 @@ from http.client import HTTPConnection
 from helper import HTML_PATH_404, HTML_PATH_NULL, assert_response
 
 
-def test_invalid_http_version(http_connection: HTTPConnection):
-    """HTTP/1.0なら400を返すこと"""
+def test_not_supported_http_version(http_connection: HTTPConnection):
+    """HTTP/1.0なら505を返すこと"""
     http_connection._http_vsn_str = "HTTP/1.0"
+    http_connection.request("GET", "/")
+    response = http_connection.getresponse()
+    assert_response(HTTPStatus.HTTP_VERSION_NOT_SUPPORTED, response)
+
+
+def test_invalid_http_version(http_connection: HTTPConnection):
+    """不正なHTTP versionなら400を返すこと"""
+    http_connection._http_vsn_str = "HTTP/11.0"
     http_connection.request("GET", "/")
     response = http_connection.getresponse()
     assert_response(HTTPStatus.BAD_REQUEST, response)
