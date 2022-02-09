@@ -70,18 +70,18 @@ void ClientSocket::sendResponse()
 void ClientSocket::sendCGIResponse()
 {
     response_.setKeepAlive(request_.canKeepAlive());
-        std::string message = response_.CGItoString(searchLocationConfig(request_.getLocation()));
-        ::send(fd_, message.c_str(), message.size(), 0);
-        if (request_.canKeepAlive())
-        {
-            changeState(READ_REQUEST);
-            response_.clear();
-        }
-        else
-        {
-            changeState(CLOSE);
-        }
-        clearRequest();
+    std::string message = response_.CGItoString(searchLocationConfig(request_.getLocation()));
+    ::send(fd_, message.c_str(), message.size(), 0);
+    if (request_.canKeepAlive())
+    {
+        changeState(READ_REQUEST);
+        response_.clear();
+    }
+    else
+    {
+        changeState(CLOSE);
+    }
+    clearRequest();
 }
 
 void ClientSocket::readFile(intptr_t offset)
