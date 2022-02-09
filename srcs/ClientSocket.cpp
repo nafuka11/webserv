@@ -214,7 +214,8 @@ void ClientSocket::handleFile(const std::string &method, const Uri &uri)
         {
             throw HTTPParseException(CODE_403);
         }
-        std::string path = buildUploadFilePath(uri.getLocationConfig()->uploadPath());
+        std::string filename = buildUploadFilename();
+        std::string path = uri.getLocationConfig()->uploadPath() + filename;
 
         openFileToWrite(path);
         setNonBlockingFd(file_fd_);
@@ -358,7 +359,7 @@ std::string ClientSocket::resolveIPAddress(const sockaddr_storage &addr) const
     return std::string(hostname);
 }
 
-std::string ClientSocket::buildUploadFilePath(const std::string &upload_dir)
+std::string ClientSocket::buildUploadFilename()
 {
     time_t now = time(NULL);
     struct tm *now_time = gmtime(&now);
@@ -367,6 +368,6 @@ std::string ClientSocket::buildUploadFilePath(const std::string &upload_dir)
     // ファイルフォーマット: yyyymmddHHMMSS_rand()
     strftime(str, sizeof(str), "%Y%m%d%H%M%S", now_time);
     std::stringstream ss;
-    ss << upload_dir << str << "_" << rand();
+    ss << str << "_" << rand();
     return ss.str();
 }

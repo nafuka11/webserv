@@ -59,7 +59,7 @@ private:
     void clearRequest();
     const LocationConfig *searchLocationConfig(const std::string &location);
     std::string resolveIPAddress(const sockaddr_storage &addr) const;
-    std::string buildUploadFilePath(const std::string &upload_dir);
+    std::string buildUploadFilename();
 };
 
 #endif /* CLIENTSOCKET_HPP */
