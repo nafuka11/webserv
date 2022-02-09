@@ -66,14 +66,14 @@ void CGI::setArgs(const std::string &path)
     int index = 0;
 
     exec_args_ = new char*[size];
-    exec_args_[index++] = allocateString(command.c_str());
-    exec_args_[index++] = allocateString(path.c_str());
+    exec_args_[index++] = allocateString(command);
+    exec_args_[index++] = allocateString(path);
 
     for (std::vector<std::string>::iterator arg = uri_args.begin();
          arg != uri_args.end();
          ++arg)
     {
-        exec_args_[index++] = allocateString(arg->c_str());
+        exec_args_[index++] = allocateString(*arg);
     }
     exec_args_[index] = NULL;
 }
@@ -131,7 +131,7 @@ void CGI::setEnvs(const std::string &ip, const std::string &method)
          env++, index++)
     {
         std::string env_str = env->first + "=" + env->second;
-        exec_envs_[index] = allocateString(env_str.c_str());
+        exec_envs_[index] = allocateString(env_str);
     }
     exec_envs_[index] = NULL;
 }
