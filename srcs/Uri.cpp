@@ -22,6 +22,17 @@ const LocationConfig *Uri::getLocationConfig() const
     return location_config_;
 }
 
+const std::string &Uri::getQuery() const
+{
+    return query_;
+}
+
+const std::vector<std::string> &Uri::getArguments() const
+{
+    return arguments_;
+}
+
+
 const std::string &Uri::getRawPath() const
 {
     return raw_path_;
@@ -50,9 +61,35 @@ bool Uri::canWrite(const struct stat &path_stat) const
 void Uri::splitRawUri()
 {
     size_t query_pos = raw_uri_.find('?');
+    if (query_pos == std::string::npos)
+    {
+        raw_path_ = raw_uri_;
+        query_ = "";
+        return ;
+    }
     raw_path_ = raw_uri_.substr(0, query_pos);
     query_ = raw_uri_.substr(query_pos + 1);
+    parseQuery();
 }
+
+void Uri::parseQuery()
+{
+    size_t found = query_.find('=');
+    if (found != std::string::npos)
+        return;
+
+    std::string split_word = "+";
+    size_t start_pos = 0;
+    for (size_t split_pos = query_.find(split_word);
+         split_pos != std::string::npos;
+         split_pos = query_.find(split_word, start_pos))
+    {
+        arguments_.push_back(query_.substr(start_pos, (split_pos - start_pos)));
+        start_pos = split_pos + split_word.size();
+    }
+    arguments_.push_back(query_.substr(start_pos));
+}
+
 
 void Uri::findPath()
 {
@@ -99,7 +136,14 @@ void Uri::findPathFromLocation(const std::string &location_name,
     }
     if (isRegularFile(path_stat))
     {
-        resource_type_ = FILE;
+        if (hasCgiExtension(path, location.cgiExtension()))
+        {
+            resource_type_ = CGI;
+        }
+        else
+        {
+            resource_type_ = FILE;
+        }
         stat_ = path_stat;
         return;
     }
@@ -133,7 +177,14 @@ void Uri::findFileFromIndexes(const LocationConfig &location, std::string &path)
         if (isRegularFile(path_stat))
         {
             path = joined_path;
-            resource_type_ = FILE;
+            if (hasCgiExtension(path, location.cgiExtension()))
+            {
+                resource_type_ = CGI;
+            }
+            else
+            {
+                resource_type_ = FILE;
+            }
             stat_ = path_stat;
             return;
         }
@@ -189,4 +240,28 @@ bool Uri::isRegularFile(const struct stat &path_stat) const
 bool Uri::isDirectory(const struct stat &path_stat) const
 {
     return S_ISDIR(path_stat.st_mode);
+}
+
+bool Uri::hasCgiExtension(const std::string &path,
+                          const std::vector<std::string> &cgi_extension) const
+{
+    if (cgi_extension.empty())
+    {
+        return false;
+    }
+
+    size_t extension_pos = path.rfind(".");
+    if (extension_pos == std::string::npos)
+    {
+        return false;
+    }
+
+    std::string extension = path.substr(extension_pos);
+    std::vector<std::string>::const_iterator found =
+        std::find(cgi_extension.begin(), cgi_extension.end(), extension);
+    if (found == cgi_extension.end())
+    {
+        return false;
+    }
+    return true;
 }

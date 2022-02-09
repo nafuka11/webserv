@@ -8,6 +8,8 @@
 #include "HTTPParser.hpp"
 #include "ServerConfig.hpp"
 #include "KqueuePoller.hpp"
+#include "CGI.hpp"
+#include "CGIParser.hpp"
 
 class ClientSocket : public Socket
 {
@@ -15,8 +17,10 @@ public:
     enum State
     {
         READ_REQUEST,
-        WRITE_RESPONSE,
         READ_FILE,
+        READ_CGI,
+        WRITE_RESPONSE,
+        WRITE_CGI_RESPONSE,
         CLOSE
     };
 
@@ -26,7 +30,9 @@ public:
     ~ClientSocket();
     void receiveRequest();
     void sendResponse();
+    void sendCGIResponse();
     void readFile(intptr_t offset);
+    void readCGI(intptr_t offset);
     void closeFile();
     void close();
     State getState() const;
@@ -38,6 +44,7 @@ private:
     HTTPRequest request_;
     HTTPResponse response_;
     HTTPParser parser_;
+    CGIParser cgi_parser_;
     State state_;
     int file_fd_;
     std::string ip_;
@@ -52,6 +59,11 @@ private:
     void handleErrorFromFile(const LocationConfig *location, HTTPStatusCode statusCode);
     void openFile(const char *path);
     DIR *openDirectory(const char *path);
+    void createPipe(const std::string &method, int *pipe_cgi_read, int *pipe_cgi_write);
+    void prepareCGIInOut(const std::string &method, int *pipe_cgi_read, int *pipe_cgi_write);
+    void prepareServerInOut(const std::string &method, int *pipe_cgi_read, int *pipe_cgi_write);
+    void duplicateFd(int oldfd, int newfd);
+    void closeFd(int fd);
     void closeDirectory(DIR *dir_p);
     void clearRequest();
     const LocationConfig *searchLocationConfig(const std::string &location);

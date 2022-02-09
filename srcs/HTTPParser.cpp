@@ -4,13 +4,14 @@
 #include <cstring>
 #include <cstdlib>
 #include <cerrno>
+#include <sstream>
 
 const std::string HTTPParser::NEWLINE = "\r\n";
 
 HTTPParser::HTTPParser(HTTPRequest &request, const std::vector<ServerConfig> &configs)
-    : request_(request), configs_(configs), parse_pos_(0),
-      parse_state_(PARSE_START_LINE), message_body_state_(NONE),
-      content_length_(0), chunk_size_(0)
+    : parse_pos_(0), parse_state_(PARSE_START_LINE),
+      message_body_state_(NONE), content_length_(0), chunk_size_(0),
+      request_(request), configs_(configs)
 {
 }
 
@@ -37,6 +38,12 @@ bool HTTPParser::finished()
 {
     return parse_state_ == PARSE_FINISH;
 }
+
+size_t HTTPParser::getContentLength() const
+{
+    return content_length_;
+}
+
 
 void HTTPParser::parse()
 {
@@ -65,7 +72,7 @@ void HTTPParser::parse()
 bool HTTPParser::parseStartLine()
 {
     std::string line;
-    if (!tryGetLine(line))
+    if (!tryGetLine(line, NEWLINE))
     {
         return false;
     }
@@ -86,7 +93,7 @@ bool HTTPParser::parseStartLine()
 bool HTTPParser::parseHeader()
 {
     std::string line;
-    if (!tryGetLine(line))
+    if (!tryGetLine(line, NEWLINE))
     {
         return false;
     }
@@ -152,7 +159,7 @@ bool HTTPParser::parseMessageBodyFromContentLength()
 bool HTTPParser::parseMessageBodyFromChunkSize()
 {
     std::string line;
-    if (!tryGetLine(line))
+    if (!tryGetLine(line, NEWLINE))
     {
         return false;
     }
@@ -291,15 +298,15 @@ bool HTTPParser::isAllowMethod(const std::string &method)
     return true;
 }
 
-bool HTTPParser::tryGetLine(std::string &line)
+bool HTTPParser::tryGetLine(std::string &line, const std::string &newline)
 {
-    size_t newline_pos = raw_message_.find(NEWLINE, parse_pos_);
+    size_t newline_pos = raw_message_.find(newline, parse_pos_);
     if (newline_pos == std::string::npos)
     {
         return false;
     }
     line = raw_message_.substr(parse_pos_, newline_pos - parse_pos_);
-    parse_pos_ = newline_pos + NEWLINE.size();
+    parse_pos_ = newline_pos + newline.size();
     return true;
 }
 
@@ -375,9 +382,39 @@ const std::string &HTTPParser::validateMethod(const std::string &method)
     throw HTTPParseException(CODE_501);
 }
 
-const std::string &HTTPParser::validateUri(const std::string &uri)
+const std::string HTTPParser::validateUri(const std::string &uri)
 {
-    return uri;
+    size_t parse_pos = uri.find('%');
+    if (parse_pos == std::string::npos)
+    {
+        return uri;
+    }
+
+    std::stringstream ss;
+    size_t start_parse_pos = 0;
+    char *endp = NULL;
+    while (parse_pos != std::string::npos)
+    {
+        ss << uri.substr(start_parse_pos, (parse_pos - start_parse_pos));
+
+        long num = std::strtol(uri.substr((parse_pos + 1), 2).c_str(), &endp, 16);
+        if (*endp != '\0' || num < 0)
+        {
+            throw HTTPParseException(CODE_400);
+        }
+        if ((num == LONG_MAX || num == LONG_MIN) && errno == ERANGE)
+        {
+            throw HTTPParseException(CODE_400);
+        }
+        ss << static_cast<char>(num);
+        start_parse_pos = (parse_pos + 3);
+        parse_pos = uri.find('%', start_parse_pos);
+    }
+    if (start_parse_pos < uri.size())
+    {
+        ss << uri.substr(start_parse_pos, (uri.size() - start_parse_pos));
+    }
+    return ss.str();
 }
 
 const std::string &HTTPParser::validateProtocolVersion(

@@ -23,6 +23,8 @@ public:
     const LocationConfig *getLocationConfig() const;
     const std::string &getRawPath() const;
     const std::string &getLocalPath() const;
+    const std::string &getQuery() const;
+    const std::vector<std::string> &getArguments() const;
     Type getResourceType() const;
     const struct stat &getStat() const;
 
@@ -39,10 +41,12 @@ private:
     std::string raw_path_;
     std::string local_path_;
     std::string query_;
+    std::vector<std::string> arguments_;
     Type resource_type_;
     struct stat stat_;
 
     void splitRawUri();
+    void parseQuery();
     void findPath();
     void findPathFromLocation(const std::string &location_name,
                               const LocationConfig &location, std::string &path);
@@ -51,6 +55,8 @@ private:
     bool startsWith(const std::string &str, const std::string &prefix) const;
     bool needAutoIndex(const LocationConfig &config, const std::string &path) const;
     bool execStat(const std::string &path, struct stat *buf) const;
+    bool hasCgiExtension(const std::string &path,
+                         const std::vector<std::string> &cgi_extension) const;
 };
 
 #endif /* URI_HPP */

@@ -14,14 +14,17 @@ public:
     HTTPResponse();
     ~HTTPResponse();
     std::string toString(const LocationConfig *location);
+    std::string CGItoString(const LocationConfig *location);
     void appendMessageBody(const char *body, size_t size);
     void clear();
+    void setHeader(const std::pair<std::string, std::string> &item);
     void setStatusCode(int status_code);
     void setKeepAlive(bool keep_alive);
     void setMessageBody(const std::string &body);
     void setRedirectResponse(int status_code, const std::string &uri);
     std::string generateAutoindexHTML(const Uri &uri, DIR *dir_p) const;
     std::string generateHTMLfromStatusCode(HTTPStatusCode statusCode) const;
+    const std::map<std::string, std::string> getHeaders() const;
 
 private:
     static const std::string CRLF;
