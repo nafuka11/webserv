@@ -1,4 +1,4 @@
-# webserv tester
+# webserv http_test
 
 Python製のwebservのテスターです。
 
