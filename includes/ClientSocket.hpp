@@ -62,6 +62,8 @@ private:
     void createPipe(const std::string &method, int *pipe_cgi_read, int *pipe_cgi_write);
     void prepareCGIInOut(const std::string &method, int *pipe_cgi_read, int *pipe_cgi_write);
     void prepareServerInOut(const std::string &method, int *pipe_cgi_read, int *pipe_cgi_write);
+    void duplicateFd(int oldfd, int newfd);
+    void closeFd(int fd);
     void closeDirectory(DIR *dir_p);
     void clearRequest();
     const LocationConfig *searchLocationConfig(const std::string &location);

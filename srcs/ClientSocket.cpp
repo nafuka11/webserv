@@ -279,6 +279,7 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
 {
     int pipe_cgi_read[2];
     int pipe_cgi_write[2];
+
     createPipe(method, pipe_cgi_read, pipe_cgi_write);
 
     pid_t pid;
@@ -309,7 +310,7 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
         if (method == "POST")
         {
             write(pipe_cgi_read[1], request_.getMessageBody().c_str(), parser_.getContentLength());
-            ::close(pipe_cgi_read[1]);
+            closeFd(pipe_cgi_read[1]);
         }
 
         if (waitpid(pid, NULL, 0) != pid)
@@ -398,13 +399,13 @@ void ClientSocket::prepareCGIInOut(const std::string &method,
 {
     if (method == "POST")
     {
-        ::close(pipe_cgi_read[1]);
-        ::close(STDIN_FILENO);
-        dup2(pipe_cgi_read[0], STDIN_FILENO);
+        closeFd(pipe_cgi_read[1]);
+        closeFd(STDIN_FILENO);
+        duplicateFd(pipe_cgi_read[0], STDIN_FILENO);
     }
-    ::close(pipe_cgi_write[0]);
-    ::close(STDOUT_FILENO);
-    dup2(pipe_cgi_write[1], STDOUT_FILENO);
+    closeFd(pipe_cgi_write[0]);
+    closeFd(STDOUT_FILENO);
+    duplicateFd(pipe_cgi_write[1], STDOUT_FILENO);
 }
 
 void ClientSocket::prepareServerInOut(const std::string &method,
@@ -412,13 +413,27 @@ void ClientSocket::prepareServerInOut(const std::string &method,
 {
     if (method == "POST")
     {
-        ::close(pipe_cgi_read[0]);
+        closeFd(pipe_cgi_read[0]);
     }
-    ::close(pipe_cgi_write[1]);
+    closeFd(pipe_cgi_write[1]);
     file_fd_ = pipe_cgi_write[0];
 }
 
+void ClientSocket::duplicateFd(int oldfd, int newfd)
+{
+    if (dup2(oldfd, newfd) < 0)
+    {
+        throw SystemError("dup2", errno);
+    }
+}
 
+void ClientSocket::closeFd(int fd)
+{
+    if (::close(fd) < 0)
+    {
+        throw SystemError("close", errno);
+    }
+}
 
 void ClientSocket::closeDirectory(DIR *dir_p)
 {
