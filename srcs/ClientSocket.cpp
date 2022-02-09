@@ -1,4 +1,5 @@
 #include "ClientSocket.hpp"
+#include <iostream>
 #include <cerrno>
 #include <unistd.h>
 #include <fcntl.h>
@@ -288,10 +289,18 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
     }
     if (pid == 0)  // Child prosess
     {
-        prepareCGIInOut(method, pipe_cgi_read, pipe_cgi_write);
+        try
+        {
+            prepareCGIInOut(method, pipe_cgi_read, pipe_cgi_write);
 
-        CGI cgi = CGI(request_, uri, *request_.getServerConfig(), method, ip_);
-        cgi.execute();
+            CGI cgi = CGI(request_, uri, *request_.getServerConfig(), method, ip_);
+            cgi.execute();
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
+        exit(EXIT_FAILURE);
     }
     else // Parent process
     {
