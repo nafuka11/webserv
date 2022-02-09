@@ -291,7 +291,7 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
         prepareCGIInOut(method, pipe_cgi_read, pipe_cgi_write);
 
         CGI cgi = CGI(request_, uri, *request_.getServerConfig(), method, ip_);
-        cgi.Execute();
+        cgi.execute();
     }
     else // Parent process
     {

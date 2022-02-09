@@ -12,7 +12,7 @@ public:
     CGI(const HTTPRequest &request,  const Uri &uri, const ServerConfig &config,
         const std::string &method, const std::string &ip);
     ~CGI();
-    void Execute();
+    void execute();
 private:
     static const std::map<std::string,std::string> EXEC_PATH;
     static const std::map<std::string,std::string> EXEC_COMMAND;

@@ -147,7 +147,7 @@ char *CGI::allocateString(const std::string &str)
     return allocated;
 }
 
-void CGI::Execute()
+void CGI::execute()
 {
     int rc = execve(exec_path_.c_str(), exec_args_, exec_envs_);
 
