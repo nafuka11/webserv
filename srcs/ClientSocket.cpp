@@ -300,7 +300,7 @@ void ClientSocket::openFileToWrite(const std::string &path)
     file_fd_ = open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (file_fd_ < 0)
     {
-        throw HTTPParseException(CODE_404);
+        throw HTTPParseException(CODE_403);
     }
 }
 
