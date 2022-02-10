@@ -46,7 +46,6 @@ void ConfigParser::readFile(const std::string &filepath)
         throw SystemError("open", errno);
     }
     readAndSplitLines(ifs);
-    putSplitLines(); // TODO: 後で消す
     ifs.close();
     parseMainContext();
 }
@@ -91,26 +90,6 @@ std::vector<std::string> ConfigParser::splitLine(const std::string &line)
         start = end;
     }
     return words;
-}
-
-// TODO: 後で消す
-void ConfigParser::putSplitLines()
-{
-    size_t line_num = 1;
-    for (std::vector<std::vector<std::string> > ::const_iterator vviter = parse_lines_.begin();
-         vviter != parse_lines_.end();
-         ++vviter)
-    {
-        std::cout << "------------------(" << line_num << std::endl;
-        for (std::vector<std::string>::const_iterator viter = vviter->begin();
-             viter != vviter->end();
-             ++viter)
-        {
-            std::cout << "[" << *viter << "]" << std::endl;
-        }
-        ++line_num;
-    }
-    std::cout << "-----[end]-----------------------------------\n" << std::endl;
 }
 
 void ConfigParser::parseMainContext()
