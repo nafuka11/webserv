@@ -95,6 +95,75 @@ class TestDelete:
         assert_response(HTTPStatus.FORBIDDEN, response)
 
 
+class TestPost:
+    def test_upload_file(self, http_connection: HTTPConnection, upload_dir: Path):
+        """upload_pathが設定されたlocationでuploadできること"""
+        # StatusCode確認
+        body = "expected body"
+        http_connection.request("POST", "/upload/", body)
+        response = http_connection.getresponse()
+        assert_response(HTTPStatus.CREATED, response, empty_body=True)
+
+        # Location確認
+        location = response.getheader("Location")
+        self._assert_location_file(upload_dir, location, body)
+
+    def test_upload_file_empty_body(
+        self, http_connection: HTTPConnection, upload_dir: Path
+    ):
+        """メッセージボディが空でもuploadできること"""
+        # StatusCode確認
+        body = ""
+        http_connection.request("POST", "/upload/", body)
+        response = http_connection.getresponse()
+        assert_response(HTTPStatus.CREATED, response, empty_body=True)
+
+        # Location確認
+        location = response.getheader("Location")
+        self._assert_location_file(upload_dir, location, body)
+
+    def test_upload_no_permission(
+        self, http_connection: HTTPConnection, upload_no_perm_dir: Path
+    ):
+        """書き込み権限がないディレクトリへのuploadで403を返すこと"""
+        body = "should not upload file"
+        http_connection.request("POST", "/upload_no_perm/", body)
+        response = http_connection.getresponse()
+        assert_response(HTTPStatus.FORBIDDEN, response)
+        assert self._has_no_file(upload_no_perm_dir)
+
+    def test_no_upload_path(self, http_connection: HTTPConnection):
+        """upload_pathが設定されていないlocationで403を返すこと"""
+        body = "should not upload file"
+        http_connection.request("POST", "/test_post/", body)
+        response = http_connection.getresponse()
+        assert_response(HTTPStatus.FORBIDDEN, response)
+
+    def test_location_is_not_upload_path(
+        self, http_connection: HTTPConnection, upload_dir: Path
+    ):
+        """URIがupload_pathの設定された/location/fileのとき403を返すこと"""
+        body = "should not upload file"
+        http_connection.request("POST", "/upload/file", body)
+        response = http_connection.getresponse()
+        assert_response(HTTPStatus.FORBIDDEN, response)
+
+    def _has_no_file(self, dir: Path) -> bool:
+        """ディレクトリにファイルが無い場合Trueを返す"""
+        file_count = 0
+        for _ in dir.iterdir():
+            file_count += 1
+        return file_count == 0
+
+    def _assert_location_file(self, dir: Path, location: str, expected_body: str):
+        """Locationヘッダの値で設定されたファイルの中身がexpected_bodyか確認する"""
+        assert location is not None
+        filename = location[location.rfind("/") + 1:]
+        filepath = dir / filename
+        with filepath.open("r") as f:
+            assert f.read() == expected_body
+
+
 class TestInvalid:
     def test_invalid_method(self, http_connection: HTTPConnection):
         """サポートしていないmethodなら501を返すこと"""

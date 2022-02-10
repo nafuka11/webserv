@@ -1,4 +1,5 @@
 #include "ClientSocket.hpp"
+#include <sstream>
 #include <iostream>
 #include <cerrno>
 #include <unistd.h>
@@ -107,6 +108,19 @@ void ClientSocket::readFile(intptr_t offset)
     }
 }
 
+void ClientSocket::writeFile()
+{
+    const std::string &body = request_.getMessageBody();
+    ssize_t write_byte = write(file_fd_, body.c_str(), body.size());
+    if (write_byte < 0)
+    {
+        closeFile();
+        handleError(CODE_500);
+    }
+    closeFile();
+    response_.setStatusCode(CODE_201);
+}
+
 void ClientSocket::readCGI(intptr_t offset)
 {
     char buffer[BUF_SIZE];
@@ -179,6 +193,8 @@ void ClientSocket::changeState(State new_state)
     case WRITE_CGI_RESPONSE:
         poller_.unregisterWriteEvent(this, fd_);
         break;
+    case WRITE_FILE:
+        break;
     default:
         break;
     }
@@ -195,6 +211,8 @@ void ClientSocket::changeState(State new_state)
     case WRITE_CGI_RESPONSE:
         poller_.registerWriteEvent(this, fd_);
         break;
+    case WRITE_FILE:
+        poller_.registerWriteEvent(this, file_fd_);
     default:
         break;
     }
@@ -232,7 +250,7 @@ void ClientSocket::handleFile(const std::string &method, const Uri &uri)
     {
         std::string path = uri.getLocalPath();
 
-        openFile(path.c_str());
+        openFileToRead(path.c_str());
         setNonBlockingFd(file_fd_);
         changeState(READ_FILE);
     }
@@ -250,6 +268,22 @@ void ClientSocket::handleFile(const std::string &method, const Uri &uri)
         }
         response_.setStatusCode(CODE_204);
         changeState(WRITE_RESPONSE);
+    }
+    else if (method == HTTPRequest::HTTP_POST)
+    {
+        if (uri.getLocationConfig()->uploadPath().empty())
+        {
+            throw HTTPParseException(CODE_403);
+        }
+        std::string filename = buildUploadFilename();
+        std::string location = request_.getLocation() + filename;
+        std::string path = uri.getLocationConfig()->uploadPath() + filename;
+
+        response_.setHeader(std::make_pair("Location", location));
+
+        openFileToWrite(path);
+        setNonBlockingFd(file_fd_);
+        changeState(WRITE_FILE);
     }
 }
 
@@ -358,12 +392,21 @@ void ClientSocket::handleErrorFromFile(const LocationConfig *location,
     }
 }
 
-void ClientSocket::openFile(const char *path)
+void ClientSocket::openFileToRead(const std::string &path)
 {
-    file_fd_ = open(path, O_RDONLY);
+    file_fd_ = open(path.c_str(), O_RDONLY);
     if (file_fd_ < 0)
     {
         throw HTTPParseException(CODE_404);
+    }
+}
+
+void ClientSocket::openFileToWrite(const std::string &path)
+{
+    file_fd_ = open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (file_fd_ < 0)
+    {
+        throw HTTPParseException(CODE_403);
     }
 }
 
@@ -477,4 +520,17 @@ std::string ClientSocket::resolveIPAddress(const sockaddr_storage &addr) const
         throw AddressInfoError("getnameinfo", ret);
     }
     return std::string(hostname);
+}
+
+std::string ClientSocket::buildUploadFilename()
+{
+    time_t now = time(NULL);
+    struct tm *now_time = gmtime(&now);
+    char str[20];
+
+    // ファイルフォーマット: yyyymmddHHMMSS_rand()
+    strftime(str, sizeof(str), "%Y%m%d%H%M%S", now_time);
+    std::stringstream ss;
+    ss << str << "_" << rand();
+    return ss.str();
 }

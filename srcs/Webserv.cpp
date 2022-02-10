@@ -4,6 +4,7 @@
 Webserv::Webserv(const std::string &filepath) : config_(Config())
 {
     config_.readFile(filepath);
+    srand(static_cast<unsigned int>(time(NULL)));
     setupServers();
     registerEvents();
 }
@@ -109,6 +110,15 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
             client->sendResponse();
         }
         break;
+    case ClientSocket::WRITE_FILE:
+        if (event.flags & EV_EOF)
+        {
+            client->closeFile();
+        }
+        if (event.filter == EVFILT_WRITE)
+        {
+            client->writeFile();
+        }
     case ClientSocket::WRITE_CGI_RESPONSE:
         if (event.filter == EVFILT_WRITE)
         {

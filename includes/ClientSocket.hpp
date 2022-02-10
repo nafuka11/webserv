@@ -21,6 +21,7 @@ public:
         READ_CGI,
         WRITE_RESPONSE,
         WRITE_CGI_RESPONSE,
+        WRITE_FILE,
         CLOSE
     };
 
@@ -32,6 +33,7 @@ public:
     void sendResponse();
     void sendCGIResponse();
     void readFile(intptr_t offset);
+    void writeFile();
     void readCGI(intptr_t offset);
     void closeFile();
     void close();
@@ -57,7 +59,8 @@ private:
     void handleCGI(const std::string &method, const Uri &uri);
     void handleError(HTTPStatusCode statusCode);
     void handleErrorFromFile(const LocationConfig *location, HTTPStatusCode statusCode);
-    void openFile(const char *path);
+    void openFileToRead(const std::string &path);
+    void openFileToWrite(const std::string &path);
     DIR *openDirectory(const char *path);
     void createPipe(const std::string &method, int *pipe_cgi_read, int *pipe_cgi_write);
     void prepareCGIInOut(const std::string &method, int *pipe_cgi_read, int *pipe_cgi_write);
@@ -68,6 +71,7 @@ private:
     void clearRequest();
     const LocationConfig *searchLocationConfig(const std::string &location);
     std::string resolveIPAddress(const sockaddr_storage &addr) const;
+    std::string buildUploadFilename();
 };
 
 #endif /* CLIENTSOCKET_HPP */

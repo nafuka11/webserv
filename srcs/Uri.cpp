@@ -128,6 +128,18 @@ void Uri::findPathFromLocation(const std::string &location_name,
         findFileFromIndexes(location, path);
         return;
     }
+    if (method_ == HTTPRequest::HTTP_POST && !location.uploadPath().empty())
+    {
+        if (raw_path_ == location_name)
+        {
+            resource_type_ = FILE;
+            return;
+        }
+        else
+        {
+            throw HTTPParseException(CODE_403);
+        }
+    }
 
     struct stat path_stat;
     if (!execStat(path, &path_stat))
