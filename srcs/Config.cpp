@@ -54,7 +54,7 @@ void Config::addServer(const ServerConfig &server_config)
     }
 }
 
-#if DEBUG
+#ifdef DEBUG
 void Config::printServerConfig() const
 {
     int count = 1;
