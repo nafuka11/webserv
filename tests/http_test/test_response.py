@@ -1,7 +1,8 @@
 from http import HTTPStatus
 from http.client import HTTPConnection
 
-from helper import HTML_PATH_404, HTML_PATH_NULL, assert_response
+from helper import (HTML_PATH_404, HTML_PATH_EMPTY, HTML_PATH_NULL,
+                    assert_response)
 
 
 def test_invalid_http_version(http_connection: HTTPConnection):
@@ -67,3 +68,10 @@ def test_response_body_contains_null(http_connection: HTTPConnection):
     http_connection.request("GET", "/contains_null.html")
     response = http_connection.getresponse()
     assert_response(HTTPStatus.OK, response, HTML_PATH_NULL)
+
+
+def test_response_body_is_empty(http_connection: HTTPConnection):
+    """空ファイルの場合、空のメッセージボディを返すこと"""
+    http_connection.request("GET", "/empty.html")
+    response = http_connection.getresponse()
+    assert_response(HTTPStatus.OK, response, HTML_PATH_EMPTY)
