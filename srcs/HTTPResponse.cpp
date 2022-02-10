@@ -48,7 +48,7 @@ std::string HTTPResponse::CGItoString(const LocationConfig *location)
     std::map<std::string, std::string>::const_iterator found = headers_.find("Status");
     if (found != headers_.end())
     {
-        phrase = found->second.substr((found->second.find_last_of(' ') + 1), found->second.length());
+        phrase = found->second.substr((found->second.find(' ') + 1));
         headers_.erase("Status");
     }
     else
