@@ -65,7 +65,7 @@ class TestDelete:
         dir_name = "new_dir"
         dir_path = tmp_path / dir_name
         dir_path.mkdir()
-        http_connection.request("DELETE", f"/test_delete/{tmp_path.name}/{dir_name}")
+        http_connection.request("DELETE", f"/test_delete/{tmp_path.name}/{dir_name}/")
         response = http_connection.getresponse()
         assert_response(HTTPStatus.FORBIDDEN, response)
 
