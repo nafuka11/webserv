@@ -383,7 +383,7 @@ void ClientSocket::handleError(HTTPStatusCode statusCode)
 void ClientSocket::handleErrorFromFile(const LocationConfig *location,
                                        HTTPStatusCode statusCode)
 {
-    const std::map<int, std::string> error_pages = location->errorPage();
+    const std::map<int, std::string> &error_pages = location->errorPage();
     std::map<int, std::string>::const_iterator page_found = error_pages.find(statusCode);
     if (page_found != error_pages.end())
     {
