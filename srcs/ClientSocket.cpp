@@ -378,6 +378,7 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
 
 void ClientSocket::handleError(HTTPStatusCode statusCode)
 {
+    response_.clear();
     response_.setStatusCode(statusCode);
     const LocationConfig *location = searchLocationConfig(request_.getLocation());
     if (location)
