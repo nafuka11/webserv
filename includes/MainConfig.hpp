@@ -26,6 +26,7 @@ public:
     const std::map<int, std::string> &errorPage() const;
     const std::vector<std::string> &index() const;
     const std::vector<ServerConfig> &server() const;
+
 private:
     std::vector<std::string> allow_method_;
     std::string autoindex_;

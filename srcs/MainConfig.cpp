@@ -2,12 +2,12 @@
 #include "ConfigConstant.hpp"
 
 MainConfig::MainConfig()
-: allow_method_(),
-  autoindex_(),
-  cgi_extension_(),
-  client_max_body_size_(ConfigConstant::UNSET_TYPE_INT),
-  error_page_(),
-  index_()
+    : allow_method_(),
+      autoindex_(),
+      cgi_extension_(),
+      client_max_body_size_(ConfigConstant::UNSET_TYPE_INT),
+      error_page_(),
+      index_()
 {
 }
 

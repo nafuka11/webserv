@@ -1,14 +1,14 @@
 #include "LocationConfig.hpp"
 
 LocationConfig::LocationConfig()
-: alias_(),
-  allow_method_(),
-  autoindex_(),
-  cgi_extension_(),
-  error_page_(),
-  index_(),
-  return_redirect_(),
-  upload_path_()
+    : alias_(),
+      allow_method_(),
+      autoindex_(),
+      cgi_extension_(),
+      error_page_(),
+      index_(),
+      return_redirect_(),
+      upload_path_()
 {
 }
 

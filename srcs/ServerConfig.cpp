@@ -3,16 +3,16 @@
 #include "ConfigConstant.hpp"
 
 ServerConfig::ServerConfig()
-: allow_method_(),
-  autoindex_(),
-  cgi_extension_(),
-  client_max_body_size_(ConfigConstant::UNSET_TYPE_INT),
-  error_page_(),
-  index_(),
-  listen_(ConfigConstant::UNSET_TYPE_INT),
-  return_redirect_(),
-  server_name_(),
-  upload_path_()
+    : allow_method_(),
+      autoindex_(),
+      cgi_extension_(),
+      client_max_body_size_(ConfigConstant::UNSET_TYPE_INT),
+      error_page_(),
+      index_(),
+      listen_(ConfigConstant::UNSET_TYPE_INT),
+      return_redirect_(),
+      server_name_(),
+      upload_path_()
 {
 }
 

@@ -28,6 +28,7 @@ public:
     const std::vector<std::string> &index() const;
     const std::map<int, std::string> &returnRedirect() const;
     const std::string &uploadPath() const;
+
 private:
     std::string alias_;
     std::vector<std::string> allow_method_;
