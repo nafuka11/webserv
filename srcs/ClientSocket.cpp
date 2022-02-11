@@ -341,7 +341,7 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
     {
         throw SystemError("fork", errno);
     }
-    if (pid == 0)  // Child prosess
+    if (pid == 0) // Child prosess
     {
         try
         {
@@ -350,7 +350,7 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
             CGI cgi = CGI(request_, uri, *request_.getServerConfig(), method, ip_);
             cgi.execute();
         }
-        catch(const std::exception& e)
+        catch (const std::exception &e)
         {
             std::cerr << e.what() << '\n';
         }
