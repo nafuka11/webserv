@@ -158,7 +158,7 @@ class TestPost:
     def _assert_location_file(self, dir: Path, location: str, expected_body: str):
         """Locationヘッダの値で設定されたファイルの中身がexpected_bodyか確認する"""
         assert location is not None
-        filename = location[location.rfind("/") + 1:]
+        filename = location[location.rfind("/") + 1 :]
         filepath = dir / filename
         with filepath.open("r") as f:
             assert f.read() == expected_body
