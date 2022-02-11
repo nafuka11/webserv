@@ -105,9 +105,11 @@ void ClientSocket::readFile(intptr_t offset)
 
     if (read_byte < 0)
     {
-        response_.setStatusCode(CODE_404);
+        closeFile();
+        handleError(CODE_500);
+        return;
     }
-    if (read_byte <= 0)
+    if (read_byte == 0)
     {
         closeFile();
         return;
