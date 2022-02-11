@@ -171,6 +171,7 @@ void ClientSocket::closeFile()
     switch (state_)
     {
     case READ_FILE:
+    case WRITE_FILE:
         changeState(WRITE_RESPONSE);
         break;
     case READ_CGI:
