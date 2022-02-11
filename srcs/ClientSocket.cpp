@@ -126,13 +126,14 @@ void ClientSocket::writeFile()
 {
     const std::string &body = request_.getMessageBody();
     ssize_t write_byte = write(file_fd_, body.c_str(), body.size());
-    if (write_byte < 0)
+    if (write_byte < 0 || static_cast<size_t>(write_byte) != body.size())
     {
         closeFile();
         handleError(CODE_500);
+        return;
     }
-    closeFile();
     response_.setStatusCode(CODE_201);
+    closeFile();
 }
 
 void ClientSocket::readCGI(intptr_t offset)
