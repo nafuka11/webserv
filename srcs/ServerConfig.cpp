@@ -80,7 +80,7 @@ const std::vector<std::string> &ServerConfig::allowMethod() const
     return allow_method_;
 }
 
-const std::string ServerConfig::autoindex() const
+const std::string &ServerConfig::autoindex() const
 {
     return autoindex_;
 }
@@ -120,12 +120,12 @@ const std::map<int, std::string> &ServerConfig::returnRedirect() const
     return return_redirect_;
 }
 
-const std::string ServerConfig::serverName() const
+const std::string &ServerConfig::serverName() const
 {
     return server_name_;
 }
 
-const std::string ServerConfig::uploadPath() const
+const std::string &ServerConfig::uploadPath() const
 {
     return upload_path_;
 }

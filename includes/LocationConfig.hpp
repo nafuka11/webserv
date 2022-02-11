@@ -20,14 +20,14 @@ public:
     void addIndex(const std::string &file);
     void addReturnRedirect(const int status_code, const std::string &uri);
 
-    const std::string alias() const;
-    const std::vector<std::string> allowMethod() const;
-    const std::string autoindex() const;
+    const std::string &alias() const;
+    const std::vector<std::string> &allowMethod() const;
+    const std::string &autoindex() const;
     const std::vector<std::string> &cgiExtension() const;
-    const std::map<int, std::string> errorPage() const;
-    const std::vector<std::string> index() const;
-    const std::map<int, std::string> returnRedirect() const;
-    const std::string uploadPath() const;
+    const std::map<int, std::string> &errorPage() const;
+    const std::vector<std::string> &index() const;
+    const std::map<int, std::string> &returnRedirect() const;
+    const std::string &uploadPath() const;
 private:
     std::string alias_;
     std::vector<std::string> allow_method_;

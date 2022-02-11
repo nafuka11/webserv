@@ -50,12 +50,12 @@ void MainConfig::addServer(const ServerConfig &server_config)
     server_.push_back(server_config);
 }
 
-const std::vector<std::string> MainConfig::allowMethod() const
+const std::vector<std::string> &MainConfig::allowMethod() const
 {
     return allow_method_;
 }
 
-const std::string MainConfig::autoindex() const
+const std::string &MainConfig::autoindex() const
 {
     return autoindex_;
 }
@@ -70,12 +70,12 @@ const std::vector<std::string> &MainConfig::cgiExtension() const
     return cgi_extension_;
 }
 
-const std::map<int, std::string> MainConfig::errorPage() const
+const std::map<int, std::string> &MainConfig::errorPage() const
 {
     return error_page_;
 }
 
-const std::vector<std::string> MainConfig::index() const
+const std::vector<std::string> &MainConfig::index() const
 {
     return index_;
 }

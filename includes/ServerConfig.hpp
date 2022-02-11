@@ -25,7 +25,7 @@ public:
     void addReturnRedirect(const int status_code, const std::string &uri);
 
     const std::vector<std::string> &allowMethod() const;
-    const std::string autoindex() const;
+    const std::string &autoindex() const;
     const std::vector<std::string> &cgiExtension() const;
     const int &clientMaxBodySize() const;
     const std::map<int, std::string> &errorPage() const;
@@ -33,8 +33,8 @@ public:
     const int &listen() const;
     const std::map<std::string, LocationConfig> &location() const;
     const std::map<int, std::string> &returnRedirect() const;
-    const std::string serverName() const;
-    const std::string uploadPath() const;
+    const std::string &serverName() const;
+    const std::string &uploadPath() const;
 
 private:
     std::vector<std::string> allow_method_;
