@@ -17,14 +17,19 @@ public:
     std::string CGItoString(const LocationConfig *location);
     void appendMessageBody(const char *body, size_t size);
     void clear();
+    void setRedirectResponse(int status_code, const std::string &uri);
+    std::string generateAutoindexHTML(const Uri &uri, DIR *dir_p) const;
+    std::string generateHTMLfromStatusCode(HTTPStatusCode statusCode) const;
+
     void setHeader(const std::pair<std::string, std::string> &item);
     void setStatusCode(int status_code);
     void setKeepAlive(bool keep_alive);
     void setMessageBody(const std::string &body);
-    void setRedirectResponse(int status_code, const std::string &uri);
-    std::string generateAutoindexHTML(const Uri &uri, DIR *dir_p) const;
-    std::string generateHTMLfromStatusCode(HTTPStatusCode statusCode) const;
+    void setSentByte(size_t sent_byte);
+
     const std::map<std::string, std::string> getHeaders() const;
+    const std::string &getRawMessage() const;
+    size_t getSentByte() const;
 
 private:
     static const std::string CRLF;
@@ -39,6 +44,8 @@ private:
     std::map<std::string, std::string> headers_;
     std::string message_body_;
     bool keep_alive_;
+    std::string raw_message_;
+    size_t sent_byte_;
 
     static std::map<int, std::string> setReasonPhrase();
     void setProperties(const LocationConfig *location);
