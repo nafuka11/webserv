@@ -54,26 +54,38 @@ void ClientSocket::receiveRequest()
 
 void ClientSocket::sendResponse()
 {
-    response_.setKeepAlive(request_.canKeepAlive());
-    std::string message = response_.toString(searchLocationConfig(request_.getLocation()));
-    ::send(fd_, message.c_str(), message.size(), 0);
-    if (request_.canKeepAlive())
+    if (response_.getRawMessage().empty())
     {
-        changeState(READ_REQUEST);
-        response_.clear();
+        switch (state_)
+        {
+        case WRITE_RESPONSE:
+            response_.setNormalResponse(searchLocationConfig(request_.getLocation()),
+                                        request_.canKeepAlive());
+
+            break;
+        case WRITE_CGI_RESPONSE:
+            response_.setCGIResponse(searchLocationConfig(request_.getLocation()),
+                                     request_.canKeepAlive());
+            break;
+        default:
+            break;
+        }
     }
-    else
+    const std::string &message = response_.getRawMessage();
+    size_t sent_byte = response_.getSentByte();
+    ssize_t write_byte = send(fd_, message.c_str() + sent_byte,
+                              message.size() - sent_byte, 0);
+    if (write_byte < 0)
     {
         changeState(CLOSE);
+        clearRequest();
+        return;
     }
-    clearRequest();
-}
-
-void ClientSocket::sendCGIResponse()
-{
-    response_.setKeepAlive(request_.canKeepAlive());
-    std::string message = response_.CGItoString(searchLocationConfig(request_.getLocation()));
-    ::send(fd_, message.c_str(), message.size(), 0);
+    if (write_byte + sent_byte < response_.getRawMessage().size())
+    {
+        response_.setSentByte(sent_byte + write_byte);
+        return;
+    }
     if (request_.canKeepAlive())
     {
         changeState(READ_REQUEST);
