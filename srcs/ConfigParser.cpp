@@ -270,7 +270,7 @@ void ConfigParser::validateNumOfArgs(DirectiveNumArgs num)
     std::vector<std::string>::const_iterator value = parse_line_.begin();
     int count = 0;
 
-    for (++value; (*value != ";") && (value != parse_line_.end()); ++value)
+    for (++value; (value != parse_line_.end() && (*value != ";")); ++value)
     {
         count++;
     }
