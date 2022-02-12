@@ -34,7 +34,6 @@ void CGI::run(const HTTPRequest &request,  const ServerConfig &config,
 
 void CGI::end()
 {
-    std::cerr << "Called end(delete)" << std::endl; //TODO: 後で消す
     if (method_  == "POST")
     {
         close(pipe_cgi_read_[1]);
@@ -149,7 +148,6 @@ void CGI::setPath()
 
 void CGI::setArgs(const Uri &uri)
 {
-    std::cerr << "Called setArgs(new)" << std::endl; //TODO: 後で消す
     std::vector<std::string> uri_args = uri.getArguments();
     std::string command = EXEC_COMMAND.find(extension_)->second;
     int size = uri_args.size() + 3;

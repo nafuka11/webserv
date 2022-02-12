@@ -152,7 +152,6 @@ void ClientSocket::readCGI(intptr_t offset)
     }
     if ((read_byte == 0) || (read_byte == offset))
     {
-        // closeFile();
         cgi_.end();
         changeState(WRITE_CGI_RESPONSE);
         try
@@ -194,18 +193,6 @@ void ClientSocket::closeFile()
     ::close(file_fd_);
 
     changeState(WRITE_RESPONSE);
-    // switch (state_)
-    // {
-    // case READ_FILE:
-    // case WRITE_FILE:
-    //     changeState(WRITE_RESPONSE);
-    //     break;
-    // case READ_CGI:
-    //     changeState(WRITE_CGI_RESPONSE);
-    //     break;
-    // default:
-    //     break;
-    // }
 }
 
 void ClientSocket::close()
@@ -408,8 +395,6 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
         {
             setNonBlockingFd(cgi_.getFdWriteToCGI());
             changeState(WRITE_TO_CGI);
-            // setNonBlockingFd(cgi_.getFdReadFromCGI()); // TODO: 後で消す
-            // changeState(READ_CGI); // TODO: 後で消す
         }
         catch(const SystemError &e)
         {
