@@ -9,28 +9,45 @@
 class CGI
 {
 public:
-    CGI(const HTTPRequest &request,  const Uri &uri, const ServerConfig &config,
-        const std::string &method, const std::string &ip);
+    CGI();
     ~CGI();
-    void execute();
+    void run(const HTTPRequest &request,  const ServerConfig &config,
+             const std::string &ip, const std::string &method, const Uri &uri);
+    void end();
+    pid_t spawnChild();
+    void prepareServerInOut();
+    int getFdWriteToCGI() const;
+    int getFdReadFromCGI() const;
+    pid_t getChildPID() const;
 private:
     static const std::map<std::string,std::string> EXEC_PATH;
     static const std::map<std::string,std::string> EXEC_COMMAND;
 
     static std::map<std::string, std::string> createExecutePath();
     static std::map<std::string, std::string> createExecuteCommand();
-    void setPath(const std::string &local_path);
-    void setArgs(const std::string &path);
-    void setEnvs(const std::string &ip, const std::string &method);
+    void createPipe();
+    void prepareCGIInOut();
+    void setPath();
+    void setArgs(const Uri &uri);
+    void setEnvs(const Uri &uri);
     char *allocateString(const std::string &str);
+    void close(int fd);
+    void duplicateFd(int oldfd, int newfd);
+    void execve();
+    void deleteAllocated();
 
     HTTPRequest request_;
-    Uri         uri_;
     ServerConfig config_;
+    std::string method_;
     std::string extension_;
     std::string exec_path_;
+    std::string local_path_;
+    std::string ip_;
     char **exec_args_;
     char **exec_envs_;
+    int pipe_cgi_read_[2];
+    int pipe_cgi_write_[2];
+    pid_t child_pid_;
 };
 
 #endif /* CGI_HPP */
