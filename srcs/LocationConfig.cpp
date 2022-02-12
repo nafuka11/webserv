@@ -1,14 +1,14 @@
 #include "LocationConfig.hpp"
 
 LocationConfig::LocationConfig()
-: alias_(),
-  allow_method_(),
-  autoindex_(),
-  cgi_extension_(),
-  error_page_(),
-  index_(),
-  return_redirect_(),
-  upload_path_()
+    : alias_(),
+      allow_method_(),
+      autoindex_(),
+      cgi_extension_(),
+      error_page_(),
+      index_(),
+      return_redirect_(),
+      upload_path_()
 {
 }
 
@@ -56,17 +56,17 @@ void LocationConfig::addReturnRedirect(const int status_code, const std::string 
     return_redirect_.insert(std::make_pair(status_code, uri));
 }
 
-const std::string LocationConfig::alias() const
+const std::string &LocationConfig::alias() const
 {
     return alias_;
 }
 
-const std::vector<std::string> LocationConfig::allowMethod() const
+const std::vector<std::string> &LocationConfig::allowMethod() const
 {
     return allow_method_;
 }
 
-const std::string LocationConfig::autoindex() const
+const std::string &LocationConfig::autoindex() const
 {
     return autoindex_;
 }
@@ -76,22 +76,22 @@ const std::vector<std::string> &LocationConfig::cgiExtension() const
     return cgi_extension_;
 }
 
-const std::map<int, std::string> LocationConfig::errorPage() const
+const std::map<int, std::string> &LocationConfig::errorPage() const
 {
     return error_page_;
 }
 
-const std::vector<std::string> LocationConfig::index() const
+const std::vector<std::string> &LocationConfig::index() const
 {
     return index_;
 }
 
-const std::map<int, std::string> LocationConfig::returnRedirect() const
+const std::map<int, std::string> &LocationConfig::returnRedirect() const
 {
     return return_redirect_;
 }
 
-const std::string LocationConfig::uploadPath() const
+const std::string &LocationConfig::uploadPath() const
 {
     return upload_path_;
 }

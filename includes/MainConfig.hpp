@@ -19,13 +19,14 @@ public:
     void addIndex(const std::string &file);
     void addServer(const ServerConfig &server_config);
 
-    const std::vector<std::string> allowMethod() const;
-    const std::string autoindex() const;
+    const std::vector<std::string> &allowMethod() const;
+    const std::string &autoindex() const;
     const int &clientMaxBodySize() const;
     const std::vector<std::string> &cgiExtension() const;
-    const std::map<int, std::string> errorPage() const;
-    const std::vector<std::string> index() const;
+    const std::map<int, std::string> &errorPage() const;
+    const std::vector<std::string> &index() const;
     const std::vector<ServerConfig> &server() const;
+
 private:
     std::vector<std::string> allow_method_;
     std::string autoindex_;
