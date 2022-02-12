@@ -34,7 +34,7 @@ void CGI::run(const HTTPRequest &request,  const ServerConfig &config,
 
 void CGI::end()
 {
-    if (method_  == "POST")
+    if (method_ == HTTPRequest::HTTP_POST)
     {
         close(pipe_cgi_read_[1]);
     }
@@ -104,7 +104,7 @@ std::map<std::string, std::string> CGI::createExecuteCommand()
 
 void CGI::createPipe()
 {
-    if (method_ == "POST")
+    if (method_ == HTTPRequest::HTTP_POST)
     {
         if (pipe(pipe_cgi_read_) < 0)
         {
@@ -119,7 +119,7 @@ void CGI::createPipe()
 
 void CGI::prepareCGIInOut()
 {
-    if (method_ == "POST")
+    if (method_ == HTTPRequest::HTTP_POST)
     {
         close(pipe_cgi_read_[1]);
         close(STDIN_FILENO);
@@ -132,7 +132,7 @@ void CGI::prepareCGIInOut()
 
 void CGI::prepareServerInOut()
 {
-    if (method_ == "POST")
+    if (method_ == HTTPRequest::HTTP_POST)
     {
         close(pipe_cgi_read_[0]);
     }
