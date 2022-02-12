@@ -173,10 +173,11 @@ void ClientSocket::writeToCGI()
 
     const std::string &body = request_.getMessageBody();
     ssize_t write_byte = write(to_cgi_fd, body.c_str(), body.size());
-    if (write_byte < 0)
+    if (write_byte < 0 || static_cast<size_t>(write_byte) != body.size())
     {
         cgi_.end();
         handleError(CODE_500);
+        return;
     }
     pid_t child_pid = cgi_.getChildPID();
     if (waitpid(child_pid, NULL, 0) != child_pid)
