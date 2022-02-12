@@ -56,6 +56,11 @@ void ConfigParser::readAndSplitLines(std::ifstream &ifs)
 
     while (std::getline(ifs, line))
     {
+        // skip comment out
+        if (line.size() != 0 && line[0] == '#')
+        {
+            continue;
+        }
         const std::vector<std::string> words = splitLine(line);
         parse_lines_.push_back(words);
     }
