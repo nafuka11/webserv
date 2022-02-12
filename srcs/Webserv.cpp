@@ -121,6 +121,12 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
             client->writeFile();
         }
         break;
+    case ClientSocket::WRITE_TO_CGI:
+        if (event.filter == EVFILT_WRITE)
+        {
+            client->writeToCGI();
+        }
+        break;
     default:
         break;
     }

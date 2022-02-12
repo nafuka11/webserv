@@ -166,6 +166,28 @@ void ClientSocket::readCGI(intptr_t offset)
     }
 }
 
+void ClientSocket::writeToCGI()
+{
+    int to_cgi_fd = cgi_.getFdWriteToCGI();
+    int from_cgi_fd = cgi_.getFdReadFromCGI();
+
+    const std::string &body = request_.getMessageBody();
+    ssize_t write_byte = write(to_cgi_fd, body.c_str(), body.size());
+    if (write_byte < 0)
+    {
+        cgi_.end();
+        handleError(CODE_500);
+    }
+    pid_t child_pid = cgi_.getChildPID();
+    if (waitpid(child_pid, NULL, 0) != child_pid)
+    {
+        cgi_.end();
+        handleError(CODE_500);
+    }
+    setNonBlockingFd(from_cgi_fd);
+    changeState(READ_CGI);
+}
+
 void ClientSocket::closeFile()
 {
     ::close(file_fd_);
@@ -214,6 +236,9 @@ void ClientSocket::changeState(State new_state)
         break;
     case WRITE_FILE:
         break;
+    case WRITE_TO_CGI:
+        poller_.unregisterWriteEvent(this, cgi_.getFdWriteToCGI());
+        break;
     default:
         break;
     }
@@ -234,6 +259,10 @@ void ClientSocket::changeState(State new_state)
         break;
     case WRITE_FILE:
         poller_.registerWriteEvent(this, file_fd_);
+        break;
+    case WRITE_TO_CGI:
+        poller_.registerWriteEvent(this, cgi_.getFdWriteToCGI());
+        break;
     default:
         break;
     }
@@ -376,10 +405,10 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
     {
         try
         {
-            // TODO: setNonBlockingFd(cgi_.getFdWriteToCGI());を実装する
-            // TODO: changeState(WRITE_TO_CGI);を実装する
-            setNonBlockingFd(cgi_.getFdReadFromCGI()); // TODO: 後で消す
-            changeState(READ_CGI); // TODO: 後で消す
+            setNonBlockingFd(cgi_.getFdWriteToCGI());
+            changeState(WRITE_TO_CGI);
+            // setNonBlockingFd(cgi_.getFdReadFromCGI()); // TODO: 後で消す
+            // changeState(READ_CGI); // TODO: 後で消す
         }
         catch(const SystemError &e)
         {

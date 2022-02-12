@@ -22,6 +22,7 @@ public:
         WRITE_RESPONSE,
         WRITE_CGI_RESPONSE,
         WRITE_FILE,
+        WRITE_TO_CGI,
         CLOSE
     };
 
@@ -35,6 +36,7 @@ public:
     void readFile(intptr_t offset);
     void writeFile();
     void readCGI(intptr_t offset);
+    void writeToCGI();
     void closeFile();
     void close();
     State getState() const;

@@ -34,6 +34,7 @@ void CGI::run(const HTTPRequest &request,  const ServerConfig &config,
 
 void CGI::end()
 {
+    std::cerr << "Called end(delete)" << std::endl; //TODO: 後で消す
     if (method_  == "POST")
     {
         close(pipe_cgi_read_[1]);
