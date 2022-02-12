@@ -24,7 +24,7 @@ void CGI::run(const HTTPRequest &request,  const ServerConfig &config,
     setArgs(uri);
     setEnvs(uri);
     createPipe();
-    child_pid_ = spawnChild();
+    spawnChild();
 }
 
 void CGI::end()
@@ -35,33 +35,6 @@ void CGI::end()
     }
     close(pipe_cgi_write_[0]);
     deleteAllocated();
-}
-
-pid_t CGI::spawnChild()
-{
-    pid_t pid = fork();
-    if (pid < 0)
-    {
-        throw SystemError("fork", errno);
-    }
-    if (pid == 0)
-    {
-        try
-        {
-            prepareCGIInOut();
-            execve();
-        }
-        catch(const std::exception& e)
-        {
-            std::cerr << e.what() << '\n';
-        }
-        exit(EXIT_FAILURE);
-    }
-    else
-    {
-        prepareServerInOut();
-        return pid;
-    }
 }
 
 int CGI::getFdWriteToCGI() const
@@ -95,43 +68,6 @@ std::map<std::string, std::string> CGI::createExecuteCommand()
     command[".php"] = "php";
     command[".pl"] = "perl";
     return command;
-}
-
-void CGI::createPipe()
-{
-    if (method_ == HTTPRequest::HTTP_POST)
-    {
-        if (pipe(pipe_cgi_read_) < 0)
-        {
-            throw SystemError("pipe", errno);
-        }
-    }
-    if (pipe(pipe_cgi_write_) < 0)
-    {
-        throw SystemError("pipe", errno);
-    }
-}
-
-void CGI::prepareCGIInOut()
-{
-    if (method_ == HTTPRequest::HTTP_POST)
-    {
-        close(pipe_cgi_read_[1]);
-        close(STDIN_FILENO);
-        duplicateFd(pipe_cgi_read_[0], STDIN_FILENO);
-    }
-    close(pipe_cgi_write_[0]);
-    close(STDOUT_FILENO);
-    duplicateFd(pipe_cgi_write_[1], STDOUT_FILENO);
-}
-
-void CGI::prepareServerInOut()
-{
-    if (method_ == HTTPRequest::HTTP_POST)
-    {
-        close(pipe_cgi_read_[0]);
-    }
-    close(pipe_cgi_write_[1]);
 }
 
 void CGI::setMembersValue(const HTTPRequest &request,  const ServerConfig &config,
@@ -230,6 +166,70 @@ void CGI::setEnvs(const Uri &uri)
         exec_envs_[index] = allocateString(env_str);
     }
     exec_envs_[index] = NULL;
+}
+
+void CGI::createPipe()
+{
+    if (method_ == HTTPRequest::HTTP_POST)
+    {
+        if (pipe(pipe_cgi_read_) < 0)
+        {
+            throw SystemError("pipe", errno);
+        }
+    }
+    if (pipe(pipe_cgi_write_) < 0)
+    {
+        throw SystemError("pipe", errno);
+    }
+}
+
+void CGI::spawnChild()
+{
+    pid_t pid = fork();
+    if (pid < 0)
+    {
+        throw SystemError("fork", errno);
+    }
+    if (pid == 0)
+    {
+        try
+        {
+            prepareCGIInOut();
+            execve();
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
+        exit(EXIT_FAILURE);
+    }
+    else
+    {
+        prepareServerInOut();
+        child_pid_ = pid;
+    }
+}
+
+void CGI::prepareCGIInOut()
+{
+    if (method_ == HTTPRequest::HTTP_POST)
+    {
+        close(pipe_cgi_read_[1]);
+        close(STDIN_FILENO);
+        duplicateFd(pipe_cgi_read_[0], STDIN_FILENO);
+    }
+    close(pipe_cgi_write_[0]);
+    close(STDOUT_FILENO);
+    duplicateFd(pipe_cgi_write_[1], STDOUT_FILENO);
+}
+
+void CGI::prepareServerInOut()
+{
+    if (method_ == HTTPRequest::HTTP_POST)
+    {
+        close(pipe_cgi_read_[0]);
+    }
+    close(pipe_cgi_write_[1]);
 }
 
 char *CGI::allocateString(const std::string &str)

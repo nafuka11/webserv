@@ -37,16 +37,16 @@ private:
     static std::map<std::string, std::string> createExecutePath();
     static std::map<std::string, std::string> createExecuteCommand();
 
-    void createPipe();
-    pid_t spawnChild();
-    void prepareCGIInOut();
-    void prepareServerInOut();
-
     void setMembersValue(const HTTPRequest &request, const ServerConfig &config,
                          const std::string &ip, const std::string &method, const Uri &uri);
     void setPath();
     void setArgs(const Uri &uri);
     void setEnvs(const Uri &uri);
+
+    void createPipe();
+    void spawnChild();
+    void prepareCGIInOut();
+    void prepareServerInOut();
 
     char *allocateString(const std::string &str);
     void close(int fd);
