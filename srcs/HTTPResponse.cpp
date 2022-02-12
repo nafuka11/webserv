@@ -11,12 +11,126 @@ const size_t HTTPResponse::AUTOINDEX_FILENAME_WIDTH = 50;
 const size_t HTTPResponse::AUTOINDEX_MTIME_WIDTH = 17;
 const size_t HTTPResponse::AUTOINDEX_FILESIZE_WIDTH = 20;
 
-HTTPResponse::HTTPResponse()
+HTTPResponse::HTTPResponse() : sent_byte_(0)
 {
 }
 
 HTTPResponse::~HTTPResponse()
 {
+}
+
+void HTTPResponse::appendMessageBody(const char *body, size_t size)
+{
+    message_body_.append(body, size);
+}
+
+void HTTPResponse::clear()
+{
+    message_body_.clear();
+    headers_.clear();
+    raw_message_.clear();
+    sent_byte_ = 0;
+}
+
+void HTTPResponse::setRedirectResponse(int status_code, const std::string &uri)
+{
+    status_code_ = status_code;
+    headers_.insert(std::make_pair("Location", uri));
+}
+
+void HTTPResponse::setNormalResponse(const LocationConfig *location, bool keep_alive)
+{
+    keep_alive_ = keep_alive;
+    raw_message_ = toString(location);
+}
+
+void HTTPResponse::setCGIResponse(const LocationConfig *location, bool keep_alive)
+{
+    keep_alive_ = keep_alive;
+    raw_message_ = CGItoString(location);
+}
+
+std::string HTTPResponse::generateAutoindexHTML(const Uri &uri, DIR *dir_p) const
+{
+    std::stringstream ss;
+
+    ss << "<html>" << CRLF
+       << "<head><title>Index of " << uri.getRawPath() << "</title></head>" << CRLF
+       << "<body>" << CRLF
+       << "<h1>Index of " << uri.getRawPath()
+       << "</h1><hr><pre style=\"font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace\"><a href=\"../\">../</a>"
+       << CRLF;
+
+    for (struct dirent *entry = readdir(dir_p); entry != NULL; entry = readdir(dir_p))
+    {
+        if (entry->d_name[0] == '.')
+        {
+            continue;
+        }
+
+        appendFileHTML(ss, uri, entry);
+    }
+
+    ss << "</pre><hr></body>" << CRLF
+       << "</html>" << CRLF;
+
+    return ss.str();
+}
+
+std::string HTTPResponse::generateHTMLfromStatusCode(HTTPStatusCode statusCode) const
+{
+    std::stringstream ss;
+
+    std::string phrase = HTTPResponse::REASON_PHRASE.find(statusCode)->second;
+    ss << "<html>"
+       << "\r\n"
+       << "<head><title>" << statusCode << " " << phrase << "</title></head>"
+       << "\r\n"
+       << "<body>"
+       << "\r\n"
+       << "<center><h1>" << statusCode << " " << phrase << "</h1></center>"
+       << "<hr><center>webserv/1.0.0</center>"
+       << "\r\n"
+       << "</body>"
+       << "\r\n"
+       << "</html>"
+       << "\r\n";
+    return ss.str();
+}
+
+void HTTPResponse::setHeader(const std::pair<std::string, std::string> &item)
+{
+    headers_.insert(item);
+}
+
+void HTTPResponse::setStatusCode(int status_code)
+{
+    status_code_ = status_code;
+}
+
+void HTTPResponse::setMessageBody(const std::string &body)
+{
+    message_body_ = body;
+}
+
+void HTTPResponse::setSentByte(size_t sent_bytes)
+{
+    sent_byte_ = sent_bytes;
+}
+
+const std::map<std::string, std::string> HTTPResponse::getHeaders() const
+{
+    return headers_;
+}
+
+const std::string &HTTPResponse::getRawMessage() const
+{
+    return raw_message_;
+}
+
+size_t HTTPResponse::getSentByte() const
+{
+    return sent_byte_;
 }
 
 std::string HTTPResponse::toString(const LocationConfig *location)
@@ -66,43 +180,6 @@ std::string HTTPResponse::CGItoString(const LocationConfig *location)
     ss << message_body_;
     return ss.str();
 
-}
-
-void HTTPResponse::appendMessageBody(const char *body, size_t size)
-{
-    message_body_.append(body, size);
-}
-
-void HTTPResponse::clear()
-{
-    message_body_.clear();
-    headers_.clear();
-}
-
-void HTTPResponse::setHeader(const std::pair<std::string, std::string> &item)
-{
-    headers_.insert(item);
-}
-
-void HTTPResponse::setStatusCode(int status_code)
-{
-    status_code_ = status_code;
-}
-
-void HTTPResponse::setKeepAlive(bool keep_alive)
-{
-    keep_alive_ = keep_alive;
-}
-
-void HTTPResponse::setMessageBody(const std::string &body)
-{
-    message_body_ = body;
-}
-
-void HTTPResponse::setRedirectResponse(int status_code, const std::string &uri)
-{
-    status_code_ = status_code;
-    headers_.insert(std::make_pair("Location", uri));
 }
 
 std::map<int, std::string> HTTPResponse::setReasonPhrase()
@@ -217,27 +294,6 @@ std::string HTTPResponse::findReasonPhrase(int status_code) const
     return "";
 }
 
-std::string HTTPResponse::generateHTMLfromStatusCode(HTTPStatusCode statusCode) const
-{
-    std::stringstream ss;
-
-    std::string phrase = HTTPResponse::REASON_PHRASE.find(statusCode)->second;
-    ss << "<html>"
-       << "\r\n"
-       << "<head><title>" << statusCode << " " << phrase << "</title></head>"
-       << "\r\n"
-       << "<body>"
-       << "\r\n"
-       << "<center><h1>" << statusCode << " " << phrase << "</h1></center>"
-       << "<hr><center>webserv/1.0.0</center>"
-       << "\r\n"
-       << "</body>"
-       << "\r\n"
-       << "</html>"
-       << "\r\n";
-    return ss.str();
-}
-
 std::string HTTPResponse::generateDateString() const
 {
     time_t now = time(NULL);
@@ -246,33 +302,6 @@ std::string HTTPResponse::generateDateString() const
 
     strftime(str, sizeof(str), "%a, %d %b %Y %H:%M:%S GMT", now_time);
     return std::string(str);
-}
-
-std::string HTTPResponse::generateAutoindexHTML(const Uri &uri, DIR *dir_p) const
-{
-    std::stringstream ss;
-
-    ss << "<html>" << CRLF
-       << "<head><title>Index of " << uri.getRawPath() << "</title></head>" << CRLF
-       << "<body>" << CRLF
-       << "<h1>Index of " << uri.getRawPath()
-       << "</h1><hr><pre style=\"font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace\"><a href=\"../\">../</a>"
-       << CRLF;
-
-    for (struct dirent *entry = readdir(dir_p); entry != NULL; entry = readdir(dir_p))
-    {
-        if (entry->d_name[0] == '.')
-        {
-            continue;
-        }
-
-        appendFileHTML(ss, uri, entry);
-    }
-
-    ss << "</pre><hr></body>" << CRLF
-       << "</html>" << CRLF;
-
-    return ss.str();
 }
 
 void HTTPResponse::appendFileHTML(std::stringstream &ss,
@@ -386,9 +415,4 @@ std::string HTTPResponse::escapeUri(const std::string &str) const
         }
     }
     return ss.str();
-}
-
-const std::map<std::string, std::string> HTTPResponse::getHeaders() const
-{
-    return headers_;
 }

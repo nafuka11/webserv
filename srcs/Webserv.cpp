@@ -105,6 +105,7 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
         }
         break;
     case ClientSocket::WRITE_RESPONSE:
+    case ClientSocket::WRITE_CGI_RESPONSE:
         if (event.filter == EVFILT_WRITE)
         {
             client->sendResponse();
@@ -118,11 +119,6 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
         if (event.filter == EVFILT_WRITE)
         {
             client->writeFile();
-        }
-    case ClientSocket::WRITE_CGI_RESPONSE:
-        if (event.filter == EVFILT_WRITE)
-        {
-            client->sendCGIResponse();
         }
         break;
     default:

@@ -54,26 +54,38 @@ void ClientSocket::receiveRequest()
 
 void ClientSocket::sendResponse()
 {
-    response_.setKeepAlive(request_.canKeepAlive());
-    std::string message = response_.toString(searchLocationConfig(request_.getLocation()));
-    ::send(fd_, message.c_str(), message.size(), 0);
-    if (request_.canKeepAlive())
+    if (response_.getRawMessage().empty())
     {
-        changeState(READ_REQUEST);
-        response_.clear();
+        switch (state_)
+        {
+        case WRITE_RESPONSE:
+            response_.setNormalResponse(searchLocationConfig(request_.getLocation()),
+                                        request_.canKeepAlive());
+
+            break;
+        case WRITE_CGI_RESPONSE:
+            response_.setCGIResponse(searchLocationConfig(request_.getLocation()),
+                                     request_.canKeepAlive());
+            break;
+        default:
+            break;
+        }
     }
-    else
+    const std::string &message = response_.getRawMessage();
+    size_t sent_byte = response_.getSentByte();
+    ssize_t write_byte = send(fd_, message.c_str() + sent_byte,
+                              message.size() - sent_byte, 0);
+    if (write_byte < 0)
     {
         changeState(CLOSE);
+        clearRequest();
+        return;
     }
-    clearRequest();
-}
-
-void ClientSocket::sendCGIResponse()
-{
-    response_.setKeepAlive(request_.canKeepAlive());
-    std::string message = response_.CGItoString(searchLocationConfig(request_.getLocation()));
-    ::send(fd_, message.c_str(), message.size(), 0);
+    if (write_byte + sent_byte < response_.getRawMessage().size())
+    {
+        response_.setSentByte(sent_byte + write_byte);
+        return;
+    }
     if (request_.canKeepAlive())
     {
         changeState(READ_REQUEST);
@@ -93,9 +105,11 @@ void ClientSocket::readFile(intptr_t offset)
 
     if (read_byte < 0)
     {
-        response_.setStatusCode(CODE_404);
+        closeFile();
+        handleError(CODE_500);
+        return;
     }
-    if (read_byte <= 0)
+    if (read_byte == 0)
     {
         closeFile();
         return;
@@ -112,13 +126,14 @@ void ClientSocket::writeFile()
 {
     const std::string &body = request_.getMessageBody();
     ssize_t write_byte = write(file_fd_, body.c_str(), body.size());
-    if (write_byte < 0)
+    if (write_byte < 0 || static_cast<size_t>(write_byte) != body.size())
     {
         closeFile();
         handleError(CODE_500);
+        return;
     }
-    closeFile();
     response_.setStatusCode(CODE_201);
+    closeFile();
 }
 
 void ClientSocket::readCGI(intptr_t offset)
@@ -156,6 +171,7 @@ void ClientSocket::closeFile()
     switch (state_)
     {
     case READ_FILE:
+    case WRITE_FILE:
         changeState(WRITE_RESPONSE);
         break;
     case READ_CGI:
@@ -325,7 +341,7 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
     {
         throw SystemError("fork", errno);
     }
-    if (pid == 0)  // Child prosess
+    if (pid == 0) // Child prosess
     {
         try
         {
@@ -334,7 +350,7 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
             CGI cgi = CGI(request_, uri, *request_.getServerConfig(), method, ip_);
             cgi.execute();
         }
-        catch(const std::exception& e)
+        catch (const std::exception &e)
         {
             std::cerr << e.what() << '\n';
         }
@@ -362,6 +378,7 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
 
 void ClientSocket::handleError(HTTPStatusCode statusCode)
 {
+    response_.clear();
     response_.setStatusCode(statusCode);
     const LocationConfig *location = searchLocationConfig(request_.getLocation());
     if (location)

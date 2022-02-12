@@ -13,18 +13,22 @@ class HTTPResponse
 public:
     HTTPResponse();
     ~HTTPResponse();
-    std::string toString(const LocationConfig *location);
-    std::string CGItoString(const LocationConfig *location);
     void appendMessageBody(const char *body, size_t size);
     void clear();
-    void setHeader(const std::pair<std::string, std::string> &item);
-    void setStatusCode(int status_code);
-    void setKeepAlive(bool keep_alive);
-    void setMessageBody(const std::string &body);
     void setRedirectResponse(int status_code, const std::string &uri);
+    void setNormalResponse(const LocationConfig *location, bool keep_alive);
+    void setCGIResponse(const LocationConfig *location, bool keep_alive);
     std::string generateAutoindexHTML(const Uri &uri, DIR *dir_p) const;
     std::string generateHTMLfromStatusCode(HTTPStatusCode statusCode) const;
+
+    void setHeader(const std::pair<std::string, std::string> &item);
+    void setStatusCode(int status_code);
+    void setMessageBody(const std::string &body);
+    void setSentByte(size_t sent_byte);
+
     const std::map<std::string, std::string> getHeaders() const;
+    const std::string &getRawMessage() const;
+    size_t getSentByte() const;
 
 private:
     static const std::string CRLF;
@@ -39,7 +43,11 @@ private:
     std::map<std::string, std::string> headers_;
     std::string message_body_;
     bool keep_alive_;
+    std::string raw_message_;
+    size_t sent_byte_;
 
+    std::string toString(const LocationConfig *location);
+    std::string CGItoString(const LocationConfig *location);
     static std::map<int, std::string> setReasonPhrase();
     void setProperties(const LocationConfig *location);
     std::string findReasonPhrase(int status_code) const;
