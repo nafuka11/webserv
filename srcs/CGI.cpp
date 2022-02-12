@@ -17,14 +17,9 @@ CGI::~CGI()
 }
 
 void CGI::run(const HTTPRequest &request,  const ServerConfig &config,
-                        const std::string &ip, const std::string &method, const Uri &uri)
+              const std::string &ip, const std::string &method, const Uri &uri)
 {
-    request_ = request;
-    config_ = config;
-    ip_ = ip;
-    method_= method;
-    local_path_ = uri.getLocalPath();
-
+    setMembersValue(request, config, ip, method, uri);
     setPath();
     setArgs(uri);
     setEnvs(uri);
@@ -137,6 +132,16 @@ void CGI::prepareServerInOut()
         close(pipe_cgi_read_[0]);
     }
     close(pipe_cgi_write_[1]);
+}
+
+void CGI::setMembersValue(const HTTPRequest &request,  const ServerConfig &config,
+                          const std::string &ip, const std::string &method, const Uri &uri)
+{
+    request_ = request;
+    config_ = config;
+    ip_ = ip;
+    method_= method;
+    local_path_ = uri.getLocalPath();
 }
 
 void CGI::setPath()

@@ -42,6 +42,8 @@ private:
     void prepareCGIInOut();
     void prepareServerInOut();
 
+    void setMembersValue(const HTTPRequest &request, const ServerConfig &config,
+                         const std::string &ip, const std::string &method, const Uri &uri);
     void setPath();
     void setArgs(const Uri &uri);
     void setEnvs(const Uri &uri);
