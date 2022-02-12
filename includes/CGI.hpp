@@ -14,28 +14,11 @@ public:
     void run(const HTTPRequest &request,  const ServerConfig &config,
              const std::string &ip, const std::string &method, const Uri &uri);
     void end();
-    pid_t spawnChild();
-    void prepareServerInOut();
     int getFdWriteToCGI() const;
     int getFdReadFromCGI() const;
     pid_t getChildPID() const;
+
 private:
-    static const std::map<std::string,std::string> EXEC_PATH;
-    static const std::map<std::string,std::string> EXEC_COMMAND;
-
-    static std::map<std::string, std::string> createExecutePath();
-    static std::map<std::string, std::string> createExecuteCommand();
-    void createPipe();
-    void prepareCGIInOut();
-    void setPath();
-    void setArgs(const Uri &uri);
-    void setEnvs(const Uri &uri);
-    char *allocateString(const std::string &str);
-    void close(int fd);
-    void duplicateFd(int oldfd, int newfd);
-    void execve();
-    void deleteAllocated();
-
     HTTPRequest request_;
     ServerConfig config_;
     std::string method_;
@@ -48,6 +31,26 @@ private:
     int pipe_cgi_read_[2];
     int pipe_cgi_write_[2];
     pid_t child_pid_;
+
+    static const std::map<std::string,std::string> EXEC_PATH;
+    static const std::map<std::string,std::string> EXEC_COMMAND;
+    static std::map<std::string, std::string> createExecutePath();
+    static std::map<std::string, std::string> createExecuteCommand();
+
+    void createPipe();
+    pid_t spawnChild();
+    void prepareCGIInOut();
+    void prepareServerInOut();
+
+    void setPath();
+    void setArgs(const Uri &uri);
+    void setEnvs(const Uri &uri);
+
+    char *allocateString(const std::string &str);
+    void close(int fd);
+    void duplicateFd(int oldfd, int newfd);
+    void execve();
+    void deleteAllocated();
 };
 
 #endif /* CGI_HPP */
