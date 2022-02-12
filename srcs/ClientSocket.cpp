@@ -325,7 +325,17 @@ void ClientSocket::handleRedirect(const Uri &uri)
 {
     const std::map<int, std::string>
         redirects = uri.getLocationConfig()->returnRedirect();
-    response_.setRedirectResponse(redirects.begin()->first, redirects.begin()->second);
+    if (redirects.size() > 0)
+    {
+        response_.setRedirectResponse(redirects.begin()->first,
+                                      redirects.begin()->second);
+    }
+    else
+    {
+        std::string path = "http://" + request_.getHeaders().find("host")->second +
+                           uri.getRawPath() + "/";
+        response_.setRedirectResponse(CODE_301, path);
+    }
     changeState(WRITE_RESPONSE);
 }
 

@@ -65,7 +65,7 @@ class TestDelete:
         dir_name = "new_dir"
         dir_path = tmp_path / dir_name
         dir_path.mkdir()
-        http_connection.request("DELETE", f"/test_delete/{tmp_path.name}/{dir_name}")
+        http_connection.request("DELETE", f"/test_delete/{tmp_path.name}/{dir_name}/")
         response = http_connection.getresponse()
         assert_response(HTTPStatus.FORBIDDEN, response)
 
@@ -158,7 +158,7 @@ class TestPost:
     def _assert_location_file(self, dir: Path, location: str, expected_body: str):
         """Locationヘッダの値で設定されたファイルの中身がexpected_bodyか確認する"""
         assert location is not None
-        filename = location[location.rfind("/") + 1:]
+        filename = location[location.rfind("/") + 1 :]
         filepath = dir / filename
         with filepath.open("r") as f:
             assert f.read() == expected_body

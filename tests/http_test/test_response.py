@@ -83,3 +83,10 @@ def test_response_body_is_empty(http_connection: HTTPConnection):
     http_connection.request("GET", "/empty.html")
     response = http_connection.getresponse()
     assert_response(HTTPStatus.OK, response, HTML_PATH_EMPTY)
+
+
+def test_uri_does_not_end_with_slash(http_connection: HTTPConnection):
+    """URIがディレクトリかつ/で終わらないとき301を返すこと"""
+    http_connection.request("GET", "/autoindex")
+    response = http_connection.getresponse()
+    assert_response(HTTPStatus.MOVED_PERMANENTLY, response, empty_body=True)

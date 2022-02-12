@@ -146,6 +146,11 @@ void Uri::findPathFromLocation(const std::string &location_name,
     {
         throw HTTPParseException(CODE_404);
     }
+    if (isDirectory(path_stat) && path.at(path.size() - 1) != '/')
+    {
+        resource_type_ = REDIRECT;
+        return;
+    }
     if (isRegularFile(path_stat))
     {
         if (hasCgiExtension(path, location.cgiExtension()))
