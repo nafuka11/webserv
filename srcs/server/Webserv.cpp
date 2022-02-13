@@ -11,6 +11,10 @@ Webserv::Webserv(const std::string &filepath) : config_(Config())
 
 Webserv::~Webserv()
 {
+    for (size_t i = 0; i < sockets_.size(); i++)
+    {
+        delete sockets_.at(i);
+    }
 }
 
 void Webserv::run()
