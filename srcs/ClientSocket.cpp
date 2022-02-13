@@ -139,7 +139,7 @@ void ClientSocket::writeFile()
 void ClientSocket::readCGI(intptr_t offset)
 {
     char buffer[BUF_SIZE];
-    ssize_t read_byte = read(file_fd_, buffer, BUF_SIZE - 1);
+    ssize_t read_byte = read(cgi_.getFdReadFromCGI(), buffer, BUF_SIZE - 1);
 
     if (read_byte < 0)
     {
@@ -152,7 +152,8 @@ void ClientSocket::readCGI(intptr_t offset)
     }
     if ((read_byte == 0) || (read_byte == offset))
     {
-        closeFile();
+        cgi_.end();
+        changeState(WRITE_CGI_RESPONSE);
         try
         {
             cgi_parser_.parse();
@@ -164,22 +165,34 @@ void ClientSocket::readCGI(intptr_t offset)
     }
 }
 
+void ClientSocket::writeToCGI()
+{
+    int to_cgi_fd = cgi_.getFdWriteToCGI();
+    int from_cgi_fd = cgi_.getFdReadFromCGI();
+
+    const std::string &body = request_.getMessageBody();
+    ssize_t write_byte = write(to_cgi_fd, body.c_str(), body.size());
+    if (write_byte < 0 || static_cast<size_t>(write_byte) != body.size())
+    {
+        cgi_.end();
+        handleError(CODE_500);
+        return;
+    }
+    pid_t child_pid = cgi_.getChildPID();
+    if (waitpid(child_pid, NULL, 0) != child_pid)
+    {
+        cgi_.end();
+        handleError(CODE_500);
+    }
+    setNonBlockingFd(from_cgi_fd);
+    changeState(READ_CGI);
+}
+
 void ClientSocket::closeFile()
 {
     ::close(file_fd_);
 
-    switch (state_)
-    {
-    case READ_FILE:
-    case WRITE_FILE:
-        changeState(WRITE_RESPONSE);
-        break;
-    case READ_CGI:
-        changeState(WRITE_CGI_RESPONSE);
-        break;
-    default:
-        break;
-    }
+    changeState(WRITE_RESPONSE);
 }
 
 void ClientSocket::close()
@@ -211,6 +224,9 @@ void ClientSocket::changeState(State new_state)
         break;
     case WRITE_FILE:
         break;
+    case WRITE_TO_CGI:
+        poller_.unregisterWriteEvent(this, cgi_.getFdWriteToCGI());
+        break;
     default:
         break;
     }
@@ -220,8 +236,10 @@ void ClientSocket::changeState(State new_state)
         poller_.registerReadEvent(this, fd_);
         break;
     case READ_FILE:
-    case READ_CGI:
         poller_.registerReadEvent(this, file_fd_);
+        break;
+    case READ_CGI:
+        poller_.registerReadEvent(this, cgi_.getFdReadFromCGI());
         break;
     case WRITE_RESPONSE:
     case WRITE_CGI_RESPONSE:
@@ -229,6 +247,10 @@ void ClientSocket::changeState(State new_state)
         break;
     case WRITE_FILE:
         poller_.registerWriteEvent(this, file_fd_);
+        break;
+    case WRITE_TO_CGI:
+        poller_.registerWriteEvent(this, cgi_.getFdWriteToCGI());
+        break;
     default:
         break;
     }
@@ -341,48 +363,43 @@ void ClientSocket::handleRedirect(const Uri &uri)
 
 void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
 {
-    int pipe_cgi_read[2];
-    int pipe_cgi_write[2];
-
-    createPipe(method, pipe_cgi_read, pipe_cgi_write);
-
-    pid_t pid = fork();
-    if (pid < 0)
+    try
     {
-        throw SystemError("fork", errno);
+        cgi_.run(request_, *request_.getServerConfig(), ip_, method, uri);
     }
-    if (pid == 0) // Child prosess
+    catch(const std::exception &e)
+    {
+        handleError(CODE_500);
+    }
+
+    if (method == HTTPRequest::HTTP_GET)
     {
         try
         {
-            prepareCGIInOut(method, pipe_cgi_read, pipe_cgi_write);
-
-            CGI cgi = CGI(request_, uri, *request_.getServerConfig(), method, ip_);
-            cgi.execute();
+            pid_t child_pid = cgi_.getChildPID();
+            if (waitpid(child_pid, NULL, 0) != child_pid)
+            {
+                throw SystemError("waitpid", errno);
+            }
+            setNonBlockingFd(cgi_.getFdReadFromCGI());
+            changeState(READ_CGI);
         }
-        catch (const std::exception &e)
+        catch(const SystemError &e)
         {
-            std::cerr << e.what() << '\n';
+            handleError(CODE_500);
         }
-        exit(EXIT_FAILURE);
     }
-    else // Parent process
+    else if (method == HTTPRequest::HTTP_POST)
     {
-        prepareServerInOut(method, pipe_cgi_read, pipe_cgi_write);
-
-        if (method == "POST")
+        try
         {
-            write(pipe_cgi_read[1], request_.getMessageBody().c_str(), parser_.getContentLength());
-            closeFd(pipe_cgi_read[1]);
+            setNonBlockingFd(cgi_.getFdWriteToCGI());
+            changeState(WRITE_TO_CGI);
         }
-
-        if (waitpid(pid, NULL, 0) != pid)
+        catch(const SystemError &e)
         {
-            throw SystemError("waitpid", errno);
+            handleError(CODE_500);
         }
-
-        setNonBlockingFd(file_fd_);
-        changeState(READ_CGI);
     }
 }
 
@@ -449,63 +466,6 @@ DIR *ClientSocket::openDirectory(const char *path)
         throw HTTPParseException(CODE_404);
     }
     return dir_p;
-}
-
-void ClientSocket::createPipe(const std::string &method,
-                              int *pipe_cgi_read, int *pipe_cgi_write)
-{
-    if (method == "POST")
-    {
-        if (pipe(pipe_cgi_read) < 0)
-        {
-            throw SystemError("pipe", errno);
-        }
-    }
-    if (pipe(pipe_cgi_write) < 0)
-    {
-        throw SystemError("pipe", errno);
-    }
-}
-
-void ClientSocket::prepareCGIInOut(const std::string &method,
-                                   int *pipe_cgi_read, int *pipe_cgi_write)
-{
-    if (method == "POST")
-    {
-        closeFd(pipe_cgi_read[1]);
-        closeFd(STDIN_FILENO);
-        duplicateFd(pipe_cgi_read[0], STDIN_FILENO);
-    }
-    closeFd(pipe_cgi_write[0]);
-    closeFd(STDOUT_FILENO);
-    duplicateFd(pipe_cgi_write[1], STDOUT_FILENO);
-}
-
-void ClientSocket::prepareServerInOut(const std::string &method,
-                                      int *pipe_cgi_read, int *pipe_cgi_write)
-{
-    if (method == "POST")
-    {
-        closeFd(pipe_cgi_read[0]);
-    }
-    closeFd(pipe_cgi_write[1]);
-    file_fd_ = pipe_cgi_write[0];
-}
-
-void ClientSocket::duplicateFd(int oldfd, int newfd)
-{
-    if (dup2(oldfd, newfd) < 0)
-    {
-        throw SystemError("dup2", errno);
-    }
-}
-
-void ClientSocket::closeFd(int fd)
-{
-    if (::close(fd) < 0)
-    {
-        throw SystemError("close", errno);
-    }
 }
 
 void ClientSocket::closeDirectory(DIR *dir_p)
