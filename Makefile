@@ -1,12 +1,12 @@
 NAME		:= webserv
 
-INC_DIR		:= ./includes
-SRCS		:= srcs/AddressInfoError.cpp srcs/CGI.cpp srcs/CGIParser.cpp srcs/ClientSocket.cpp srcs/Config.cpp srcs/ConfigConstant.cpp srcs/ConfigError.cpp srcs/ConfigParser.cpp srcs/HTTPParseException.cpp srcs/HTTPParser.cpp srcs/HTTPRequest.cpp srcs/HTTPResponse.cpp srcs/KqueuePoller.cpp srcs/LocationConfig.cpp srcs/MainConfig.cpp srcs/ServerConfig.cpp srcs/ServerSocket.cpp srcs/Socket.cpp srcs/SystemError.cpp srcs/Uri.cpp srcs/Webserv.cpp srcs/main.cpp
+INC			:= -I ./srcs/config/ -I ./srcs/exception/ -I ./srcs/server/
+SRCS		:= srcs/config/Config.cpp srcs/config/ConfigConstant.cpp srcs/config/ConfigError.cpp srcs/config/ConfigParser.cpp srcs/config/LocationConfig.cpp srcs/config/MainConfig.cpp srcs/config/ServerConfig.cpp srcs/exception/AddressInfoError.cpp srcs/exception/HTTPParseException.cpp srcs/exception/SystemError.cpp srcs/main.cpp srcs/server/CGI.cpp srcs/server/CGIParser.cpp srcs/server/ClientSocket.cpp srcs/server/HTTPParser.cpp srcs/server/HTTPRequest.cpp srcs/server/HTTPResponse.cpp srcs/server/KqueuePoller.cpp srcs/server/ServerSocket.cpp srcs/server/Socket.cpp srcs/server/Uri.cpp srcs/server/Webserv.cpp
 OBJS		:= $(SRCS:.cpp=.o)
 DEPS		:= $(SRCS:.cpp=.d)
 
 CXX			:= clang++
-CXXFLAGS	:= -Wall -Wextra -Werror -std=c++98 -I$(INC_DIR) -pedantic -MMD -MP
+CXXFLAGS	:= -Wall -Wextra -Werror -std=c++98 $(INC) -pedantic -MMD -MP
 
 .PHONY		: all
 all			: $(NAME) ## Build executable
