@@ -2,8 +2,9 @@ NAME		:= webserv
 
 INC			:= -I ./srcs/config/ -I ./srcs/exception/ -I ./srcs/server/
 SRCS		:= srcs/config/Config.cpp srcs/config/ConfigConstant.cpp srcs/config/ConfigError.cpp srcs/config/ConfigParser.cpp srcs/config/LocationConfig.cpp srcs/config/MainConfig.cpp srcs/config/ServerConfig.cpp srcs/exception/AddressInfoError.cpp srcs/exception/HTTPParseException.cpp srcs/exception/SystemError.cpp srcs/main.cpp srcs/server/CGI.cpp srcs/server/CGIParser.cpp srcs/server/ClientSocket.cpp srcs/server/HTTPParser.cpp srcs/server/HTTPRequest.cpp srcs/server/HTTPResponse.cpp srcs/server/KqueuePoller.cpp srcs/server/ServerSocket.cpp srcs/server/Socket.cpp srcs/server/Uri.cpp srcs/server/Webserv.cpp
-OBJS		:= $(SRCS:.cpp=.o)
-DEPS		:= $(SRCS:.cpp=.d)
+OBJS_DIR	:= ./objs
+OBJS		:= $(addprefix $(OBJS_DIR)/, $(SRCS:.cpp=.o))
+DEPS		:= $(addprefix $(OBJS_DIR)/, $(SRCS:.cpp=.d))
 
 CXX			:= clang++
 CXXFLAGS	:= -Wall -Wextra -Werror -std=c++98 $(INC) -pedantic -MMD -MP
@@ -14,9 +15,13 @@ all			: $(NAME) ## Build executable
 $(NAME)	: $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJS)
 
+$(OBJS_DIR)/%.o:	%.cpp
+	@if [ ! -e `dirname $@` ]; then mkdir -p `dirname $@`; fi
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
+
 .PHONY		: clean
 clean		: ## Delete object files and dependency files
-	$(RM) $(OBJS) $(DEPS)
+	rm -rf $(OBJS_DIR)
 
 .PHONY		: fclean
 fclean		: clean ## Delete executable, object files and dependency files
