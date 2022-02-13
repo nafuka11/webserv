@@ -397,7 +397,8 @@ const std::string HTTPParser::validateUri(const std::string &uri)
     {
         ss << uri.substr(start_parse_pos, (parse_pos - start_parse_pos));
 
-        long num = std::strtol(uri.substr((parse_pos + 1), 2).c_str(), &endp, 16);
+        std::string encoded_url = uri.substr((parse_pos + 1), 2);
+        long num = std::strtol(encoded_url.c_str(), &endp, 16);
         if (*endp != '\0' || num < 0)
         {
             throw HTTPParseException(CODE_400);
