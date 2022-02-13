@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
     {
         if (argc != 2)
         {
-            throw std::invalid_argument("Invalid argument.");
+            throw std::invalid_argument("usage: ./webserv <conf file>");
         }
         Webserv webserv(argv[1]);
         webserv.run();
