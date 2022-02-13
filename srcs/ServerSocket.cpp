@@ -65,7 +65,7 @@ void ServerSocket::open(int port)
     }
     if (current == NULL)
     {
-        throw std::runtime_error("socket not found");
+        throw std::runtime_error("error: socket can't bind");
     }
     struct sockaddr_storage storage = {};
     *reinterpret_cast<struct sockaddr *>(&storage) = *current->ai_addr;
