@@ -1,5 +1,6 @@
 #include "KqueuePoller.hpp"
 #include <cerrno>
+#include <unistd.h>
 #include "SystemError.hpp"
 
 const int KqueuePoller::MAX_EVENT_SIZE = 32;
@@ -17,6 +18,7 @@ KqueuePoller::KqueuePoller()
 KqueuePoller::~KqueuePoller()
 {
     delete[] events_;
+    close(kqueue_d_);
 }
 
 void KqueuePoller::registerReadEvent(Socket *socket, int fd) const
