@@ -1,5 +1,8 @@
 #include "Webserv.hpp"
+#include <unistd.h>
 #include "ServerSocket.hpp"
+
+#define USLEEP_SEC 1000
 
 Webserv::Webserv(const std::string &filepath) : config_(Config())
 {
@@ -52,6 +55,8 @@ void Webserv::watchEvents()
     const struct kevent *events = poller_.getEvents();
     for (int i = 0; i < num_event; i++)
     {
+        // 接続づまりを解消するためsleepを挟む
+        usleep(USLEEP_SEC);
         Socket *socket = reinterpret_cast<Socket *>(events[i].udata);
         switch (socket->getType())
         {
