@@ -14,7 +14,7 @@ const size_t ClientSocket::BUF_SIZE = 8192;
 
 ClientSocket::ClientSocket(int fd, const struct sockaddr_storage &address,
                            const std::vector<ServerConfig> &configs,
-                           const KqueuePoller &poller)
+                           KqueuePoller &poller)
     : Socket(CLIENT, fd), configs_(configs), poller_(poller),
       parser_(request_, configs_), cgi_parser_(request_, configs_, response_), state_(READ_REQUEST)
 {
@@ -24,6 +24,7 @@ ClientSocket::ClientSocket(int fd, const struct sockaddr_storage &address,
 
 ClientSocket::~ClientSocket()
 {
+    close();
 }
 
 void ClientSocket::receiveRequest()
@@ -32,7 +33,7 @@ void ClientSocket::receiveRequest()
     ssize_t read_byte = recv(fd_, buffer, BUF_SIZE - 1, 0);
     if (read_byte <= 0)
     {
-        changeState(CLOSE);
+        setState(CLOSE);
         clearRequest();
         return;
     }
@@ -77,7 +78,7 @@ void ClientSocket::sendResponse()
                               message.size() - sent_byte, 0);
     if (write_byte < 0)
     {
-        changeState(CLOSE);
+        setState(CLOSE);
         clearRequest();
         return;
     }
@@ -88,12 +89,12 @@ void ClientSocket::sendResponse()
     }
     if (request_.canKeepAlive())
     {
-        changeState(READ_REQUEST);
+        setState(READ_REQUEST);
         response_.clear();
     }
     else
     {
-        changeState(CLOSE);
+        setState(CLOSE);
     }
     clearRequest();
 }
@@ -153,7 +154,7 @@ void ClientSocket::readCGI(intptr_t offset)
     if ((read_byte == 0) || (read_byte == offset))
     {
         cgi_.end();
-        changeState(WRITE_CGI_RESPONSE);
+        setState(WRITE_CGI_RESPONSE);
         try
         {
             cgi_parser_.parse();
@@ -185,14 +186,14 @@ void ClientSocket::writeToCGI()
         handleError(CODE_500);
     }
     setNonBlockingFd(from_cgi_fd);
-    changeState(READ_CGI);
+    setState(READ_CGI);
 }
 
 void ClientSocket::closeFile()
 {
     ::close(file_fd_);
 
-    changeState(WRITE_RESPONSE);
+    setState(WRITE_RESPONSE);
 }
 
 void ClientSocket::close()
@@ -208,9 +209,18 @@ ClientSocket::State ClientSocket::getState() const
     return state_;
 }
 
-void ClientSocket::changeState(State new_state)
+void ClientSocket::setState(State new_state)
 {
-    switch (state_)
+    state_ = new_state;
+}
+
+void ClientSocket::updateEventFromState(State prev_state)
+{
+    if (prev_state == state_)
+    {
+        return;
+    }
+    switch (prev_state)
     {
     case READ_REQUEST:
         poller_.unregisterReadEvent(this, fd_);
@@ -230,7 +240,7 @@ void ClientSocket::changeState(State new_state)
     default:
         break;
     }
-    switch (new_state)
+    switch (state_)
     {
     case READ_REQUEST:
         poller_.registerReadEvent(this, fd_);
@@ -254,7 +264,6 @@ void ClientSocket::changeState(State new_state)
     default:
         break;
     }
-    state_ = new_state;
 }
 
 void ClientSocket::prepareResponse()
@@ -290,7 +299,7 @@ void ClientSocket::handleFile(const std::string &method, const Uri &uri)
 
         openFileToRead(path.c_str());
         setNonBlockingFd(file_fd_);
-        changeState(READ_FILE);
+        setState(READ_FILE);
         if (uri.getStat().st_size == 0)
         {
             closeFile();
@@ -309,7 +318,7 @@ void ClientSocket::handleFile(const std::string &method, const Uri &uri)
             throw HTTPParseException(CODE_500);
         }
         response_.setStatusCode(CODE_204);
-        changeState(WRITE_RESPONSE);
+        setState(WRITE_RESPONSE);
     }
     else if (method == HTTPRequest::HTTP_POST)
     {
@@ -325,7 +334,7 @@ void ClientSocket::handleFile(const std::string &method, const Uri &uri)
 
         openFileToWrite(path);
         setNonBlockingFd(file_fd_);
-        changeState(WRITE_FILE);
+        setState(WRITE_FILE);
     }
 }
 
@@ -339,7 +348,7 @@ void ClientSocket::handleAutoindex(const std::string &method, const Uri &uri)
         std::string body = response_.generateAutoindexHTML(uri, dir_p);
         response_.appendMessageBody(body.c_str(), body.size());
         closeDirectory(dir_p);
-        changeState(WRITE_RESPONSE);
+        setState(WRITE_RESPONSE);
     }
 }
 
@@ -358,7 +367,7 @@ void ClientSocket::handleRedirect(const Uri &uri)
                            uri.getRawPath() + "/";
         response_.setRedirectResponse(CODE_301, path);
     }
-    changeState(WRITE_RESPONSE);
+    setState(WRITE_RESPONSE);
 }
 
 void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
@@ -367,7 +376,7 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
     {
         cgi_.run(request_, *request_.getServerConfig(), ip_, method, uri);
     }
-    catch(const std::exception &e)
+    catch (const std::exception &e)
     {
         handleError(CODE_500);
     }
@@ -382,9 +391,9 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
                 throw SystemError("waitpid", errno);
             }
             setNonBlockingFd(cgi_.getFdReadFromCGI());
-            changeState(READ_CGI);
+            setState(READ_CGI);
         }
-        catch(const SystemError &e)
+        catch (const SystemError &e)
         {
             handleError(CODE_500);
         }
@@ -394,9 +403,9 @@ void ClientSocket::handleCGI(const std::string &method, const Uri &uri)
         try
         {
             setNonBlockingFd(cgi_.getFdWriteToCGI());
-            changeState(WRITE_TO_CGI);
+            setState(WRITE_TO_CGI);
         }
-        catch(const SystemError &e)
+        catch (const SystemError &e)
         {
             handleError(CODE_500);
         }
@@ -421,7 +430,7 @@ void ClientSocket::handleError(HTTPStatusCode statusCode)
         }
     }
     response_.setMessageBody(response_.generateHTMLfromStatusCode(statusCode));
-    changeState(WRITE_RESPONSE);
+    setState(WRITE_RESPONSE);
 }
 
 void ClientSocket::handleErrorFromFile(const LocationConfig *location,

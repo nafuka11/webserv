@@ -19,7 +19,7 @@ ServerSocket::~ServerSocket()
 {
 }
 
-ClientSocket *ServerSocket::acceptConnection(const KqueuePoller &poller) const
+ClientSocket *ServerSocket::acceptConnection(KqueuePoller &poller) const
 {
     struct sockaddr_storage address;
     socklen_t address_len = sizeof(struct sockaddr_storage);

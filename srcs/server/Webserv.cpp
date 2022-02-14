@@ -1,5 +1,8 @@
 #include "Webserv.hpp"
+#include <unistd.h>
 #include "ServerSocket.hpp"
+
+#define USLEEP_SEC 1000
 
 Webserv::Webserv(const std::string &filepath) : config_(Config())
 {
@@ -52,6 +55,8 @@ void Webserv::watchEvents()
     const struct kevent *events = poller_.getEvents();
     for (int i = 0; i < num_event; i++)
     {
+        // 接続づまりを解消するためsleepを挟む
+        usleep(USLEEP_SEC);
         Socket *socket = reinterpret_cast<Socket *>(events[i].udata);
         switch (socket->getType())
         {
@@ -79,6 +84,7 @@ void Webserv::handleServerEvent(Socket *socket, const struct kevent &event)
 void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
 {
     ClientSocket *client = dynamic_cast<ClientSocket *>(socket);
+    ClientSocket::State prev_state = client->getState();
     switch (client->getState())
     {
     case ClientSocket::READ_REQUEST:
@@ -97,7 +103,7 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
         {
             client->closeFile();
         }
-        if (event.filter == EVFILT_READ)
+        else if (event.filter == EVFILT_READ)
         {
             client->readFile(event.data);
         }
@@ -110,6 +116,11 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
         break;
     case ClientSocket::WRITE_RESPONSE:
     case ClientSocket::WRITE_CGI_RESPONSE:
+        if (event.flags & EV_EOF)
+        {
+            closeClient(client);
+            return;
+        }
         if (event.filter == EVFILT_WRITE)
         {
             client->sendResponse();
@@ -120,7 +131,7 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
         {
             client->closeFile();
         }
-        if (event.filter == EVFILT_WRITE)
+        else if (event.filter == EVFILT_WRITE)
         {
             client->writeFile();
         }
@@ -138,11 +149,14 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
     {
         closeClient(client);
     }
+    else
+    {
+        client->updateEventFromState(prev_state);
+    }
 }
 
 void Webserv::closeClient(ClientSocket *client)
 {
     sockets_.erase(client->getFd());
-    client->close();
     delete client;
 }
