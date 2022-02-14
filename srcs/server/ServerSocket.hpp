@@ -11,7 +11,7 @@ class ServerSocket : public Socket
 public:
     ServerSocket(int port, const std::vector<ServerConfig> &configs);
     ~ServerSocket();
-    ClientSocket *acceptConnection(const KqueuePoller &poller) const;
+    ClientSocket *acceptConnection(KqueuePoller &poller) const;
 
 private:
     const std::vector<ServerConfig> &configs_;

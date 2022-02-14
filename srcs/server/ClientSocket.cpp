@@ -14,7 +14,7 @@ const size_t ClientSocket::BUF_SIZE = 8192;
 
 ClientSocket::ClientSocket(int fd, const struct sockaddr_storage &address,
                            const std::vector<ServerConfig> &configs,
-                           const KqueuePoller &poller)
+                           KqueuePoller &poller)
     : Socket(CLIENT, fd), configs_(configs), poller_(poller),
       parser_(request_, configs_), cgi_parser_(request_, configs_, response_), state_(READ_REQUEST)
 {
