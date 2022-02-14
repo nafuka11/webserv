@@ -97,7 +97,7 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
         {
             client->closeFile();
         }
-        if (event.filter == EVFILT_READ)
+        else if (event.filter == EVFILT_READ)
         {
             client->readFile(event.data);
         }
@@ -110,6 +110,11 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
         break;
     case ClientSocket::WRITE_RESPONSE:
     case ClientSocket::WRITE_CGI_RESPONSE:
+        if (event.flags & EV_EOF)
+        {
+            closeClient(client);
+            return;
+        }
         if (event.filter == EVFILT_WRITE)
         {
             client->sendResponse();
@@ -120,7 +125,7 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
         {
             client->closeFile();
         }
-        if (event.filter == EVFILT_WRITE)
+        else if (event.filter == EVFILT_WRITE)
         {
             client->writeFile();
         }
