@@ -148,6 +148,5 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
 void Webserv::closeClient(ClientSocket *client)
 {
     sockets_.erase(client->getFd());
-    client->close();
     delete client;
 }

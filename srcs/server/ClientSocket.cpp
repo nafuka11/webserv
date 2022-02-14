@@ -24,6 +24,7 @@ ClientSocket::ClientSocket(int fd, const struct sockaddr_storage &address,
 
 ClientSocket::~ClientSocket()
 {
+    close();
 }
 
 void ClientSocket::receiveRequest()
