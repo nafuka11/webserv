@@ -40,6 +40,7 @@ public:
     void closeFile();
     void close();
     State getState() const;
+    void updateEventFromState(State prev_state);
 
 private:
     static const size_t BUF_SIZE;
@@ -54,7 +55,7 @@ private:
     int file_fd_;
     std::string ip_;
 
-    void changeState(State new_state);
+    void setState(State new_state);
     void prepareResponse();
     void handleFile(const std::string &method, const Uri &uri);
     void handleAutoindex(const std::string &method, const Uri &uri);

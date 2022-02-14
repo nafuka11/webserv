@@ -79,6 +79,7 @@ void Webserv::handleServerEvent(Socket *socket, const struct kevent &event)
 void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
 {
     ClientSocket *client = dynamic_cast<ClientSocket *>(socket);
+    ClientSocket::State prev_state = client->getState();
     switch (client->getState())
     {
     case ClientSocket::READ_REQUEST:
@@ -142,6 +143,10 @@ void Webserv::handleClientEvent(Socket *socket, const struct kevent &event)
     if (client->getState() == ClientSocket::CLOSE)
     {
         closeClient(client);
+    }
+    else
+    {
+        client->updateEventFromState(prev_state);
     }
 }
 
