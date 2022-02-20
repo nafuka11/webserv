@@ -12,6 +12,10 @@ http: ## Run http tests
 conf: ## Run conf tests
 	bash $(CONF_TEST_DIR)/test.sh
 
+.PHONY: install
+conf: ## Install packages for testing
+	$(MAKE) -C $(HTTP_TEST_DIR) install
+
 help: ## Show this message
 	@echo "Target lists:"
 	@grep -E '^[a-zA-Z_-]+\t*:.*?## .*$$' Makefile | awk 'BEGIN {FS = "\t*:.*?## "}; {printf "    \033[36m%-10s\033[0m %s\n", $$1, $$2}'
