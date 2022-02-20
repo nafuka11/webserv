@@ -27,7 +27,6 @@ make
 ```bash
 cd tests
 make install
-make
 ```
 
 ### すべてのテスト
