@@ -20,9 +20,9 @@ make
 ./webserv conf/default.conf
 ```
 
-### テスト
+## テスト
 
-#### テストに必要なパッケージのインストール
+### テストに必要なパッケージのインストール
 
 ```bash
 cd tests
@@ -30,19 +30,19 @@ make install
 make
 ```
 
-#### すべてのテスト
+### すべてのテスト
 
 ```bash
 make
 ```
 
-#### 設定ファイルのテスト
+### 設定ファイルのテスト
 
 ```bash
 make conf
 ```
 
-#### サーバのテスト
+### サーバのテスト
 
 ```bash
 make http
