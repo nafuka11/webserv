@@ -13,7 +13,7 @@ conf: ## Run conf tests
 	bash $(CONF_TEST_DIR)/test.sh
 
 .PHONY: install
-conf: ## Install packages for testing
+install: ## Install packages for testing
 	$(MAKE) -C $(HTTP_TEST_DIR) install
 
 help: ## Show this message
